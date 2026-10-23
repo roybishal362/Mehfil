@@ -36,6 +36,7 @@ export default mergeConfig(
           'src/**/*.test.{ts,tsx}',
           'src/**/*.d.ts',
           'src/client/test/**',
+          'src/shared/test/**',
           'src/client/main.tsx',
           'src/server/node.ts',
           'src/server/vercel.ts',
