@@ -308,12 +308,15 @@ function findBudget(text: string): { amount: number; currency?: Currency } | und
   return nearBudgetWord === undefined ? undefined : { amount: nearBudgetWord };
 }
 
-const NON_VEG = pattern(String.raw`\bnon[- ]?veg|मांसाहारी|আমিষ`);
-const STRICTLY_VEG = pattern(String.raw`\b(?:pure[- ]veg|veg[- ]only|only veg|strictly veg)`);
+const NON_VEG = pattern(String.raw`\bnon[- ]?veg|मांसाहारी|${NO_LETTER_BEFORE}আমিষ`);
+const STRICTLY_VEG = pattern(
+  String.raw`\b(?:pure[- ]veg|(?<!non[- ]?)veg[- ]only|only veg|strictly veg|no non[- ]?veg)`,
+);
 const DIET_PATTERNS: readonly (readonly [DietaryNeed, RegExp])[] = [
   ['jain', pattern(String.raw`\bjain\b|जैन|জৈন`)],
   ['vegan', pattern(String.raw`\bvegan\b`)],
-  ['vegetarian', pattern(String.raw`\b(?:veg|vegetarian)\b|शाकाहारी|নিরামিষ`)],
+  // "veg" on its own, not the "veg" inside "non-veg".
+  ['vegetarian', pattern(String.raw`(?<!non[- ]?)\b(?:veg|vegetarian)\b|शाकाहारी|নিরামিষ`)],
   ['halal', pattern(String.raw`\bhalal\b|हलाल|হালাল`)],
   [
     'no_onion_garlic',
@@ -325,12 +328,13 @@ const DIET_PATTERNS: readonly (readonly [DietaryNeed, RegExp])[] = [
 
 function findDietary(text: string): DietaryNeed[] {
   const needs: DietaryNeed[] = [];
-  // "veg and non-veg food" is a mixed menu, not a vegetarian one.
-  const mixedMenu = NON_VEG.test(text) && !STRICTLY_VEG.test(text);
   for (const [need, regex] of DIET_PATTERNS) {
-    if (need === 'vegetarian' && (mixedMenu || needs.includes('vegan'))) continue;
+    // Vegan already implies vegetarian.
+    if (need === 'vegetarian' && needs.includes('vegan')) continue;
     if (regex.test(text)) needs.push(need);
   }
+  // "veg and non-veg food" serves both; "pure veg, no non-veg" serves only vegetarian food.
+  if (NON_VEG.test(text) && !STRICTLY_VEG.test(text)) needs.push('non_vegetarian');
   return needs;
 }
 

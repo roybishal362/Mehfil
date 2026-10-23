@@ -389,8 +389,60 @@ export const AiMetaInfo = z.object({
 });
 export type AiMetaInfo = z.infer<typeof AiMetaInfo>;
 
-/** One line of the NDJSON stream returned by POST /api/ai/personalize. */
-export type PersonalizeEvent =
-  | ({ type: 'section'; meta: AiMetaInfo } & SectionData)
-  | { type: 'section_error'; section: AiSection; code: string; message: string }
-  | { type: 'done'; ms: number };
+/**
+ * One line of the NDJSON stream returned by POST /api/ai/personalize. The browser validates
+ * every line with this schema before merging it into a plan.
+ */
+export const PersonalizeEvent = z.union([
+  z.object({
+    type: z.literal('section'),
+    section: z.literal('budget'),
+    data: BudgetSectionData,
+    meta: AiMetaInfo,
+  }),
+  z.object({
+    type: z.literal('section'),
+    section: z.literal('timeline'),
+    data: TimelineSectionData,
+    meta: AiMetaInfo,
+  }),
+  z.object({
+    type: z.literal('section'),
+    section: z.literal('vendors'),
+    data: VendorsSectionData,
+    meta: AiMetaInfo,
+  }),
+  z.object({
+    type: z.literal('section'),
+    section: z.literal('ideas'),
+    data: IdeasSectionData,
+    meta: AiMetaInfo,
+  }),
+  z.object({
+    type: z.literal('section_error'),
+    section: AiSection,
+    code: z.string(),
+    message: z.string(),
+  }),
+  z.object({ type: z.literal('done'), ms: z.number().min(0) }),
+]);
+export type PersonalizeEvent = z.infer<typeof PersonalizeEvent>;
+
+/** POST /api/ai/brief answers with the extracted brief plus metadata. */
+export const BriefApiResponse = BriefResponse.extend({ meta: AiMetaInfo });
+export type BriefApiResponse = z.infer<typeof BriefApiResponse>;
+
+/** POST /api/ai/refine answers with one section plus metadata. */
+export const RefineApiResponse = z.union([
+  z.object({ section: z.literal('budget'), data: BudgetSectionData, meta: AiMetaInfo }),
+  z.object({ section: z.literal('timeline'), data: TimelineSectionData, meta: AiMetaInfo }),
+  z.object({ section: z.literal('vendors'), data: VendorsSectionData, meta: AiMetaInfo }),
+  z.object({ section: z.literal('ideas'), data: IdeasSectionData, meta: AiMetaInfo }),
+]);
+export type RefineApiResponse = z.infer<typeof RefineApiResponse>;
+
+export const CopilotApiResponse = CopilotResponse.extend({ meta: AiMetaInfo });
+export type CopilotApiResponse = z.infer<typeof CopilotApiResponse>;
+
+export const InvitationApiResponse = InvitationDraft.extend({ meta: AiMetaInfo });
+export type InvitationApiResponse = z.infer<typeof InvitationApiResponse>;

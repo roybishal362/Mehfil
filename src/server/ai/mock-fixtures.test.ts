@@ -16,6 +16,7 @@ import {
   mockIdeasSection,
   mockInvitation,
   mockTimelineSection,
+  mockTitle,
 } from './mock-fixtures';
 
 const TODAY = '2026-10-23';
@@ -51,6 +52,18 @@ describe('mockBriefExtraction', () => {
     expect(result.missing).toEqual([]);
     expect(result.question).toBeUndefined();
     expect(result.brief.currency).toBe('INR');
+  });
+});
+
+describe('mockTitle', () => {
+  it.each([
+    ['A wedding of Ananya and Rohan in Kolkata', 'wedding', 'Kolkata', "Ananya & Rohan's Wedding"],
+    ["Aarav's 7th birthday party", 'birthday', 'Pune', "Aarav's 7th Birthday"],
+    ['A wedding in Kolkata', 'wedding', 'Kolkata', 'Kolkata Wedding'],
+    ['Durga Puja in Kolkata', 'community', 'Kolkata', 'Kolkata Celebration'],
+    ['Something', undefined, undefined, undefined],
+  ] as const)('titles "%s"', (text, type, city, title) => {
+    expect(mockTitle(text, type, city)).toBe(title);
   });
 });
 
@@ -124,6 +137,21 @@ describe('mockIdeasSection', () => {
   });
 });
 
+describe('mockIdeasSection refinements', () => {
+  it.each([
+    ['More budget-friendly', 'Marigolds and diyas, no imports'],
+    ['Eco-friendly please', 'Banana-leaf and sal-leaf plates'],
+    ['Fun for children too', 'Rangoli colouring table'],
+    ['More regional food', 'Regional street-food lane'],
+    ['Something completely different', 'Marigolds and diyas, no imports'],
+  ])('answers "%s"', (instruction, firstTitle) => {
+    const data = mockIdeasSection(weddingBrief(), instruction);
+    expect(IdeasSectionData.safeParse(data).success).toBe(true);
+    expect(data.ideas[0]?.title).toBe(firstTitle);
+    expect(data.summary).toContain(instruction);
+  });
+});
+
 describe('mockInvitation', () => {
   it('uses the hosts, time and venue only when given', () => {
     const full = mockInvitation({
@@ -143,7 +171,9 @@ describe('mockInvitation', () => {
       channel: 'card',
       language: 'en',
     });
-    expect(bare.variants[0]?.text).toMatch(/^warmly invite you to .* on 2027-02-14 in Kolkata\./);
+    expect(bare.variants[0]?.text).toMatch(
+      /^We warmly invite you to .* on 2027-02-14 in Kolkata\./,
+    );
   });
 });
 

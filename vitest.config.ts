@@ -26,6 +26,10 @@ export default mergeConfig(
             environment: 'jsdom',
             include: ['src/client/**/*.test.{ts,tsx}'],
             setupFiles: ['./src/client/test/setup.ts'],
+            // CSS is stubbed in tests, except the tokens file the contrast test reads.
+            css: { include: [/tokens\.css/] },
+            // Full-page axe scans of the SVG-rich pages are slow in jsdom, more so with coverage.
+            testTimeout: 20_000,
           },
         },
       ],

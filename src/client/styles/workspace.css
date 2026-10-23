@@ -1,0 +1,705 @@
+/* The plan workspace: section tabs, overview cards and the Copilot panel. */
+
+.plan-tabs {
+  display: flex;
+  gap: 4px;
+  margin: 30px 0 26px;
+  padding: 6px;
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.plan-tabs a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--muted);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.plan-tabs a:hover {
+  color: var(--ink);
+}
+
+.plan-tabs a .i {
+  width: 17px;
+  height: 17px;
+}
+
+.plan-tabs a[aria-current='page'] {
+  background: var(--foil);
+  background-size: 160% 100%;
+  color: var(--on-foil);
+  box-shadow: 0 8px 20px -10px rgb(246 190 90 / 0.8);
+}
+
+.plan-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  justify-content: flex-end;
+}
+
+.ws-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 24px;
+  align-items: start;
+}
+
+.ws-main {
+  display: grid;
+  gap: 22px;
+  min-width: 0;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 20px;
+}
+
+.section-head h2 {
+  font-size: clamp(32px, 3vw, 42px);
+  color: var(--ink);
+}
+
+.section-head p {
+  color: var(--muted);
+  max-width: 62ch;
+}
+
+.section-head .actions {
+  margin-left: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* AI status banner shown while Gemini personalises the plan. */
+.ai-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  align-items: center;
+  padding: 14px 18px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(120deg, var(--ai-bg), rgb(155 123 240 / 0.12));
+  box-shadow: inset 0 0 0 1px rgb(224 69 123 / 0.35);
+  color: var(--ink);
+  font-size: 14.5px;
+}
+
+.ai-status ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ai-status .lead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 650;
+}
+
+/* ---------------------------------------------------------------- overview: focus */
+
+.focus {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 22px;
+}
+
+.tasks {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tasks li {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 13px 2px;
+  border-top: 1px solid var(--line);
+}
+
+.tasks li:first-child {
+  border-top: 0;
+}
+
+.tasks .t {
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--ink);
+}
+
+.tasks .done .t {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.tasks .m {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 13.5px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+.ask {
+  padding: 20px;
+  border-radius: 20px;
+  background:
+    radial-gradient(400px 200px at 100% 0%, rgb(242 140 40 / 0.22), transparent 70%),
+    linear-gradient(160deg, rgb(224 69 123 / 0.16), rgb(155 123 240 / 0.12));
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+}
+
+.ask h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 24px;
+  color: var(--ink);
+}
+
+.ask p {
+  font-size: 14px;
+  color: var(--ink-2);
+  margin: 6px 0 12px;
+}
+
+.ask button {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  text-align: left;
+  border: 0;
+  border-radius: 14px;
+  padding: 10px 14px;
+  margin-top: 8px;
+  background: rgb(255 255 255 / 0.06);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+  color: var(--ink-2);
+  font-size: 14px;
+}
+
+:root[data-theme='day'] .ask button {
+  background: #fff;
+}
+
+.ask button:hover {
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--control-line);
+}
+
+/* ---------------------------------------------------------------- overview: budget */
+
+.big {
+  font-family: var(--font-display);
+  font-size: 46px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--ink);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.zari {
+  display: flex;
+  height: 28px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgb(246 210 122 / 0.5);
+}
+
+.zari i {
+  position: relative;
+  height: 100%;
+}
+
+.zari i + i {
+  box-shadow: inset 2px 0 0 rgb(246 210 122 / 0.85);
+}
+
+.zari i::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, rgb(255 243 201 / 0.18) 0 2px, transparent 2px 7px);
+  mix-blend-mode: overlay;
+}
+
+.legend {
+  display: grid;
+  gap: 6px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--ink-2);
+  min-width: 0;
+}
+
+.legend li i {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex: none;
+  box-shadow: 0 0 0 1px rgb(246 210 122 / 0.5);
+}
+
+.legend li span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.legend li b {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+/* ---------------------------------------------------------------- overview: journey */
+
+.journey svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+.journey-sum {
+  margin-top: 18px;
+  display: grid;
+  gap: 10px;
+}
+
+.journey-sum p {
+  font-size: 14.5px;
+  color: var(--ink-2);
+}
+
+.journey-sum b {
+  color: var(--ink);
+  font-weight: 650;
+}
+
+.journey .phase-label {
+  font: 600 11.5px var(--font-body);
+  fill: var(--muted);
+}
+
+.journey .here {
+  font: 800 10.5px var(--font-body);
+  letter-spacing: 0.14em;
+  fill: var(--ai-ink);
+}
+
+/* ---------------------------------------------------------------- overview: vendors */
+
+.stones {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stone {
+  text-align: center;
+  padding: 14px 8px;
+  border-radius: 16px;
+  background: var(--tint);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.stone b {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--ink);
+  font-variant-numeric: lining-nums;
+}
+
+.stone span {
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+@container (max-width: 420px) {
+  .stones {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.stone--lit {
+  box-shadow:
+    inset 0 0 0 1px rgb(51 164 111 / 0.6),
+    0 0 24px -8px rgb(51 164 111 / 0.6);
+}
+
+.stone--lit b {
+  color: var(--ok-ink);
+}
+
+/* ---------------------------------------------------------------- overview: theme */
+
+.mood {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+
+.swatch-fan {
+  position: relative;
+  width: 128px;
+  height: 116px;
+  flex: none;
+}
+
+.swatch-fan i {
+  position: absolute;
+  width: 64px;
+  height: 90px;
+  border-radius: 12px;
+  box-shadow:
+    0 12px 20px -12px rgb(0 0 0 / 0.7),
+    inset 0 0 0 1px rgb(255 255 255 / 0.12);
+}
+
+.swatch-fan i::after {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1px solid rgb(255 243 201 / 0.45);
+  border-radius: 7px;
+}
+
+.swatch-fan i:nth-child(1) {
+  left: 0;
+  top: 14px;
+  transform: rotate(-12deg);
+}
+
+.swatch-fan i:nth-child(2) {
+  left: 30px;
+  top: 4px;
+  transform: rotate(-2deg);
+}
+
+.swatch-fan i:nth-child(3) {
+  left: 58px;
+  top: 16px;
+  transform: rotate(10deg);
+}
+
+.mood h3 {
+  font-size: 26px;
+  color: var(--ink);
+}
+
+.mood p {
+  font-size: 14.5px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* ---------------------------------------------------------------- copilot */
+
+.copilot {
+  position: sticky;
+  top: 20px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--surface-2), var(--surface));
+  box-shadow:
+    var(--shadow-card),
+    inset 0 0 0 1px var(--line-strong);
+}
+
+.co-head {
+  padding: 22px;
+  background:
+    radial-gradient(300px 160px at 85% 0%, rgb(242 140 40 / 0.35), transparent 70%),
+    linear-gradient(135deg, rgb(224 69 123 / 0.22), rgb(91 26 106 / 0.2));
+  border-bottom: 1px solid var(--line);
+}
+
+.co-head h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 30px;
+  color: var(--ink);
+}
+
+.co-head p {
+  font-size: 14px;
+  color: var(--ink-2);
+  margin-top: 4px;
+}
+
+.co-body {
+  padding: 18px;
+  display: grid;
+  gap: 12px;
+}
+
+.co-log {
+  display: grid;
+  gap: 12px;
+  max-height: 520px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bubble {
+  padding: 12px 15px;
+  border-radius: 18px;
+  font-size: 15px;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.bubble--me {
+  background: rgb(246 210 122 / 0.14);
+  margin-left: 28px;
+  border-bottom-right-radius: 6px;
+  box-shadow: inset 0 0 0 1px rgb(246 210 122 / 0.3);
+}
+
+.bubble--ai {
+  background: var(--tint);
+  margin-right: 14px;
+  border-bottom-left-radius: 6px;
+}
+
+:root[data-theme='day'] .bubble--ai {
+  background: #fff6e6;
+}
+
+.proposals {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.proposals li label {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgb(0 0 0 / 0.18);
+  box-shadow: inset 0 0 0 1px var(--line);
+  font-size: 14.5px;
+  cursor: pointer;
+}
+
+:root[data-theme='day'] .proposals li label {
+  background: #fffdf8;
+}
+
+.proposals .check {
+  width: 22px;
+  height: 22px;
+}
+
+.proposals .check:checked::after {
+  width: 6px;
+  height: 10px;
+  border-width: 0 2.5px 2.5px 0;
+}
+
+.proposals .what {
+  display: block;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.proposals .vals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  align-items: center;
+  color: var(--ink-2);
+}
+
+.proposals s {
+  color: var(--muted);
+}
+
+.proposals .to {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.delta {
+  font-size: 12px;
+  font-weight: 800;
+  padding: 1px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.delta--up {
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+}
+
+.delta--down {
+  background: var(--ok-bg);
+  color: var(--ok-ink);
+}
+
+.co-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.composer {
+  display: flex;
+  gap: 8px;
+}
+
+.composer .input {
+  flex: 1;
+  min-width: 0;
+  border-radius: 999px;
+  padding-inline: 18px;
+}
+
+.composer button {
+  width: 48px;
+  height: 48px;
+  flex: none;
+  border-radius: 50%;
+  border: 0;
+  background: var(--foil);
+  background-size: 160%;
+  color: var(--on-foil);
+  display: grid;
+  place-items: center;
+}
+
+/* ---------------------------------------------------------------- responsive */
+
+@media (max-width: 1100px) {
+  .ws-body {
+    grid-template-columns: 1fr;
+  }
+
+  .copilot {
+    position: static;
+  }
+}
+
+@media (max-width: 720px) {
+  .grid-2,
+  .focus {
+    grid-template-columns: 1fr;
+  }
+
+  .stones {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .plan-tabs {
+    border-radius: 18px;
+  }
+}
+
+/* ---------------------------------------------------------------- garland flowers */
+
+.journey .petal-on {
+  fill: var(--saffron);
+  stroke: var(--marigold);
+  stroke-width: 1.4;
+}
+
+.journey .petal-half {
+  fill: transparent;
+  stroke: var(--marigold);
+  stroke-width: 1.4;
+}
+
+.journey .petal-off {
+  fill: transparent;
+  stroke: var(--marigold-off);
+  stroke-width: 1.4;
+}
+
+.journey .heart-on {
+  fill: #fde68a;
+}
+
+.journey .heart-off {
+  fill: var(--marigold-off);
+}
+
+/* ---------------------------------------------------------------- summary and previews */
+
+.summary-text {
+  font-family: var(--font-display);
+  font-size: 21px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+.changes summary {
+  cursor: pointer;
+  font-weight: 650;
+  color: var(--label);
+  min-height: 32px;
+}
+
+.changes .legend li {
+  white-space: normal;
+}
+
+.changes .legend li span {
+  white-space: normal;
+}

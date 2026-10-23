@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { zipWith } from './collections';
+import { omitKey, zipWith } from './collections';
+
+describe('omitKey', () => {
+  it('copies an object without one key, leaving the original alone', () => {
+    const original = { a: 1, b: 2 };
+    expect(omitKey(original, 'a')).toEqual({ b: 2 });
+    expect(original).toEqual({ a: 1, b: 2 });
+  });
+});
 
 describe('zipWith', () => {
   it('combines arrays element by element', () => {

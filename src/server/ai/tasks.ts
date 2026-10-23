@@ -167,7 +167,7 @@ export async function generateSection(
       maxOutputTokens: settings.maxOutputTokens,
       thinking: smart ? 'low' : 'minimal',
       timeoutMs: 25_000,
-      input: { brief, today },
+      input: { brief, today, ...(instruction ? { instruction } : {}) },
       ...(signal ? { signal } : {}),
     },
     30_000,

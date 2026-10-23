@@ -26,7 +26,11 @@ import {
   type ToolResponse,
 } from './provider';
 
-const SectionInput = z.object({ brief: EventBrief, today: IsoDate });
+const SectionInput = z.object({
+  brief: EventBrief,
+  today: IsoDate,
+  instruction: z.string().optional(),
+});
 
 /** Relative latency per task, so demo mode streams sections in a natural order. */
 const LATENCY_WEIGHT: Readonly<Record<AiTask, number>> = {
@@ -68,8 +72,10 @@ function fixtureFor(task: AiTask, input: unknown): unknown {
     }
     case 'section.vendors':
       return mockVendorsSection(SectionInput.parse(input).brief);
-    case 'section.ideas':
-      return mockIdeasSection(SectionInput.parse(input).brief);
+    case 'section.ideas': {
+      const { brief, instruction } = SectionInput.parse(input);
+      return mockIdeasSection(brief, instruction);
+    }
     case 'invitation':
       return mockInvitation(InvitationRequest.parse(input));
     case 'copilot':

@@ -1,0 +1,493 @@
+/* Plan sections: budget table, timeline, vendors, ideas, guests and the run sheet. */
+
+/* ---------------------------------------------------------------- shared */
+
+.figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px 20px;
+  margin: 0;
+}
+
+.figures dt {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.figures dd {
+  margin: 4px 0 0;
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--ink);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  margin-inline: -8px;
+  padding-inline: 8px;
+}
+
+.lines {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14.5px;
+}
+
+.lines th,
+.lines td {
+  padding: 10px 8px;
+  border-top: 1px solid var(--line);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.lines thead th {
+  border-top: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.lines tbody th {
+  font-weight: 600;
+  min-width: 180px;
+}
+
+.line-name {
+  display: block;
+  color: var(--ink);
+}
+
+.line-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 4px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.line-why {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
+  max-width: 42ch;
+}
+
+.input.amount,
+.input--inline {
+  min-height: 40px;
+  padding: 6px 10px;
+  font-size: 15px;
+}
+
+.input.amount {
+  width: 130px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.input--inline {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px transparent;
+}
+
+.input--inline:hover {
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+}
+
+.input--narrow {
+  width: 76px;
+}
+
+.select--sm {
+  width: auto;
+  min-height: 40px;
+  padding-block: 6px;
+  font-size: 14.5px;
+}
+
+.add-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 14px 16px;
+  align-items: end;
+  margin-top: 18px;
+}
+
+.add-row .add-title {
+  grid-column: 1 / -1;
+  font-size: 24px;
+  color: var(--ink);
+}
+
+.add-row > .btn {
+  justify-self: start;
+}
+
+.filters {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--tint);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.filters button {
+  min-height: 38px;
+  padding: 6px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-2);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.filters button[aria-pressed='true'] {
+  background: var(--foil);
+  background-size: 160% 100%;
+  color: var(--on-foil);
+}
+
+.phase-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+  font-size: 24px;
+  color: var(--ink);
+}
+
+.row-actions {
+  display: flex;
+  gap: 2px;
+  flex: none;
+}
+
+.tips {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 8px;
+  color: var(--ink-2);
+}
+
+/* ---------------------------------------------------------------- vendors */
+
+.vendor-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.advice {
+  margin-top: 14px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--tint);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.advice summary {
+  cursor: pointer;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  font-weight: 650;
+  color: var(--label);
+}
+
+.advice h4 {
+  margin: 12px 0 4px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.advice ul {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 4px;
+  color: var(--ink-2);
+  font-size: 14.5px;
+}
+
+.quotes {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.quote {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.quote--chosen {
+  box-shadow:
+    inset 0 0 0 1.5px var(--gold-300),
+    0 0 24px -12px var(--gold-300);
+}
+
+/* ---------------------------------------------------------------- ideas */
+
+.refine {
+  display: grid;
+  gap: 14px;
+}
+
+.chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ideas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.idea {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding: 20px;
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, var(--surface-2), var(--surface));
+  box-shadow:
+    var(--shadow-card),
+    inset 0 0 0 1px var(--line);
+}
+
+.idea--theme {
+  grid-column: 1 / -1;
+  background:
+    radial-gradient(500px 200px at 100% 0%, rgb(242 140 40 / 0.18), transparent 70%),
+    linear-gradient(180deg, var(--surface-2), var(--surface));
+}
+
+.idea h3 {
+  font-size: 24px;
+  color: var(--ink);
+}
+
+.idea p {
+  color: var(--ink-2);
+  font-size: 15px;
+}
+
+.idea-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.idea-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.palette {
+  display: flex;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.palette li {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 0.18),
+    0 6px 14px -8px rgb(0 0 0 / 0.6);
+}
+
+/* ---------------------------------------------------------------- guests */
+
+.file-button {
+  position: relative;
+  cursor: pointer;
+}
+
+.file-button input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.file-button:focus-within {
+  outline: 2.5px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.variants {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.variant {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border-radius: var(--radius-sm);
+  background: var(--tint);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+}
+
+.variant h4 {
+  font-weight: 700;
+  color: var(--label);
+}
+
+.variant p {
+  white-space: pre-line;
+  color: var(--ink);
+}
+
+/* ---------------------------------------------------------------- run sheet */
+
+.slots {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.slot {
+  display: grid;
+  grid-template-columns: 116px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+}
+
+.slot:first-child {
+  border-top: 0;
+}
+
+.slot-time {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.slot-body {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.slot-body > .input--inline {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.slot-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  padding-left: 10px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.input--owner {
+  min-height: 32px;
+  width: auto;
+  flex: 1;
+  min-width: 140px;
+  font-size: 13.5px;
+}
+
+@media (max-width: 720px) {
+  .slot {
+    grid-template-columns: 96px minmax(0, 1fr) auto;
+  }
+
+  .input.amount {
+    width: 110px;
+  }
+}
+
+/* ---------------------------------------------------------------- print */
+
+@media print {
+  .skip-link,
+  .demo-banner,
+  .sky-strip,
+  .site-footer,
+  .plan-tabs,
+  .plan-toolbar,
+  .ai-status,
+  .copilot,
+  .toasts,
+  .add-row,
+  .section-head .actions,
+  .icon-btn,
+  .card-invite .jaal,
+  .card-invite .paisley {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+    color: #111;
+  }
+
+  .ws-body {
+    display: block;
+  }
+
+  .card,
+  .card-invite {
+    box-shadow: none;
+    border: 1px solid #ccc;
+    break-inside: avoid;
+  }
+
+  .input--inline {
+    box-shadow: none;
+    color: #111;
+  }
+}

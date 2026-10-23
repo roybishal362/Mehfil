@@ -21,3 +21,10 @@ export function zipWith<A, B, R>(
     return combine(a, next.value, index);
   });
 }
+
+/** A copy of an object without one key (records keyed by id, error maps). Never mutates. */
+export function omitKey<T extends object, K extends keyof T>(value: T, key: K): Omit<T, K> {
+  const copy = { ...value };
+  Reflect.deleteProperty(copy, key);
+  return copy;
+}

@@ -283,7 +283,14 @@ describe('ideas, guests, schedule and risks', () => {
       op({ type: 'guest.update', id: guest.id, patch: { rsvp: 'maybe' } }),
       ctx(),
     );
-    expect(plan.guests.at(-1)?.rsvp).toBe('maybe');
+    expect(plan.guests.at(-1)).toMatchObject({ rsvp: 'maybe', partySize: 2 });
+    // A partial edit never resets the fields it does not mention.
+    plan = applyOperation(
+      plan,
+      op({ type: 'guest.update', id: guest.id, patch: { dietary: 'jain' } }),
+      ctx(),
+    );
+    expect(plan.guests.at(-1)).toMatchObject({ rsvp: 'maybe', partySize: 2, dietary: 'jain' });
     plan = applyOperation(plan, op({ type: 'guest.remove', id: guest.id }), ctx());
     plan = applyOperation(
       plan,

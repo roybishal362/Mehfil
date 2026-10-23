@@ -1,10 +1,63 @@
-import { APP_NAME, APP_TAGLINE } from '../shared/meta';
+/** Routes. The home page ships in the main bundle; heavier pages load on demand. */
+import { LucideProvider } from 'lucide-react';
+import { lazy, Suspense } from 'react';
+import { Link, Route, Switch } from 'wouter';
+import { paths, useDocumentTitle } from './app/routing';
+import { Shell } from './app/Shell';
+import { useI18n } from './i18n';
+import { SharedDefs } from './motifs/svg';
+import { HomePage } from './pages/HomePage';
+
+const NewPlanPage = lazy(() =>
+  import('./pages/NewPlanPage').then((module) => ({ default: module.NewPlanPage })),
+);
+const PlanPage = lazy(() =>
+  import('./pages/PlanPage').then((module) => ({ default: module.PlanPage })),
+);
+
+function PageLoading() {
+  const { t } = useI18n();
+  return (
+    <div className="wrap">
+      <p className="empty" role="status">
+        <span className="spinner" aria-hidden="true" />
+        {t.common.loading}
+      </p>
+    </div>
+  );
+}
+
+function NotFoundPage() {
+  const { t } = useI18n();
+  useDocumentTitle(t.plan.notFoundTitle);
+  return (
+    <div className="wrap">
+      <div className="empty mt-16">
+        <h1 data-route-focus="page" tabIndex={-1} className="text-4xl">
+          {t.plan.notFoundTitle}
+        </h1>
+        <Link className="btn btn--gold mt-4" href={paths.home}>
+          {t.plan.backHome}
+        </Link>
+      </div>
+    </div>
+  );
+}
 
 export function App() {
   return (
-    <main>
-      <h1>{APP_NAME}</h1>
-      <p>{APP_TAGLINE}</p>
-    </main>
+    <LucideProvider strokeWidth={1.75} className="i">
+      <SharedDefs />
+      <Shell>
+        <Suspense fallback={<PageLoading />}>
+          <Switch>
+            <Route path="/" component={HomePage} />
+            <Route path="/new" component={NewPlanPage} />
+            <Route path="/plan/:id/:section?" component={PlanPage} />
+            <Route component={NotFoundPage} />
+          </Switch>
+        </Suspense>
+      </Shell>
+    </LucideProvider>
   );
 }

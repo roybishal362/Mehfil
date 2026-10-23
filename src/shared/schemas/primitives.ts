@@ -40,6 +40,10 @@ export const EVENT_TYPES = ['wedding', 'birthday', 'community', 'other'] as cons
 export const EventType = z.enum(EVENT_TYPES);
 export type EventType = z.infer<typeof EventType>;
 
+export function isEventType(value: unknown): value is EventType {
+  return EventType.safeParse(value).success;
+}
+
 export const CURRENCIES = ['INR', 'USD', 'EUR', 'GBP', 'AED', 'SGD', 'AUD', 'CAD'] as const;
 export const Currency = z.enum(CURRENCIES);
 export type Currency = z.infer<typeof Currency>;

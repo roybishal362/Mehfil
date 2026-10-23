@@ -1,1 +1,15 @@
+/*
+ * Mehfil styles. Tailwind provides the reset (base layer) and utilities; the design system sits
+ * in the base and components layers so a utility class can still override a component style.
+ * Everything is driven by the tokens in tokens.css.
+ */
 @import 'tailwindcss';
+@import './tokens.css';
+@import './base.css' layer(base);
+@import './stage.css' layer(components);
+@import './components.css' layer(components);
+@import './home.css' layer(components);
+@import './invitation.css' layer(components);
+@import './workspace.css' layer(components);
+@import './wizard.css' layer(components);
+@import './sections.css' layer(components);

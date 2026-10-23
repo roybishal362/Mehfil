@@ -1,0 +1,132 @@
+/*
+ * Design tokens for "Festival of Lights".
+ * Night is the brand theme (a Diwali sky); Day is ivory paper and gold. Components use these
+ * variables only, so both themes stay in step. Contrast is checked in tokens.test.ts.
+ */
+:root {
+  /* night sky, always used by the hero stage whatever the theme */
+  --sky-0: #08051a;
+  --sky-1: #140b2e;
+  --sky-2: #2a1140;
+  --sky-3: #4a1430;
+  --ember: #7a2a1c;
+
+  /* surfaces */
+  --page: #100a24;
+  --surface: #1b1236;
+  --surface-2: #241848;
+  --surface-3: #2f1f58;
+  --field: rgb(8 5 26 / 0.55);
+  --tint: rgb(255 255 255 / 0.05);
+  --line: rgb(242 201 122 / 0.22);
+  --line-strong: rgb(242 201 122 / 0.45);
+  /* outlines of interactive controls: at least 3:1 against the page */
+  --control-line: rgb(242 201 122 / 0.62);
+  --marigold-off: #6e5a9a;
+
+  /* gold */
+  --gold-50: #fff8e2;
+  --gold-100: #ffefc2;
+  --gold-300: #f6d27a;
+  --gold-500: #d9a441;
+  --gold-700: #9c6b1e;
+  --foil: linear-gradient(
+    100deg,
+    #9c6b1e 0%,
+    #e9c26a 18%,
+    #fff3c9 34%,
+    #f2cf79 48%,
+    #b98a2e 64%,
+    #f6d27a 82%,
+    #9c6b1e 100%
+  );
+  --on-foil: #2a1608;
+
+  /* jewel accents */
+  --saffron: #f28c28;
+  --marigold: #f7b500;
+  --rani: #e0457b;
+  --peacock: #2cb6b0;
+  --emerald: #33a46f;
+  --amethyst: #9b7bf0;
+  --vermilion: #e2543b;
+
+  /* text */
+  --ink: #fbf3e4;
+  --ink-2: #e9ddf3;
+  --muted: #c8bad9;
+  --label: #f6d27a;
+  --focus: #f6d27a;
+
+  /* status (text on tinted pills) */
+  --ai-ink: #ff9ec0;
+  --ai-bg: rgb(224 69 123 / 0.16);
+  --danger-ink: #ffb3a3;
+  --danger-bg: rgb(226 84 59 / 0.18);
+  --warn-ink: #ffd66e;
+  --warn-bg: rgb(247 181 0 / 0.16);
+  --ok-ink: #8fe3b8;
+  --ok-bg: rgb(51 164 111 / 0.18);
+
+  /* invitation card */
+  --maroon-0: #3a0716;
+  --maroon-1: #5a0e22;
+  --maroon-2: #74122c;
+
+  /* shape and type */
+  --radius: 24px;
+  --radius-sm: 14px;
+  --font-display:
+    'Cormorant Garamond Variable', 'Tiro Devanagari Hindi', 'Tiro Bangla', Georgia, serif;
+  --font-script:
+    'Great Vibes', 'Cormorant Garamond Variable', 'Tiro Devanagari Hindi', 'Tiro Bangla', cursive;
+  --font-body:
+    'Inter Variable', 'Noto Sans Devanagari Variable', 'Noto Sans Bengali Variable', system-ui,
+    -apple-system, 'Segoe UI', sans-serif;
+  --shadow-card: 0 30px 60px -40px rgb(0 0 0 / 0.9);
+
+  color-scheme: dark;
+}
+
+:root[data-theme='day'] {
+  --page: #fbf4e7;
+  --surface: #fffdf8;
+  --surface-2: #fff6e6;
+  --surface-3: #fcebd0;
+  --field: #ffffff;
+  --tint: #fff8ec;
+  --line: rgb(156 107 30 / 0.25);
+  --line-strong: rgb(156 107 30 / 0.5);
+  --control-line: #9c6b1e;
+  --marigold-off: #c9a15a;
+
+  --ink: #2a1610;
+  --ink-2: #4b3027;
+  --muted: #6e5446;
+  --label: #8a4f0c;
+  --focus: #8a4f0c;
+
+  --ai-ink: #a0104a;
+  --ai-bg: #fce3ee;
+  --danger-ink: #b42318;
+  --danger-bg: #fdecea;
+  --warn-ink: #8f5400;
+  --warn-bg: #fff0d2;
+  --ok-ink: #1e6b3a;
+  --ok-bg: #e3f4e8;
+
+  --shadow-card: 0 30px 60px -44px rgb(90 50 10 / 0.45);
+
+  color-scheme: light;
+}
+
+/* Expose the colour tokens to Tailwind utilities (bg-surface, text-muted, ...). */
+@theme inline {
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-label: var(--label);
+  --color-gold: var(--gold-300);
+}

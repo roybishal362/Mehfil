@@ -6,10 +6,12 @@ import { z } from 'zod';
 import { MAX_GUESTS, MIN_BUDGET, PartialBrief } from './brief';
 import { Guest, Idea, LIMITS, ScheduleItem, VendorOption } from './plan';
 import {
+  DietaryNeed,
   Id,
   IsoDate,
   Money,
   Priority,
+  RsvpStatus,
   TaskCategory,
   TaskStatus,
   VendorStatus,
@@ -63,6 +65,21 @@ const IdeaInput = Idea.pick({
   costLevel: true,
 });
 const GuestInput = Guest.omit({ id: true });
+/**
+ * Written out rather than `GuestInput.partial()`: in Zod 4 a partial schema still fills in
+ * defaults, which would reset a guest's RSVP and party size on every unrelated edit.
+ */
+const GuestPatch = z
+  .object({
+    name: requiredText(80),
+    group: text(40),
+    partySize: z.number().int().min(1).max(20),
+    rsvp: RsvpStatus,
+    dietary: DietaryNeed,
+    contact: text(100),
+    notes: text(200),
+  })
+  .partial();
 const ScheduleInput = ScheduleItem.omit({ id: true, source: true });
 
 export const PlanOperation = z.discriminatedUnion('type', [
@@ -108,7 +125,7 @@ export const PlanOperation = z.discriminatedUnion('type', [
   }),
   z.object({ type: z.literal('idea.remove'), id: Id }),
   z.object({ type: z.literal('guest.add'), guest: GuestInput }),
-  z.object({ type: z.literal('guest.update'), id: Id, patch: GuestInput.partial() }),
+  z.object({ type: z.literal('guest.update'), id: Id, patch: GuestPatch }),
   z.object({ type: z.literal('guest.remove'), id: Id }),
   z.object({
     type: z.literal('guests.import'),

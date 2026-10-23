@@ -1,19 +1,26 @@
 <!doctype html>
-<html lang="en" dir="ltr">
+<html lang="en" dir="ltr" data-theme="night">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>Mehfil — AI celebration planner</title>
+    <title>Mehfil · AI celebration planner</title>
     <meta
       name="description"
-      content="Plan weddings, birthdays and community events with budgets, timelines, vendor checklists and personalised ideas — powered by Google Gemini."
+      content="Plan weddings, birthdays and community events with budgets, timelines, vendor checklists and personalised ideas, powered by Google Gemini. In English, हिन्दी and বাংলা."
     />
-    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#100a24" />
+    <meta name="color-scheme" content="dark light" />
+    <meta property="og:title" content="Mehfil · AI celebration planner" />
+    <meta
+      property="og:description"
+      content="Budgets, timelines, vendor checklists and ideas for weddings, birthdays and community events."
+    />
+    <meta property="og:type" content="website" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <script src="/theme-init.js"></script>
   </head>
   <body>
-    <noscript>Mehfil needs JavaScript enabled to plan your celebration.</noscript>
+    <noscript>Mehfil needs JavaScript to plan your celebration.</noscript>
     <div id="root"></div>
     <script type="module" src="/src/client/main.tsx"></script>
   </body>

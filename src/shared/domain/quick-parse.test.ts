@@ -122,8 +122,11 @@ describe('quickParse', () => {
   });
 
   it.each([
-    ['veg and non-veg buffet', []],
+    ['veg and non-veg buffet', ['vegetarian', 'non_vegetarian']],
+    ['non-veg only, please', ['non_vegetarian']],
     ['pure veg, no non-veg at all', ['vegetarian']],
+    ['no non-veg at all', []],
+    ['আমিষ ও নিরামিষ দুই রকম খাবার', ['vegetarian', 'non_vegetarian']],
     ['vegan and gluten-free', ['vegan', 'gluten_free']],
     ['Jain food with no onion or garlic', ['jain', 'no_onion_garlic']],
     ['halal meat and nut-free desserts', ['halal', 'nut_free']],

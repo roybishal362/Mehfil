@@ -52,6 +52,29 @@ const PER_GUEST_COMFORT: Readonly<Record<EventBrief['type'], [number, number]>> 
   other: [900, 1800],
 };
 
+/** A title the way a person would write it: the couple's or the birthday person's name if given. */
+export function mockTitle(
+  text: string,
+  type: EventBrief['type'] | undefined,
+  city: string | undefined,
+): string | undefined {
+  const couple = /\b([A-Z][a-z]+)\s+(?:and|&|weds)\s+([A-Z][a-z]+)\b/.exec(text);
+  if (type === 'wedding' && couple?.[1] && couple[2])
+    return `${couple[1]} & ${couple[2]}'s Wedding`;
+  const birthday = /\b([A-Z][a-z]+)['’]s\s+(\d{1,3}(?:st|nd|rd|th))\b/.exec(text);
+  if (type === 'birthday' && birthday?.[1] && birthday[2]) {
+    return `${birthday[1]}'s ${birthday[2]} Birthday`;
+  }
+  if (!type || !city) return undefined;
+  const occasion = {
+    wedding: 'Wedding',
+    birthday: 'Birthday',
+    community: 'Celebration',
+    other: 'Celebration',
+  }[type];
+  return `${city} ${occasion}`;
+}
+
 export function mockBriefExtraction(
   text: string,
   today: string,
@@ -67,15 +90,10 @@ export function mockBriefExtraction(
     ...(quick.dietary.length ? { dietary: quick.dietary } : {}),
     language: uiLanguage === 'hi' || uiLanguage === 'bn' ? uiLanguage : 'en',
   };
-  if (quick.type && quick.city) {
-    const occasion = {
-      wedding: 'Wedding',
-      birthday: 'Birthday',
-      community: 'Celebration',
-      other: 'Celebration',
-    }[quick.type];
-    brief.title = `${quick.city} ${occasion}`;
-  }
+  const title = mockTitle(text, quick.type, quick.city);
+  if (title) brief.title = title;
+  const ritual = /(gaye holud|haldi|mehendi|mehndi|sangeet)[^,.;]*/i.exec(text);
+  if (ritual) brief.traditions = ritual[0].trim();
   if (/wheelchair|elderly|grandparent|accessib/i.test(text)) {
     brief.accessibility = 'Step-free access for elderly guests and wheelchair users';
   }
@@ -340,8 +358,193 @@ const THEMES: Readonly<Record<EventBrief['type'], IdeasSectionData['themes']>> =
   ],
 };
 
-export function mockIdeasSection(brief: EventBrief): IdeasSectionData {
+type MockIdea = IdeasSectionData['ideas'][number];
+
+/** Ideas that answer a refine request, so demo mode visibly follows what was asked. */
+const REFINED_IDEAS: readonly (readonly [RegExp, readonly MockIdea[]])[] = [
+  [
+    /budget|cheap|afford|save|saving|किफ़ायती|सस्त|কম খরচ/i,
+    [
+      {
+        kind: 'decor',
+        title: 'Marigolds and diyas, no imports',
+        description:
+          'Seasonal marigold strings and clay diyas cost a fraction of imported flowers and look richer.',
+        costLevel: 'low',
+      },
+      {
+        kind: 'food',
+        title: 'Live counters instead of a big buffet',
+        description:
+          'Two or three live counters feel generous while cutting waste and the per-plate cost.',
+        costLevel: 'low',
+      },
+      {
+        kind: 'entertainment',
+        title: 'Family talent hour',
+        description: 'Cousins and friends perform; a simple sound system replaces a hired band.',
+        costLevel: 'low',
+      },
+      {
+        kind: 'activity',
+        title: 'DIY photo corner',
+        description: 'A painted backdrop and a phone tripod instead of a booth rental.',
+        costLevel: 'low',
+      },
+      {
+        kind: 'favor',
+        title: 'Seed packets as favours',
+        description: 'Tulsi or marigold seeds in printed envelopes: cheap, light and memorable.',
+        costLevel: 'low',
+      },
+      {
+        kind: 'personal',
+        title: 'Handwritten welcome boards',
+        description: 'A calligraphy-loving relative writes the welcome and menu boards.',
+        costLevel: 'low',
+      },
+    ],
+  ],
+  [
+    /eco|green|sustain|plastic|पर्यावरण|পরিবেশ/i,
+    [
+      {
+        kind: 'sustainability',
+        title: 'Banana-leaf and sal-leaf plates',
+        description:
+          'Traditional leaf plates and kulhads replace plastic and look beautiful on the table.',
+        costLevel: 'low',
+      },
+      {
+        kind: 'decor',
+        title: 'Potted plants instead of cut flowers',
+        description: 'Potted marigolds and jasmine that live on after the celebration.',
+        costLevel: 'medium',
+      },
+      {
+        kind: 'sustainability',
+        title: 'Food rescue partner',
+        description: 'Arrange for a local food bank to collect untouched food the same night.',
+        costLevel: 'low',
+      },
+      {
+        kind: 'favor',
+        title: 'Jute bags with local sweets',
+        description: 'Reusable jute bags instead of boxes and cellophane.',
+        costLevel: 'low',
+      },
+      {
+        kind: 'activity',
+        title: 'Plant-a-tree corner',
+        description: 'Guests plant saplings with name tags to remember the day.',
+        costLevel: 'low',
+      },
+      {
+        kind: 'decor',
+        title: 'Lanterns you keep',
+        description: 'Paper kandils and fairy lights you can reuse at every Diwali.',
+        costLevel: 'low',
+      },
+    ],
+  ],
+  [
+    /child|kid|बच्च|ছোট|শিশু/i,
+    [
+      {
+        kind: 'activity',
+        title: 'Rangoli colouring table',
+        description: 'Big printed rangoli outlines and safe powder colours for children.',
+        costLevel: 'low',
+      },
+      {
+        kind: 'entertainment',
+        title: 'Puppet show',
+        description: 'A half-hour kathputli show while the grown-ups finish dinner.',
+        costLevel: 'medium',
+      },
+      {
+        kind: 'food',
+        title: 'Mini plates for little guests',
+        description: 'Smaller portions, less spice and a sweet treat at the end.',
+        costLevel: 'low',
+      },
+      {
+        kind: 'activity',
+        title: 'Treasure hunt',
+        description: 'Clues hidden around the venue lead to a box of small gifts.',
+        costLevel: 'low',
+      },
+      {
+        kind: 'personal',
+        title: 'A quiet corner',
+        description:
+          'Floor cushions and books where tired children can rest within sight of parents.',
+        costLevel: 'low',
+      },
+      {
+        kind: 'favor',
+        title: 'Crayon-and-sticker kits',
+        description: 'Small kits that keep children busy on the way home.',
+        costLevel: 'low',
+      },
+    ],
+  ],
+  [
+    /food|regional|cuisine|street|व्यंजन|खाना|খাবার/i,
+    [
+      {
+        kind: 'food',
+        title: 'Regional street-food lane',
+        description: 'Phuchka, chaat and kathi-roll stalls with cooks from the neighbourhood.',
+        costLevel: 'medium',
+      },
+      {
+        kind: 'food',
+        title: 'Home-recipe dessert',
+        description: "One dessert from a grandparent's recipe, with the story on a card.",
+        costLevel: 'low',
+      },
+      {
+        kind: 'food',
+        title: 'Seasonal welcome drink',
+        description: 'Aam panna, sherbet or masala chai depending on the season.',
+        costLevel: 'low',
+      },
+      {
+        kind: 'decor',
+        title: 'Brass and clay serveware',
+        description: 'Traditional serveware that makes simple food feel festive.',
+        costLevel: 'medium',
+      },
+      {
+        kind: 'personal',
+        title: 'Menu in two languages',
+        description: 'Printed in English and the family language, with dietary labels.',
+        costLevel: 'low',
+      },
+      {
+        kind: 'favor',
+        title: 'Spice-mix favours',
+        description: 'A small jar of the family garam masala or panch phoron.',
+        costLevel: 'low',
+      },
+    ],
+  ],
+];
+
+export function mockIdeasSection(brief: EventBrief, instruction?: string): IdeasSectionData {
   const veg = brief.dietary.includes('vegetarian') || brief.dietary.includes('jain');
+  const refined = instruction
+    ? (REFINED_IDEAS.find(([pattern]) => pattern.test(instruction))?.[1] ?? REFINED_IDEAS[0]?.[1])
+    : undefined;
+  if (refined) {
+    return {
+      summary:
+        `Fresh ideas for ${brief.title}, following your request: ${instruction ?? ''}`.trim(),
+      themes: THEMES[brief.type],
+      ideas: [...refined],
+    };
+  }
   return {
     summary: `A warm ${brief.type === 'community' ? 'community celebration' : brief.type} in ${brief.city} for ${String(brief.guestCount)} guests, planned around what matters most to you and within ${formatMoney(brief.budget, brief.currency)}.`,
     themes: THEMES[brief.type],
@@ -394,14 +597,14 @@ export function mockIdeasSection(brief: EventBrief): IdeasSectionData {
 
 export function mockInvitation(request: InvitationRequest): InvitationDraft {
   const { brief } = request;
-  const hosts = request.hosts ? `${request.hosts} ` : '';
+  const hosts = request.hosts ? `${request.hosts} warmly invite` : 'We warmly invite';
   const when = `${brief.date}${brief.startTime ? ` at ${brief.startTime}` : ''}`;
   const where = request.venueName ? `${request.venueName}, ${brief.city}` : brief.city;
   return {
     variants: [
       {
         label: 'Warm',
-        text: `${hosts}warmly invite you to ${brief.title} on ${when} in ${where}. Your presence will make the day complete.`,
+        text: `${hosts} you to ${brief.title} on ${when} in ${where}. Your presence will make the day complete.`,
       },
       {
         label: 'Short',
