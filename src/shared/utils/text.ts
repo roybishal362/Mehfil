@@ -37,6 +37,30 @@ export function stripContactDetails(value: string): string {
     .trim();
 }
 
+/**
+ * Like `cleanText` but keeps line breaks (for invitations and printed cards): at most one blank
+ * line in a row, each line trimmed, contact details removed.
+ */
+export function cleanMultilineText(value: string, max: number): string {
+  const lines = value
+    .normalize('NFC')
+    .replace(/\r\n?/g, '\n')
+    .split('\n')
+    .map((line) =>
+      stripContactDetails(
+        line
+          .replace(CONTROL_CHARS, '')
+          .replace(/[ \t]+/g, ' ')
+          .trim(),
+      ),
+    );
+  const text = lines
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+  return text.length <= max ? text : `${text.slice(0, max - 1).trimEnd()}…`;
+}
+
 /** Cleans model-generated text: contact details removed, then normalised and length-capped. */
 export function cleanModelText(value: string, max: number): string {
   return cleanText(stripContactDetails(value), max);
@@ -48,6 +72,18 @@ export function cleanModelText(value: string, max: number): string {
  */
 export function escapeForPrompt(value: string): string {
   return value.replace(CONTROL_CHARS, '').replaceAll('<', '‹').replaceAll('>', '›');
+}
+
+/**
+ * Folds text for keyword matching. Keyboards encode some Hindi and Bengali letters in two ways
+ * (precomposed "फ़" or "फ" + nukta), so the nukta is dropped and the result normalised: "फ़रवरी"
+ * and "फरवरी" then match the same pattern. Only for matching, never for display.
+ */
+export function foldForMatching(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u{93C}\u{9BC}]/gu, '')
+    .normalize('NFC');
 }
 
 /** Words of three or more letters, lower-cased, used to compare titles. */

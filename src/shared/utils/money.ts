@@ -4,6 +4,7 @@
  * are grouped in lakhs and crores (₹18,00,000) and Bengali readers see Bengali digits.
  */
 import type { Currency } from '../schemas/primitives';
+import { foldForMatching } from './text';
 
 /** Maps the app's UI language and currency to the best formatting locale. */
 export function formattingLocale(uiLanguage: string, currency: Currency): string {
@@ -49,13 +50,15 @@ export function formatNumber(value: number, locale = 'en-IN'): string {
 
 const MAX_AMOUNT = 10_000_000_000;
 
-/** Multipliers for written-out scales in English, Hindi and Bengali. */
-const SCALE_WORDS: readonly [RegExp, number][] = [
-  [/^(?:crores?|cr|करोड़|करोड|কোটি)$/u, 10_000_000],
-  [/^(?:lakhs?|lacs?|lac|l|लाख|লাখ|লক্ষ)$/u, 100_000],
-  [/^(?:millions?|mn|m)$/u, 1_000_000],
-  [/^(?:thousands?|k|हज़ार|हजार|হাজার)$/u, 1_000],
-];
+/** Multipliers for written-out scales in English, Hindi and Bengali (folded like the input). */
+const SCALE_WORDS: readonly (readonly [RegExp, number])[] = (
+  [
+    ['crores?|cr|करोड़|কোটি', 10_000_000],
+    ['lakhs?|lacs?|l|लाख|লাখ|লক্ষ', 100_000],
+    ['millions?|mn|m', 1_000_000],
+    ['thousands?|k|हज़ार|হাজার', 1_000],
+  ] as const
+).map(([words, scale]) => [new RegExp(`^(?:${foldForMatching(words)})$`, 'u'), scale] as const);
 
 /** Converts Devanagari and Bengali digits to ASCII so `१८` and `১৮` read as 18. */
 export function normaliseDigits(input: string): string {
@@ -71,7 +74,7 @@ export function normaliseDigits(input: string): string {
  * "2 million", "१८ लाख". Returns whole units, or `null` when the text is not an amount.
  */
 export function parseAmount(raw: string): number | null {
-  const cleaned = normaliseDigits(raw)
+  const cleaned = foldForMatching(normaliseDigits(raw))
     .toLowerCase()
     .replace(/[₹$€£]|rs\.?|inr|usd|rupees?|টাকা|रुपये|रुपए/gu, ' ')
     .replace(/(\d),(?=\d)/g, '$1')

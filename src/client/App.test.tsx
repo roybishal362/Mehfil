@@ -5,8 +5,11 @@ import { App } from './App';
 
 describe('App', () => {
   it('renders the product name as the page heading', async () => {
-    const { container } = render(<App />);
+    const { container, rerender } = render(<App />);
     expect(screen.getByRole('heading', { level: 1, name: 'Mehfil' })).toBeInTheDocument();
     expect(await axe(container)).toHaveNoViolations();
+    // A second render takes the React Compiler's memoised path.
+    rerender(<App />);
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
   });
 });
