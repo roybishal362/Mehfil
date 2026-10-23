@@ -3,7 +3,7 @@
  * (the browser never trusts a payload's shape), failures become an ApiError carrying the
  * server's stable error code, and every call can be cancelled with an AbortSignal.
  */
-import { z } from 'zod';
+import * as z from 'zod';
 
 export class ApiError extends Error {
   /** HTTP status, or 0 when the server could not be reached. */

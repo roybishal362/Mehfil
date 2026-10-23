@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { describe, expect, it } from 'vitest';
-import { z } from 'zod';
+import * as z from 'zod';
 import { AppError, badRequest, notFound, tooManyRequests, unauthorized } from './errors';
 import { describeIssues, readJson } from './http';
 

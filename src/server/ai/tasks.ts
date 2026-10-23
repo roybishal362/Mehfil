@@ -2,7 +2,7 @@
  * The AI tasks behind the gateway's routes. Each builds a prompt, calls the model through the
  * resilient gateway, then validates and sanitises the answer before it leaves the server.
  */
-import { z } from 'zod';
+import * as z from 'zod';
 import { deepCleanStrings } from '../../shared/domain/merge';
 import {
   BriefExtraction,

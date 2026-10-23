@@ -102,6 +102,31 @@
   animation: twinkle 2.8s ease-in-out infinite;
 }
 
+/* Neighbouring bulbs twinkle out of step, in a cycle of seven. */
+.lights g:nth-of-type(7n + 2) .bulb {
+  animation-delay: -0.4s;
+}
+
+.lights g:nth-of-type(7n + 3) .bulb {
+  animation-delay: -0.8s;
+}
+
+.lights g:nth-of-type(7n + 4) .bulb {
+  animation-delay: -1.2s;
+}
+
+.lights g:nth-of-type(7n + 5) .bulb {
+  animation-delay: -1.6s;
+}
+
+.lights g:nth-of-type(7n + 6) .bulb {
+  animation-delay: -2s;
+}
+
+.lights g:nth-of-type(7n) .bulb {
+  animation-delay: -2.4s;
+}
+
 @keyframes twinkle {
   0%,
   100% {
@@ -125,6 +150,31 @@
   top: 0;
   transform-origin: 50% 0;
   animation: swing 6s ease-in-out infinite alternate;
+}
+
+/* Where each kandil hangs, clear of the text; bigger ones sway a little slower. */
+.lantern--1 {
+  top: 56px;
+  left: 1.4%;
+  animation-duration: 6.6s;
+}
+
+.lantern--2 {
+  top: 4px;
+  left: 61.5%;
+  animation-duration: 6.24s;
+}
+
+.lantern--3 {
+  top: 46px;
+  left: 71.5%;
+  animation-duration: 6.64s;
+}
+
+.lantern--4 {
+  top: 70px;
+  left: 95.2%;
+  animation-duration: 6.44s;
 }
 
 .lantern svg {
@@ -219,6 +269,15 @@
   overflow: visible;
 }
 
+/* The lamps on the ledge flicker out of step. */
+.ledge-row svg:nth-child(3n + 2) :is(.flame, .glow) {
+  animation-delay: -0.6s;
+}
+
+.ledge-row svg:nth-child(3n) :is(.flame, .glow) {
+  animation-delay: -1.1s;
+}
+
 /* ---------------------------------------------------------------- site header */
 
 .top {
@@ -311,6 +370,20 @@
   border-radius: 999px;
   font-size: 13.5px;
   font-weight: 650;
+}
+
+/*
+ * The language names (and the same two words in the English lede, home.css) use the system's
+ * Devanagari and Bengali fonts, so English pages don't download ~230 KB of web fonts for them.
+ */
+.langs button,
+:root:lang(en) .lede {
+  font-family:
+    'Inter Variable',
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
 }
 
 .langs button[aria-pressed='true'] {

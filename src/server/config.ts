@@ -2,7 +2,7 @@
  * Server configuration, read once from the environment and validated.
  * Secrets (the Gemini key) stay on the server; only the public Firebase web config is exposed.
  */
-import { z } from 'zod';
+import * as z from 'zod';
 
 const Env = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),

@@ -22,13 +22,7 @@ export const lanternHalo = (index: number) => `m-lantern-halo-${String(index)}`;
 /** Gradients shared by the diyas, lanterns, seals and rangolis. Render once. */
 export function SharedDefs() {
   return (
-    <svg
-      aria-hidden="true"
-      focusable="false"
-      width="0"
-      height="0"
-      style={{ position: 'absolute', overflow: 'hidden' }}
-    >
+    <svg className="svg-defs" aria-hidden="true" focusable="false" width="0" height="0">
       <defs>
         <radialGradient id="m-diya-glow" r="50%">
           <stop offset="0" stopColor="#FFD27A" stopOpacity=".85" />

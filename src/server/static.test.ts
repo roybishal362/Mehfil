@@ -1,6 +1,7 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { brotliCompressSync, brotliDecompressSync } from 'node:zlib';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { MockProvider } from './ai/mock-provider';
 import { AiGateway } from './ai/gateway';
@@ -40,6 +41,7 @@ describe('mountStatic', () => {
     mkdirSync(join(root, 'assets'));
     writeFileSync(join(root, 'index.html'), '<!doctype html><title>Mehfil</title>');
     writeFileSync(join(root, 'assets', 'index-3f9a.js'), 'console.log(1)');
+    writeFileSync(join(root, 'assets', 'index-3f9a.js.br'), brotliCompressSync('console.log(1)'));
   });
 
   afterAll(() => {
@@ -51,6 +53,19 @@ describe('mountStatic', () => {
     expect(res.status).toBe(200);
     expect(res.headers.get('Cache-Control')).toBe('public, max-age=31536000, immutable');
     expect(res.headers.get('Content-Security-Policy')).toContain("default-src 'self'");
+  });
+
+  it('sends the precompressed copy to browsers that accept it', async () => {
+    const res = await app().request('/assets/index-3f9a.js', {
+      headers: { 'Accept-Encoding': 'gzip, br' },
+    });
+    expect(res.headers.get('Content-Encoding')).toBe('br');
+    expect(brotliDecompressSync(Buffer.from(await res.arrayBuffer())).toString()).toBe(
+      'console.log(1)',
+    );
+    const plain = await app().request('/assets/index-3f9a.js');
+    expect(plain.headers.get('Content-Encoding')).toBeNull();
+    expect(await plain.text()).toBe('console.log(1)');
   });
 
   it('returns 404 for a missing asset instead of the HTML shell', async () => {

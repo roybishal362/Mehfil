@@ -339,6 +339,8 @@ function findDietary(text: string): DietaryNeed[] {
 }
 
 export function quickParse(raw: string, today: string): QuickParse {
+  // Nothing typed yet (the usual first render): skip compiling and running the patterns.
+  if (!raw.trim()) return { dietary: [] };
   const text = foldForMatching(normaliseDigits(raw));
   const result: QuickParse = { dietary: findDietary(text) };
   const type = TYPE_PATTERNS.find(([, regex]) => regex.test(text))?.[0];

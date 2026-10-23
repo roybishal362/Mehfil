@@ -13,6 +13,7 @@ import { localToday } from '../../shared/utils/dates';
 import { sequentialIds } from '../../shared/utils/ids';
 import { Feedback, useFeedback } from '../app/feedback';
 import { useRuntimeConfig } from '../app/runtime-config';
+import { useTheme } from '../app/theme';
 import { useCopilot } from '../features/copilot/copilot';
 import { useDraft } from '../features/new-plan/draft';
 import { en } from '../i18n/en';
@@ -28,6 +29,7 @@ export function resetAppState(): void {
   useFeedback.setState({ toasts: [], announcement: { id: 0, text: '' } });
   useLocaleStore.setState({ locale: 'en', messages: en });
   useRuntimeConfig.setState({ config: null, unreachable: false });
+  useTheme.setState({ theme: 'night' });
   useDraft.getState().clear();
   document.documentElement.lang = 'en';
   document.documentElement.dataset.theme = 'night';

@@ -1,5 +1,5 @@
 /** Stable keys for budget lines and vendor categories. Labels live in the UI dictionaries. */
-import { z } from 'zod';
+import * as z from 'zod';
 
 export const BUDGET_CATEGORIES = [
   'venue',

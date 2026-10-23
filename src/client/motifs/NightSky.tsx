@@ -1,8 +1,12 @@
 /**
  * The decorations of the night stage: stars, string lights, hanging kandils and sparkles.
- * Positions are computed once (deterministically) so rendering stays pure.
+ * Geometry is computed once (deterministically) so rendering stays pure. Anything that would
+ * need an inline style (placement, animation timing) lives in stage.css instead: index.html
+ * carries a prerendered copy of the home page, and the Content-Security-Policy blocks inline
+ * style attributes there.
  */
 import type { CSSProperties } from 'react';
+import { useHydrated } from '../lib/hydration';
 import { LANTERN_COLORS, lanternGradient, lanternHalo, round1 } from './svg';
 
 // ------------------------------------------------------------------ string lights
@@ -10,7 +14,7 @@ import { LANTERN_COLORS, lanternGradient, lanternHalo, round1 } from './svg';
 /** The light string droops in four arcs across a 1440-wide view box. */
 const ARC_WIDTH = 360;
 const ARCS = 4;
-const BULBS_PER_ARC = 15;
+const BULBS_PER_ARC = 12;
 const BULB_COLORS = ['#FFE9B0', '#FFD0D8', '#BFF3EC', '#FFE9B0', '#E8D6FF'];
 
 /** Point on one arc's cubic Bézier: (0,4) → (120,44) → (240,44) → (360,4). */
@@ -29,7 +33,6 @@ const BULBS = Array.from({ length: ARCS * BULBS_PER_ARC + 1 }, (_, index) => {
     x: round1(x + arc * ARC_WIDTH),
     y: round1(y + 5),
     color: BULB_COLORS[index % BULB_COLORS.length] ?? '#FFE9B0',
-    delay: `${String(-(index % 7) * 0.4)}s`,
   };
 });
 
@@ -47,14 +50,7 @@ export function StringLights() {
         {BULBS.map((bulb) => (
           <g key={`${String(bulb.x)}-${String(bulb.y)}`}>
             <circle cx={bulb.x} cy={bulb.y} r={11} fill="url(#m-bulb)" />
-            <circle
-              className="bulb"
-              cx={bulb.x}
-              cy={bulb.y}
-              r={2.6}
-              fill={bulb.color}
-              style={{ animationDelay: bulb.delay }}
-            />
+            <circle className="bulb" cx={bulb.x} cy={bulb.y} r={2.6} fill={bulb.color} />
           </g>
         ))}
       </svg>
@@ -64,12 +60,12 @@ export function StringLights() {
 
 // ------------------------------------------------------------------ lanterns
 
-/** [left %, colour index, scale, drop from the top in px] — placed clear of the text. */
-const LANTERNS: readonly (readonly [number, number, number, number])[] = [
-  [1.4, 0, 0.8, 56],
-  [61.5, 1, 0.62, 4],
-  [71.5, 2, 0.82, 46],
-  [95.2, 3, 0.72, 70],
+/** [colour index, scale] of each kandil; .lantern--1 to --4 in stage.css hang them clear of the text. */
+const LANTERNS: readonly (readonly [number, number])[] = [
+  [0, 0.8],
+  [1, 0.62],
+  [2, 0.82],
+  [3, 0.72],
 ];
 
 function LanternShape({ colour }: { colour: number }) {
@@ -110,16 +106,8 @@ function LanternShape({ colour }: { colour: number }) {
 export function Lanterns() {
   return (
     <div className="lanterns" aria-hidden="true">
-      {LANTERNS.map(([left, colour, scale, drop]) => (
-        <div
-          key={left}
-          className="lantern"
-          style={{
-            left: `${String(left)}%`,
-            top: drop,
-            animationDuration: `${String(5 + scale * 2)}s`,
-          }}
-        >
+      {LANTERNS.map(([colour, scale], index) => (
+        <div key={colour} className={`lantern lantern--${String(index + 1)}`}>
           <svg viewBox="-40 0 80 190" width={80 * scale} height={190 * scale} focusable="false">
             <LanternShape colour={colour % LANTERN_COLORS.length} />
           </svg>
@@ -143,7 +131,7 @@ function seeded(seed: number): () => number {
 }
 
 const random = seeded(2027);
-const SPARKS = Array.from({ length: 34 }, (_, index) => {
+const SPARKS = Array.from({ length: 24 }, (_, index) => {
   const size = round1(random() * 2.5 + 1.5);
   return {
     id: index,
@@ -158,12 +146,15 @@ const SPARKS = Array.from({ length: 34 }, (_, index) => {
   };
 });
 
+/**
+ * Rising sparks. They join once the page is live: React then sets their styles through the
+ * DOM, which the Content-Security-Policy allows, and the prerendered HTML stays smaller.
+ */
 export function Sparkles() {
+  const hydrated = useHydrated();
   return (
     <div className="sparkles" aria-hidden="true">
-      {SPARKS.map((spark) => (
-        <i key={spark.id} style={spark.style} />
-      ))}
+      {hydrated && SPARKS.map((spark) => <i key={spark.id} style={spark.style} />)}
     </div>
   );
 }

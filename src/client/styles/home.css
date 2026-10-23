@@ -234,24 +234,33 @@
   width: min(100%, 560px);
   height: auto;
   overflow: visible;
-  filter: drop-shadow(0 30px 60px rgb(0 0 0 / 0.45));
-}
-
-.rangoli .ring {
-  transform-origin: 0 0;
-  animation: turn 140s linear infinite;
-}
-
-@keyframes turn {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 .rangoli .petal {
   transform-box: fill-box;
   transform-origin: 50% 100%;
-  animation: bloom 1s cubic-bezier(0.2, 1.25, 0.3, 1) both;
+  animation: bloom 1s cubic-bezier(0.2, 1.25, 0.3, 1) 0.2s both;
+}
+
+/* The petals open one after another (one petal per part of the plan). */
+.rangoli .bloom:nth-child(2 of .bloom) .petal {
+  animation-delay: 0.32s;
+}
+
+.rangoli .bloom:nth-child(3 of .bloom) .petal {
+  animation-delay: 0.44s;
+}
+
+.rangoli .bloom:nth-child(4 of .bloom) .petal {
+  animation-delay: 0.56s;
+}
+
+.rangoli .bloom:nth-child(5 of .bloom) .petal {
+  animation-delay: 0.68s;
+}
+
+.rangoli .bloom:nth-child(6 of .bloom) .petal {
+  animation-delay: 0.8s;
 }
 
 @keyframes bloom {
@@ -285,7 +294,6 @@
 
 .rangoli-caption {
   font-family: var(--font-display);
-  font-style: italic;
   font-size: 20px;
   color: #e9ddf3;
   text-align: center;

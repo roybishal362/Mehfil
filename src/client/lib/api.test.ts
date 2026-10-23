@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { z } from 'zod';
+import * as z from 'zod';
 import { jsonResponse, mockApi } from '../test/helpers';
 import { ApiError, getJson, postJson, postNdjson, readNdjson, setTokenProvider } from './api';
 

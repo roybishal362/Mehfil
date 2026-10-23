@@ -24,9 +24,9 @@ export function mountStatic(app: Hono<AppEnv>, root: string): void {
       );
     }
   });
-  app.use('*', serveStatic({ root }));
+  app.use('*', serveStatic({ root, precompressed: true }));
   // A missing build asset is a real 404, never the HTML shell.
   app.get('/assets/*', (c) => c.text('Not found', 404));
   // Every other GET is an app route: serve the HTML shell and let the client router take over.
-  app.get('*', serveStatic({ root, path: 'index.html' }));
+  app.get('*', serveStatic({ root, path: 'index.html', precompressed: true }));
 }

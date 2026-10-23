@@ -3,7 +3,7 @@
  * (the UI then shows a "demo mode" note). Answers are validated with the same schemas as real
  * model output, so a fixture can never drift from the contract.
  */
-import { z } from 'zod';
+import * as z from 'zod';
 import { BriefRequest, CopilotRequest, InvitationRequest } from '../../shared/schemas/ai';
 import { EventBrief } from '../../shared/schemas/brief';
 import { IsoDate } from '../../shared/schemas/primitives';

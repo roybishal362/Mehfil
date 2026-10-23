@@ -3,7 +3,7 @@
  * Zod is the single source of truth; this strips keywords Gemini rejects or ignores
  * (e.g. `$schema`, `pattern`, `maxLength`) so a schema change can never break generation.
  */
-import { z } from 'zod';
+import * as z from 'zod';
 
 /** Keywords Gemini's `responseJsonSchema` supports and we rely on. */
 const ALLOWED_KEYS = new Set([

@@ -126,14 +126,9 @@ export function Rangoli({
         const [lx, ly] = polar(angle, 286);
         const anchor = Math.abs(lx) < 20 ? 'middle' : lx > 0 ? 'start' : 'end';
         return (
-          <g key={petal.key}>
+          <g key={petal.key} className="bloom">
             <g transform={`rotate(${String(angle)})`}>
-              <path
-                className="petal"
-                d={PETAL}
-                fill={`url(#${id}-p${String(index)})`}
-                style={{ animationDelay: `${(0.2 + index * 0.12).toFixed(2)}s` }}
-              />
+              <path className="petal" d={PETAL} fill={`url(#${id}-p${String(index)})`} />
               <path
                 d={PETAL}
                 fill="none"

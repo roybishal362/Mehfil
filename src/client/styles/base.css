@@ -79,6 +79,11 @@ a:not([class]) {
   position: relative;
 }
 
+/* The prerendered home page is hidden until the app replaces it (see theme-init.js). */
+:root[data-prerender='hidden'] #root {
+  visibility: hidden;
+}
+
 #main:focus {
   outline: none;
 }
@@ -183,6 +188,21 @@ a:not([class]) {
 
 .tabular {
   font-variant-numeric: lining-nums tabular-nums;
+}
+
+/* The hidden SVG that holds the shared gradients (SharedDefs). */
+.svg-defs {
+  position: absolute;
+  overflow: hidden;
+}
+
+/*
+ * Looping decorations (flames, twinkling bulbs, sparks, lanterns, foil shine) wait until the
+ * page has loaded, so the first paint is not competing with dozens of animated SVG shapes.
+ */
+:root:not([data-motion='on']) :is(.flame, .glow, .bulb, .sparkles i, .lantern, .foil),
+:root:not([data-motion='on']) .btn--gold::after {
+  animation-play-state: paused;
 }
 
 /* Motion: everything decorative stops for people who ask for less movement. */

@@ -37,6 +37,15 @@ export default defineConfig([
       ],
       '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
       '@typescript-eslint/switch-exhaustiveness-check': 'error',
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            "ImportDeclaration[source.value='zod'][importKind!='type'] > ImportSpecifier[imported.name='z'][importKind!='type']",
+          message:
+            "Use `import * as z from 'zod'`: with the named import, esbuild keeps all of zod's locales (about 250 KB).",
+        },
+      ],
       eqeqeq: ['error', 'smart'],
       'no-console': 'error',
       'prefer-const': 'error',

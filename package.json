@@ -14,7 +14,7 @@
     "dev:web": "vite",
     "dev:api": "tsx watch src/server/node.ts",
     "build": "npm run build:web && npm run build:server",
-    "build:web": "vite build",
+    "build:web": "vite build && vite build --ssr src/client/prerender.tsx --outDir dist/prerender --emptyOutDir && tsx scripts/prerender.ts",
     "build:server": "tsx scripts/build-server.ts",
     "build:vercel": "npm run build:web && tsx scripts/build-vercel.ts",
     "start": "node dist/server/node.mjs",

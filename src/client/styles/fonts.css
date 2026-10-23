@@ -1,0 +1,16 @@
+/*
+ * Inter's rupee sign on its own (1 KB), so the "₹" on the first screen does not pull in Inter's
+ * whole latin-ext file (84 KB). Faces with overlapping unicode-ranges are tried newest first, so
+ * main.tsx imports this after the @fontsource faces. Made with fontTools from that file:
+ *   python -m fontTools.subset inter-latin-ext-wght-normal.woff2 --unicodes=U+20B9
+ *     --flavor=woff2 --layout-features='*' --output-file=inter-rupee-wght-normal.woff2
+ * Inter is licensed under the SIL Open Font License 1.1 (fonts/OFL.txt).
+ */
+@font-face {
+  font-family: 'Inter Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('./fonts/inter-rupee-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+20B9;
+}

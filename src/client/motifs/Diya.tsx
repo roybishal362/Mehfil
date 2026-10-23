@@ -1,5 +1,4 @@
 /** The diya (clay oil lamp): lit when a part of the plan has begun. */
-import type { CSSProperties } from 'react';
 
 const FLAME_OUTER = 'M0 -58 C 10 -42, 11 -29, 0 -18 C -11 -29, -10 -42, 0 -58 Z';
 const FLAME_INNER = 'M0 -48 C 6 -38, 6 -29, 0 -21 C -6 -29, -6 -38, 0 -48 Z';
@@ -9,9 +8,9 @@ const SPOUT = 'M26 -12 L33 -16 L28 -9Z';
 const DOTS = [-16, -8, 0, 8, 16];
 
 /** The lamp drawn around (0, 0) in a -30..30 × -64..12 box, for use inside other SVGs. */
-export function DiyaShape({ lit, style }: { lit: boolean; style?: CSSProperties }) {
+export function DiyaShape({ lit }: { lit: boolean }) {
   return (
-    <g style={style}>
+    <g>
       {lit && (
         <>
           <circle cy={-22} r={34} fill="url(#m-diya-glow)" className="glow" />
@@ -32,21 +31,21 @@ export function DiyaShape({ lit, style }: { lit: boolean; style?: CSSProperties 
   );
 }
 
-export function Diya({ lit = true, style }: { lit?: boolean; style?: CSSProperties }) {
+export function Diya({ lit = true }: { lit?: boolean }) {
   return (
-    <svg viewBox="-30 -64 60 76" aria-hidden="true" focusable="false" style={style}>
+    <svg viewBox="-30 -64 60 76" aria-hidden="true" focusable="false">
       <DiyaShape lit={lit} />
     </svg>
   );
 }
 
-/** A row of lit lamps on a carved ledge, closing the hero. */
+/** A row of lit lamps on a carved ledge, closing the hero. stage.css staggers their flames. */
 export function DiyaLedge({ count = 16 }: { count?: number }) {
   return (
     <div className="ledge" aria-hidden="true">
       <div className="ledge-row">
         {Array.from({ length: count }, (_, index) => (
-          <Diya key={index} style={{ animationDelay: `${String(-index * 0.3)}s` }} />
+          <Diya key={index} />
         ))}
       </div>
     </div>

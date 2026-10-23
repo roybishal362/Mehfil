@@ -704,14 +704,20 @@
   color: var(--ink-2);
 }
 
+/* Fixed, so appearing after the config loads never shifts the page. */
 .demo-banner {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: var(--warn-bg);
-  color: var(--warn-ink);
-  font-size: 13.5px;
+  position: fixed;
+  z-index: 40;
+  left: max(16px, env(safe-area-inset-left, 0px));
+  bottom: max(16px, env(safe-area-inset-bottom, 0px));
+  max-width: min(420px, calc(100vw - 32px));
+  padding: 8px 14px;
+  border-radius: 14px;
+  background: #3a2a10;
+  color: #ffd66e;
+  box-shadow:
+    0 10px 30px -12px rgb(0 0 0 / 0.8),
+    inset 0 0 0 1px rgb(247 181 0 / 0.5);
+  font-size: 13px;
   font-weight: 600;
-  text-align: center;
 }

@@ -2,7 +2,7 @@
  * Settings the server decides at runtime (GET /api/config): whether AI runs on Gemini or in
  * demo mode, and the public Firebase web config. One build works with or without them.
  */
-import { z } from 'zod';
+import * as z from 'zod';
 import { create } from 'zustand';
 import { getJson } from '../lib/api';
 

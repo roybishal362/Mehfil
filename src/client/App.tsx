@@ -1,7 +1,7 @@
 /** Routes. The home page ships in the main bundle; heavier pages load on demand. */
 import { LucideProvider } from 'lucide-react';
-import { lazy, Suspense } from 'react';
-import { Link, Route, Switch } from 'wouter';
+import { lazy, Suspense, useLayoutEffect } from 'react';
+import { Link, Route, Router, Switch } from 'wouter';
 import { paths, useDocumentTitle } from './app/routing';
 import { Shell } from './app/Shell';
 import { useI18n } from './i18n';
@@ -44,20 +44,32 @@ function NotFoundPage() {
   );
 }
 
-export function App() {
+export interface AppProps {
+  /** Set only when prerendering at build time (there is no browser location then). */
+  ssrPath?: string;
+}
+
+export function App({ ssrPath }: AppProps) {
+  // The build-time snapshot may have been hidden (another page or language); the live app
+  // has now replaced it.
+  useLayoutEffect(() => {
+    delete document.documentElement.dataset.prerender;
+  }, []);
   return (
     <LucideProvider strokeWidth={1.75} className="i">
       <SharedDefs />
-      <Shell>
-        <Suspense fallback={<PageLoading />}>
-          <Switch>
-            <Route path="/" component={HomePage} />
-            <Route path="/new" component={NewPlanPage} />
-            <Route path="/plan/:id/:section?" component={PlanPage} />
-            <Route component={NotFoundPage} />
-          </Switch>
-        </Suspense>
-      </Shell>
+      <Router {...(ssrPath ? { ssrPath } : {})}>
+        <Shell>
+          <Suspense fallback={<PageLoading />}>
+            <Switch>
+              <Route path="/" component={HomePage} />
+              <Route path="/new" component={NewPlanPage} />
+              <Route path="/plan/:id/:section?" component={PlanPage} />
+              <Route component={NotFoundPage} />
+            </Switch>
+          </Suspense>
+        </Shell>
+      </Router>
     </LucideProvider>
   );
 }

@@ -24,7 +24,11 @@ const writeJson = (path: string, value: unknown) => {
 // Only the output folder is replaced; .vercel/project.json from `vercel link` stays.
 rmSync(OUTPUT, { recursive: true, force: true });
 mkdirSync(OUTPUT, { recursive: true });
-cpSync(CLIENT, join(OUTPUT, 'static'), { recursive: true });
+cpSync(CLIENT, join(OUTPUT, 'static'), {
+  recursive: true,
+  // Vercel's CDN compresses on its own; skip the copies made for the Node server.
+  filter: (source) => !/\.(br|gz)$/.test(source),
+});
 
 const functionDir = join(OUTPUT, 'functions', `${FUNCTION_NAME}.func`);
 await bundleServer({ entry: 'src/server/vercel.ts', outfile: join(functionDir, 'index.mjs') });
