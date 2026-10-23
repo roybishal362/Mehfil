@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+.vercel/
+*.tsbuildinfo
+
+# Test & coverage artefacts
+coverage/
+playwright-report/
+test-results/
+blob-report/
+.lighthouseci/
+evals/report.md
+
+# Firebase emulator logs
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# Environment & secrets — never commit real keys
+.env
+.env.*
+!.env.example
+
+# Local submission material (kept out of the public repo)
+submission-kit/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+*.log

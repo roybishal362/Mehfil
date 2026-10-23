@@ -1,0 +1,8 @@
+# Normalise line endings so Windows and Linux CI produce identical files.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.webp binary
+*.woff2 binary
+*.ico binary

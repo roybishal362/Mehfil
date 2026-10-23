@@ -1,0 +1,12 @@
+node_modules
+dist
+.vercel
+.git
+coverage
+playwright-report
+test-results
+submission-kit
+.env
+.env.*
+!.env.example
+*.log
