@@ -38,7 +38,10 @@ schemas the app uses (`src/server/ai/json-schema.ts` keeps only the keywords Gem
    are found through Google Maps search links built by code for each category and city.
 5. **The Copilot proposes, the user decides.** Tool calls become typed operations validated by
    `PlanOperation`; operations on unknown IDs are dropped and reported. Applying them is one
-   undoable step.
+   undoable step. Gemini often answers with tool calls and no text: the panel then says what came
+   with the answer ("I suggest 2 changes."), and later turns remind Gemini of what it proposed, so
+   a follow-up such as "make it 80 instead" works. Turns from one side in a row (after a failed
+   request) are joined, so Gemini always sees a conversation that alternates.
 6. **Privacy.** Guest names and contacts never leave the device for the AI; the prompts get
    counts only. The footer tells users that the free Gemini tier may use event details to improve
    Google's products.

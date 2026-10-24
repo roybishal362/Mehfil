@@ -32,3 +32,7 @@ submission-kit/
 Thumbs.db
 .idea/
 *.log
+
+# Stray screenshots in the project root (images for the docs live in docs/images)
+/*.png
+/*.jpg
