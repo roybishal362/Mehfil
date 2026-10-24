@@ -25,9 +25,10 @@ ideas that honour your traditions and a run sheet for the day. Every detail stay
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](tsconfig.base.json)
 [![Vercel](https://img.shields.io/badge/Vercel-Node%2024-000000?logo=vercel&logoColor=white)](docs/DEPLOYMENT.md)
 
-[Live app](https://mehfil-ivory.vercel.app) · [Why Mehfil](#why-mehfil) · [Screenshots](#screenshots) · [Features](#features) ·
-[How Gemini is used](#how-gemini-is-used) · [Architecture](#architecture) · [Quality](#quality) ·
-[Run it locally](#run-it-locally) · [Docs](#documentation)
+[Live app](https://mehfil-ivory.vercel.app) · [Chosen vertical](#chosen-vertical) ·
+[How it works](#how-the-solution-works) · [Approach and logic](#approach-and-logic) ·
+[Assumptions](#assumptions) · [Screenshots](#screenshots) · [Gemini](#how-gemini-is-used) ·
+[Architecture](#architecture) · [Quality](#quality) · [Run it locally](#run-it-locally)
 
 <sub>Built for <b>PromptWars Virtual 2026 · Challenge 5: Celebration &amp; Event Planner</b></sub>
 
@@ -53,6 +54,57 @@ after one answer. Mehfil keeps Gemini working **on** the plan.
   them, or share a read-only link that leaves out guests and contacts.
 - **Free to run.** Vercel Hobby, Firebase Spark and the Gemini free tier, with caching, model
   fallback and rate limits that keep it answering within free quotas.
+
+## Chosen vertical
+
+**Celebration & Event Planner** (PromptWars Virtual 2026, Challenge 5): _a GenAI-powered planning
+assistant that helps users organise weddings, birthdays and community events with budgets,
+timelines, vendor checklists and personalised ideas._
+
+**Persona.** A family member or community volunteer in India planning a wedding, a child's birthday
+or a neighbourhood puja without a professional planner. They work to a fixed budget, often plan on
+a phone, may be more at home in Hindi or Bengali than in English, and need to know what to do next
+rather than a list of generic tips. Every decision below is designed around that person.
+
+## How the solution works
+
+1. **Describe it.** One sentence in English, Hindi, Bengali or a mix, or a three-step form. As you
+   type, a local parser picks out the occasion, date, city, guest count, budget ("18 lakh",
+   "1.5 crore") and diets, in all three languages.
+2. **Gemini reads it.** Gemini turns the sentence into a structured brief, and Mehfil fills any gap
+   from the local reading. If something essential is still missing, the form opens with what was
+   understood instead of guessing; if Gemini is unreachable, the local reading is used on its own.
+3. **A complete plan appears at once.** The planning engine builds a standard plan from the
+   occasion's template: budget lines, tasks scheduled back from the date, vendors with book-by
+   dates and a day-of run sheet. It works even if Gemini never answers.
+4. **Gemini tailors it.** Four sections are tailored in parallel and stream in as each is ready:
+   the budget split with reasons, extra tasks and risks, vendor questions and red flags, and themed
+   ideas. Code validates every answer and computes every amount and date.
+5. **You stay in control.** Edit anything inline, ask the Copilot for changes and review them
+   before applying, ask for different ideas in your own words, and undo any step.
+6. **Keep it and share it.** Plans are saved on the device. Sign in with Google to sync them, share
+   a read-only link without personal details, and add tasks to Google Calendar.
+7. **On the day.** A run sheet for every day of the celebration, with who is in charge of each
+   moment, ready to print.
+
+## Approach and logic
+
+**Gemini understands and suggests; tested code decides and computes.** Gemini is good at reading
+messy descriptions and at cultural, creative suggestions. Code is reliable at money, dates and
+rules. Every Gemini answer passes through deterministic rules that react to the user's context:
+
+| Your context        | What Mehfil decides                                                                                                                                                                                                                                                                  | Where                                                  |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ |
+| Type of celebration | A template for weddings, birthdays, community events or anything else: budget categories with typical shares and bounds, vendors to book, and tasks with ideal lead times and rituals.                                                                                               | `src/shared/templates/`                                |
+| Venue               | Shifts the budget before any AI is involved: at home the venue's weight drops to a fifth, at a community hall or temple to 60 %; a destination wedding triples accommodation and raises transport; an outdoor event raises decor and the contingency.                                | `adjustedShares` in `src/shared/domain/budget.ts`      |
+| Budget              | Keeps Gemini's suggested shares inside each category's bounds, turns them into amounts with largest-remainder rounding so the lines always equal the total, rebalances to a new total while protecting chosen lines, warns at 90 % spent and flags any line or total that goes over. | `src/shared/domain/budget.ts`                          |
+| Guests and RSVPs    | Per-guest lines (catering, favours, return gifts) scale with the count, optionally absorbed by other lines to keep the total. Once a guest list exists, the expected headcount (confirmed, maybe and pending) and diet counts replace the estimate.                                  | `scaleForGuests`, `src/shared/domain/guests.ts`        |
+| Date and today      | Schedules every task back from the date by its lead time. When time is short, lead times are compressed in order so nothing lands in the past, and those tasks are marked "brought forward". Moving the date re-dates open tasks only.                                               | `src/shared/domain/timeline.ts`                        |
+| Progress            | Readiness blends tasks (50 %), vendor bookings (30 %) and budget health (20 %). "Today's focus" lists the earliest-due open tasks, highest priority first, and anything overdue is flagged. A booked vendor's chosen quote counts against its budget line.                           | `readiness.ts`, `timeline.ts`, `vendors.ts`            |
+| Diets               | Every prompt spells out what each requested diet rules out (Jain: no onion, garlic, potato or other root vegetables), and the evaluation checks the dishes.                                                                                                                          | `src/server/ai/prompts.ts`, `evals/run.ts`             |
+| Accessibility needs | Passed to Gemini with the rest of the brief, so tasks, vendor questions and risks account for them, such as ramps and accessible seating for elderly guests.                                                                                                                         | `src/server/ai/prompts.ts`                             |
+| City                | A Google Maps search for each vendor category in that city, so people find real vendors.                                                                                                                                                                                             | `src/shared/export/links.ts`                           |
+| Language            | The interface follows your choice; Gemini writes the plan in any of 16 languages; money and dates use the locale's formats, including lakh and crore.                                                                                                                                | `src/client/i18n/`, `src/shared/schemas/primitives.ts` |
 
 ## Screenshots
 
@@ -222,6 +274,28 @@ Key decisions, each recorded as an [architecture decision record](docs/adr/):
 The full picture, including the data model and the request pipeline, is in
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
+## Assumptions
+
+- **Amounts are estimates.** Mehfil does not know live local prices. Budget shares come from
+  typical ranges and Gemini's reasoning, and the app labels every figure as an estimate to confirm
+  with vendors.
+- **Indian defaults, open to everyone.** Templates, rituals and amounts in lakh and crore follow
+  Indian celebrations, and rupees are the default, but eight currencies and any kind of
+  celebration work.
+- **Dates are local and date-only.** The browser supplies today's date, so a plan never depends on
+  the server's time zone, and multi-day celebrations count each day.
+- **One planner, many viewers.** One person edits a plan, on as many of their devices as they like;
+  family and co-organisers get a read-only link. If two devices change the same plan, the user
+  chooses which version to keep.
+- **No invented facts.** Mehfil never names vendors or gives contact details or prices as facts;
+  real vendors come from Google Maps.
+- **Guests stay private.** Guest names and contacts stay on the device; Gemini only sees counts.
+- **No sign-up.** Visitors are signed in anonymously behind the scenes, which protects the AI from
+  abuse; Google sign-in is only needed to sync across devices.
+- **Gemini's free tier has limits.** When a model is busy or out of quota, Mehfil switches to the
+  other model; when Gemini is unavailable, the standard plan still works and is clearly labelled.
+- **Modern browsers.** Current Chrome, Edge, Safari and Firefox, on phones and computers.
+
 ## Google services
 
 | Service                          | How Mehfil uses it                                                                                                                                                                                |
@@ -253,7 +327,7 @@ dependency audit. Details in [docs/TESTING.md](docs/TESTING.md).
 
 | Criterion             | What Mehfil does                                                                                                                                                                                                                                                                    | Evidence                                                                                 |
 | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| **Problem alignment** | Every part of the brief is a working, editable, saved feature (see [Features](#features)), with Gemini doing real planning work rather than chat.                                                                                                                                   | `src/client/features/`, `e2e/plan.spec.ts`                                               |
+| **Problem alignment** | Every part of the brief is a working, editable, saved feature (see [Features](#features)), with Gemini doing real planning work rather than chat, and decisions that follow the user's context (see [Approach and logic](#approach-and-logic)).                                     | `src/client/features/`, `e2e/plan.spec.ts`                                               |
 | **Code quality**      | Strict TypeScript and strict type-checked lint rules; one shared schema contract for browser, server and Gemini; one pure function for every edit, so undo is free; a dependency-injected server; typed translations, where a missing string fails the build; documented decisions. | `src/shared/`, `eslint.config.js`, [ADRs](docs/adr/)                                     |
 | **Security**          | The key stays on the server; a strict CSP with no inline code or `eval`; rate limits and Firebase token checks on AI calls; prompt-injection containment and output cleaning; tested Firestore rules; a CSV-injection guard; a secret scan in CI.                                   | [SECURITY.md](SECURITY.md), `firestore.rules`, `src/server/security/`                    |
 | **Efficiency**        | AI suggests and code computes; sections stream in parallel; a response cache and per-model request budget for the free tier; a prerendered home page; routes, languages, Firebase and dialogs load on demand; Brotli; fonts per script.                                             | [ARCHITECTURE.md](docs/ARCHITECTURE.md), [ADR 5](docs/adr/0005-prerender-and-hydrate.md) |
