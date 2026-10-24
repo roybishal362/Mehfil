@@ -11,10 +11,11 @@ mode with sample AI answers.
 ## 1. Gemini (Google AI Studio)
 
 1. Open [Google AI Studio → API keys](https://aistudio.google.com/apikey) and create a key.
-2. For local development, put it in `.env.local` at the project root (never commit this file):
+2. For local development, paste it after the `=` in `.env.local` at the project root (git
+   ignores this file; never put the key in `.env.example`, which is published):
 
    ```
-   GEMINI_API_KEY=your-key
+   GEMINI_API_KEY=
    ```
 
 3. For Vercel, add it as an environment variable (step 3). The key is read only by the server

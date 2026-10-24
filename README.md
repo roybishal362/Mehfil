@@ -60,10 +60,11 @@ npm run dev
 
 Open <http://localhost:5173>. Without a key the server runs in a labelled **demo mode** with
 realistic sample answers. For real Gemini, create a free key in
-[Google AI Studio](https://aistudio.google.com/apikey) and put it in `.env.local`:
+[Google AI Studio](https://aistudio.google.com/apikey) and paste it after the `=` in
+`.env.local` (git ignores this file):
 
 ```
-GEMINI_API_KEY=your-key
+GEMINI_API_KEY=
 ```
 
 | Command                                                     | What it does                                                                 |
