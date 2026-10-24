@@ -15,6 +15,7 @@ import { AiGateway } from './gateway';
 import { MockProvider } from './mock-provider';
 import { AiError, type AiProvider, type AiTask } from './provider';
 import {
+  copilotTurns,
   draftInvitation,
   extractBrief,
   generateSection,
@@ -146,6 +147,7 @@ describe('MockProvider', () => {
       input: copilotRequest('add a task: book the shehnai players'),
     });
     expect(add.data.calls[0]?.name).toBe('add_task');
+    expect(add.data.text).toBe('');
     const week = await provider.generateWithTools({
       ...tools,
       input: copilotRequest('What should I do this week?'),
@@ -352,6 +354,22 @@ describe('Copilot tool calls → plan operations', () => {
     expect(response.operations).toEqual([{ type: 'task.remove', id: 'task_1' }]);
     expect(response.dropped).toBe(1);
     expect(response.reply).not.toContain('98765');
+  });
+
+  it('gives Gemini a conversation that starts with the user and alternates', () => {
+    const turns = copilotTurns({
+      ...copilotRequest('And the decor?'),
+      history: [
+        { role: 'assistant', text: 'Welcome!' },
+        { role: 'user', text: 'Add 50 guests' },
+        // The request for this question failed, so it has no answer.
+        { role: 'user', text: 'Hello?' },
+        { role: 'assistant', text: '(No change proposed.)' },
+      ],
+    });
+    expect(turns.map((turn) => turn.role)).toEqual(['user', 'model', 'user']);
+    expect(turns[0]?.text).toBe('Add 50 guests\n\nHello?');
+    expect(turns[2]?.text).toContain('And the decor?');
   });
 
   it('runs the Copilot end to end and counts dropped proposals', async () => {

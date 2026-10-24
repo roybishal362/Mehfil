@@ -82,6 +82,17 @@ test.describe('a plan made from one sentence', () => {
     await expect(page.getByText('350 guests').first()).toBeVisible();
     await page.getByRole('button', { name: 'Undo' }).last().click();
     await expect(page.getByText('300 guests').first()).toBeVisible();
+
+    // Follow-ups, including one answered with a change and no words (as Gemini often does).
+    const copilot = page.getByRole('complementary', { name: 'Copilot' });
+    await page.getByLabel('Ask Copilot').fill('add a task: book the shehnai players');
+    await page.getByRole('button', { name: 'Send' }).click();
+    await expect(copilot.getByText('I suggest 1 change.')).toBeVisible({ timeout: 15_000 });
+    await copilot.getByRole('button', { name: 'Apply 1 change' }).click();
+    await page.getByLabel('Ask Copilot').fill('What should I do this week?');
+    await page.getByRole('button', { name: 'Send' }).click();
+    await expect(copilot.getByText(/This week, focus on:/)).toBeVisible({ timeout: 15_000 });
+    await expect(copilot.getByRole('alert')).toHaveCount(0);
   });
 
   test('keeps the guest list on this device and writes the invitation', async ({ page }) => {

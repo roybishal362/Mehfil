@@ -658,8 +658,9 @@ export function mockCopilot(request: CopilotRequest): ToolResponse {
   }
   const add = /add (?:a )?task:?\s+(.+)/i.exec(request.message);
   if (add?.[1]) {
+    // Like Gemini often does, a direct instruction is answered with the change alone.
     return {
-      text: 'Added to your timeline for next week.',
+      text: '',
       calls: [
         {
           name: 'add_task',

@@ -42,7 +42,7 @@ import {
   sectionPrompt,
   systemPrompt,
 } from './prompts';
-import type { ToolCall, ToolDeclaration } from './provider';
+import type { ChatTurn, ToolCall, ToolDeclaration } from './provider';
 
 function meta(outcome: AiOutcome<unknown>, mode: AiGateway['mode']): AiMetaInfo {
   return { model: outcome.model, mode, cached: outcome.cached, ms: outcome.ms };
@@ -423,6 +423,33 @@ export function toOperation(call: ToolCall, request: CopilotRequest): PlanOperat
     : null;
 }
 
+/**
+ * The conversation as Gemini expects it: starting with the user, then alternating. A failed
+ * request leaves two questions in a row, so neighbouring turns from one side are joined.
+ */
+export function copilotTurns(request: CopilotRequest): ChatTurn[] {
+  const turns: ChatTurn[] = [];
+  const all: ChatTurn[] = [
+    ...request.history.map((turn) => ({
+      role: turn.role === 'assistant' ? ('model' as const) : ('user' as const),
+      text: turn.text,
+    })),
+    {
+      role: 'user',
+      text: copilotTurnText(request.brief, request.today, request.plan, request.message),
+    },
+  ];
+  for (const turn of all) {
+    const last = turns.at(-1);
+    if (last?.role === turn.role) {
+      turns[turns.length - 1] = { role: turn.role, text: `${last.text}\n\n${turn.text}` };
+    } else if (last || turn.role === 'user') {
+      turns.push(turn);
+    }
+  }
+  return turns;
+}
+
 export async function runCopilot(
   gateway: AiGateway,
   request: CopilotRequest,
@@ -433,16 +460,7 @@ export async function runCopilot(
       task: 'copilot',
       model: gateway.models.smart,
       system: copilotSystemPrompt(request.brief.language),
-      contents: [
-        ...request.history.map((turn) => ({
-          role: turn.role === 'assistant' ? ('model' as const) : ('user' as const),
-          text: turn.text,
-        })),
-        {
-          role: 'user',
-          text: copilotTurnText(request.brief, request.today, request.plan, request.message),
-        },
-      ],
+      contents: copilotTurns(request),
       tools: COPILOT_TOOLS,
       temperature: 0.4,
       maxOutputTokens: 2048,

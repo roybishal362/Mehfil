@@ -608,6 +608,8 @@ export const hi: Messages = {
     thinking: 'सोच रहा है…',
     empty: 'आज़माएँ: “अब 50 मेहमान और आएँगे”',
     review: 'बदलाव देखें:',
+    proposed: (count: string) => `मैं ${count} बदलाव सुझाता हूँ।`,
+    noAnswer: 'इसके लिए कोई बदलाव नहीं सूझा। किसी और तरह से पूछकर देखें।',
     apply: (count: string) => `${count} बदलाव लागू करें`,
     applied: (count: string) => `${count} बदलाव लागू हुए।`,
     dismissed: 'सुझाव हटा दिए गए।',

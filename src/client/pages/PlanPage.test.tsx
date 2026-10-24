@@ -102,6 +102,39 @@ describe('PlanPage', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Applied 1 change.');
   });
 
+  it('says what a Copilot answer without words proposes', async () => {
+    const user = userEvent.setup();
+    const answers = [
+      {
+        reply: '',
+        operations: [{ type: 'guests.setCount', guestCount: 350, keepBudget: true }],
+        dropped: 0,
+        meta: META,
+      },
+      { reply: '', operations: [], dropped: 0, meta: META },
+    ];
+    let turn = 0;
+    mockApi({
+      '/api/ai/copilot': () => {
+        const answer = answers[turn];
+        turn += 1;
+        return jsonResponse(answer);
+      },
+    });
+    open();
+    const copilot = screen.getByRole('complementary', { name: 'Copilot' });
+    const ask = within(copilot).getByRole('textbox', { name: 'Ask Copilot' });
+    await user.type(ask, 'We now expect 50 more guests{Enter}');
+    expect(await within(copilot).findByText('I suggest 1 change.')).toBeInTheDocument();
+    await user.type(ask, 'And the decor?{Enter}');
+    expect(
+      await within(copilot).findByText(
+        'I couldn’t find a change to suggest for that. Try asking another way.',
+      ),
+    ).toBeInTheDocument();
+    expect(within(copilot).queryByRole('alert')).not.toBeInTheDocument();
+  });
+
   it('types a question into the Copilot', async () => {
     const user = userEvent.setup();
     const { calls } = mockApi({

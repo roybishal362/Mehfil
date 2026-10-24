@@ -83,7 +83,11 @@ export function CopilotPanel({ plan }: { plan: EventPlan }) {
               <span className="sr-only">
                 {message.role === 'user' ? t.copilot.you : t.copilot.mehfil}:{' '}
               </span>
-              {message.text}
+              {message.text ||
+                // An answer without words: say what came with it, so it is announced too.
+                (message.proposed
+                  ? t.copilot.proposed(f.number(message.proposed), message.proposed)
+                  : t.copilot.noAnswer)}
             </li>
           ))}
           {conversation.busy && (

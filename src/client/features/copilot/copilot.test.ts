@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { CopilotPlanContext } from '../../../shared/schemas/ai';
+import { COPILOT_TURN_MAX, CopilotPlanContext, CopilotRequest } from '../../../shared/schemas/ai';
+import type { PlanOperation } from '../../../shared/schemas/operations';
 import { META } from '../../test/ai-fixtures';
 import { jsonResponse, mockApi, seedPlan } from '../../test/helpers';
 import { plansStore } from '../../state/plans';
@@ -12,6 +13,7 @@ import {
   selectedOperations,
   toggleProposal,
   useCopilot,
+  wordlessAnswer,
 } from './copilot';
 
 const conversation = (planId: string) => useCopilot.getState().conversations[planId];
@@ -76,6 +78,66 @@ describe('Copilot conversation', () => {
     // The next question carries the history.
     await askCopilot(plan.id, 'Thanks');
     expect(calls[1]?.body).toMatchObject({ history: [{ role: 'user' }, { role: 'assistant' }] });
+  });
+
+  it('keeps the conversation going when Gemini answers with changes and no words', async () => {
+    const plan = seedPlan();
+    const answers = [
+      {
+        reply: '',
+        operations: [{ type: 'guests.setCount', guestCount: 350, keepBudget: true }],
+        dropped: 0,
+        meta: META,
+      },
+      { reply: '  ', operations: [], dropped: 0, meta: META },
+      { reply: 'Glad to help.', operations: [], dropped: 0, meta: META },
+    ];
+    let turn = 0;
+    const { calls } = mockApi({
+      '/api/ai/copilot': () => {
+        const answer = answers[turn];
+        turn += 1;
+        return jsonResponse(answer);
+      },
+    });
+
+    await askCopilot(plan.id, 'We now expect 50 more guests');
+    const answer = conversation(plan.id)?.messages[1];
+    expect(answer).toMatchObject({ role: 'assistant', text: '', proposed: 1 });
+    expect(answer?.context).toContain('guests.setCount');
+    await askCopilot(plan.id, 'And the decor?');
+    expect(conversation(plan.id)?.messages.at(-1)).toMatchObject({
+      text: '',
+      context: '(No change proposed.)',
+      proposed: 0,
+    });
+    await askCopilot(plan.id, 'Thanks');
+
+    // Every follow-up is one the server accepts: no turn in the history is empty.
+    expect(calls).toHaveLength(3);
+    for (const call of calls) expect(CopilotRequest.safeParse(call.body).success).toBe(true);
+    expect(calls[2]?.body).toMatchObject({
+      history: [
+        { role: 'user', text: 'We now expect 50 more guests' },
+        { role: 'assistant', text: expect.stringContaining('"guestCount":350') },
+        { role: 'user', text: 'And the decor?' },
+        { role: 'assistant', text: '(No change proposed.)' },
+      ],
+    });
+  });
+
+  it('keeps the note for a wordless answer within the history limit', () => {
+    const many: PlanOperation[] = Array.from({ length: 40 }, (_, index) => ({
+      type: 'task.add',
+      task: {
+        title: `Confirm the decorator’s plan for evening ${String(index)}`,
+        dueDate: '2026-12-01',
+        priority: 'medium',
+        category: 'planning',
+      },
+    }));
+    expect(wordlessAnswer(many)).toHaveLength(COPILOT_TURN_MAX);
+    expect(wordlessAnswer([])).toBe('(No change proposed.)');
   });
 
   it('flags failures without touching the plan, and ignores empty questions', async () => {

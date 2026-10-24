@@ -6,6 +6,7 @@
 import { create } from 'zustand';
 import { applyOperations } from '../../../shared/domain/operations';
 import {
+  COPILOT_TURN_MAX,
   CopilotApiResponse,
   type CopilotMessage,
   type CopilotPlanContext,
@@ -24,8 +25,22 @@ export interface Proposal {
   dropped: number;
 }
 
+/**
+ * One turn of the conversation. Gemini often answers with proposed changes and no words, so what
+ * the panel shows (`text`) and what later questions remind Gemini of (`context`) can differ.
+ */
+export interface ChatMessage {
+  role: CopilotMessage['role'];
+  /** What the panel shows; empty for an answer without words. */
+  text: string;
+  /** What later questions send back to Gemini; never empty. */
+  context: string;
+  /** For answers: how many changes came with it. */
+  proposed?: number;
+}
+
 export interface Conversation {
-  messages: CopilotMessage[];
+  messages: ChatMessage[];
   proposal: Proposal | null;
   busy: boolean;
   failed: boolean;
@@ -89,16 +104,28 @@ export function copilotContext(plan: EventPlan): CopilotPlanContext {
   };
 }
 
+/**
+ * Stands in for an answer that had no words, so a follow-up such as "make it 80 instead" still
+ * knows what was proposed.
+ */
+export function wordlessAnswer(operations: readonly PlanOperation[]): string {
+  const note =
+    operations.length > 0
+      ? `(Proposed for the user to review: ${JSON.stringify(operations)})`
+      : '(No change proposed.)';
+  return note.slice(0, COPILOT_TURN_MAX);
+}
+
 export async function askCopilot(planId: string, message: string): Promise<void> {
   const plan = plansStore.getState().plans[planId];
   const text = message.trim();
   if (!plan || !text) return;
-  const history = (useCopilot.getState().conversations[planId] ?? EMPTY).messages.slice(
-    -HISTORY_SENT,
-  );
+  const history: CopilotMessage[] = (useCopilot.getState().conversations[planId] ?? EMPTY).messages
+    .slice(-HISTORY_SENT)
+    .map(({ role, context }) => ({ role, text: context }));
   update(planId, (conversation) => ({
     ...conversation,
-    messages: [...conversation.messages, { role: 'user', text }],
+    messages: [...conversation.messages, { role: 'user', text, context: text }],
     proposal: null,
     busy: true,
     failed: false,
@@ -115,10 +142,19 @@ export async function askCopilot(planId: string, message: string): Promise<void>
       },
       CopilotApiResponse,
     );
+    const reply = response.reply.trim();
     update(planId, (conversation) => ({
       ...conversation,
       busy: false,
-      messages: [...conversation.messages, { role: 'assistant', text: response.reply }],
+      messages: [
+        ...conversation.messages,
+        {
+          role: 'assistant',
+          text: reply,
+          context: reply || wordlessAnswer(response.operations),
+          proposed: response.operations.length,
+        },
+      ],
       proposal:
         response.operations.length > 0 || response.dropped > 0
           ? {

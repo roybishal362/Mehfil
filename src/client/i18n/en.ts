@@ -629,6 +629,8 @@ export const en = {
     thinking: 'Thinking…',
     empty: 'Try: “We now expect 50 more guests”',
     review: 'Review the changes:',
+    proposed: (count: string, n: number) => `I suggest ${count} ${plural(n, 'change', 'changes')}.`,
+    noAnswer: 'I couldn’t find a change to suggest for that. Try asking another way.',
     apply: (count: string, n: number) => `Apply ${count} ${plural(n, 'change', 'changes')}`,
     applied: (count: string, n: number) => `Applied ${count} ${plural(n, 'change', 'changes')}.`,
     dismissed: 'Suggestions dismissed.',

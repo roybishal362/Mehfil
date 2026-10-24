@@ -345,9 +345,12 @@ export const CopilotPlanContext = z.object({
 });
 export type CopilotPlanContext = z.infer<typeof CopilotPlanContext>;
 
+/** The longest conversation turn the Copilot accepts in its history. */
+export const COPILOT_TURN_MAX = 1500;
+
 export const CopilotMessage = z.object({
   role: z.enum(['user', 'assistant']),
-  text: requiredText(1500),
+  text: requiredText(COPILOT_TURN_MAX),
 });
 export type CopilotMessage = z.infer<typeof CopilotMessage>;
 
