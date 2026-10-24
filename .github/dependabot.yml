@@ -16,6 +16,12 @@ updates:
       # typescript-eslint currently supports TypeScript < 6.1.
       - dependency-name: typescript
         update-types: ['version-update:semver-major', 'version-update:semver-minor']
+      # Node's type definitions follow the oldest Node line the app supports (22).
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
+      # jsdom 30 needs Node 22.22 or newer; the app supports Node 22.12 and later.
+      - dependency-name: jsdom
+        update-types: ['version-update:semver-major']
 
   - package-ecosystem: github-actions
     directory: /
