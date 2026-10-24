@@ -6,7 +6,7 @@
  * (`cleanModelText`) instead of failing a whole answer because one sentence ran long.
  * Dates never appear in model output: the model gives day offsets and the engine computes dates.
  */
-import * as z from 'zod';
+import * as z from '../zod';
 import { EventBrief, PartialBrief } from './brief';
 import {
   BUDGET_CATEGORIES,

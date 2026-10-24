@@ -37,7 +37,11 @@ export function createApp({
 
   // Generous for ordinary API calls, much tighter for AI calls (which cost real quota).
   const apiLimiter = new TokenBucketLimiter({ capacity: 120, refillPerSecond: 2, now });
-  const aiLimiter = new TokenBucketLimiter({ capacity: 24, refillPerSecond: 24 / 600, now });
+  const aiLimiter = new TokenBucketLimiter({
+    capacity: config.ai.rateLimit,
+    refillPerSecond: config.ai.rateLimit / 600,
+    now,
+  });
 
   app.use('*', requestId());
   app.use('*', applySecurityHeaders(production));

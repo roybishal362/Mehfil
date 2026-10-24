@@ -2,7 +2,6 @@
  * Entry point. Fonts are self-hosted (no third-party requests) and split by script, so Hindi
  * and Bengali glyphs download only when they appear on the page.
  */
-import './lib/zod-jitless';
 import '@fontsource-variable/inter/wght.css';
 import '@fontsource-variable/cormorant-garamond/wght.css';
 import '@fontsource-variable/cormorant-garamond/wght-italic.css';
@@ -18,6 +17,7 @@ import { createRoot, hydrateRoot } from 'react-dom/client';
 import { App } from './App';
 import { toast } from './app/feedback';
 import { loadRuntimeConfig } from './app/runtime-config';
+import { connectCloud } from './cloud/account';
 import { initLocale, useLocaleStore } from './i18n';
 import { browserStorage, connectPersistence, loadPlans } from './state/persistence';
 import { plansStore } from './state/plans';
@@ -36,6 +36,8 @@ async function start(): Promise<void> {
     },
   });
   void loadRuntimeConfig();
+  // Firebase loads only when a cloud feature is used (or a Google user returns).
+  connectCloud({ store: plansStore, storage });
 
   const app = (
     <StrictMode>

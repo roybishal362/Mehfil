@@ -32,6 +32,8 @@ export interface Formatters {
   monthYear(iso: string): string;
   /** "18:30" → "6:30 pm" */
   time(clock: string): string;
+  /** The local time of day of an instant, e.g. when plans last synced: "6:30 pm". */
+  timeOfDay(instant: string): string;
   /** ["a", "b", "c"] → "a, b and c" */
   list(items: readonly string[]): string;
 }
@@ -63,6 +65,10 @@ export function formatters(locale: Locale): Formatters {
   const day = dateFormat({ day: 'numeric' });
   const monthYear = dateFormat({ month: 'short', year: 'numeric' });
   const time = dateFormat({ hour: 'numeric', minute: '2-digit' });
+  // In the viewer's own time zone, unlike the date-only formats above.
+  const timeOfDay = lazy(
+    () => new Intl.DateTimeFormat(intl, { hour: 'numeric', minute: '2-digit' }),
+  );
   const list = lazy(() => new Intl.ListFormat(intl, { type: 'conjunction' }));
 
   const formats: Formatters = {
@@ -80,6 +86,7 @@ export function formatters(locale: Locale): Formatters {
     day: (iso) => day().format(toDate(iso)),
     monthYear: (iso) => monthYear().format(toDate(iso)),
     time: (clock) => time().format(new Date(`1970-01-01T${clock}:00Z`)),
+    timeOfDay: (instant) => timeOfDay().format(new Date(instant)),
     list: (items) => list().format(items),
   };
   cache.set(locale, formats);

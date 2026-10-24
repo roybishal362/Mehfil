@@ -5,6 +5,7 @@
 import { Link } from 'wouter';
 import { isPlanSection, paths, useDocumentTitle, type PlanSection } from '../app/routing';
 import { ErrorBoundary } from '../components/ErrorBoundary';
+import { ShareButton } from '../features/cloud/ShareDialog';
 import { CopilotPanel } from '../features/copilot/CopilotPanel';
 import { Overview } from '../features/overview/Overview';
 import { InvitationCard } from '../features/plan/InvitationCard';
@@ -65,7 +66,10 @@ export function PlanPage({ params }: { params: { id?: string; section?: string }
   return (
     <div className="wrap">
       <InvitationCard plan={plan} />
-      <UndoRedo planId={plan.id} />
+      <div className="plan-actions">
+        <UndoRedo planId={plan.id} />
+        <ShareButton plan={plan} />
+      </div>
       <PlanTabs planId={plan.id} current={section} />
       <div className="mb-6">
         <AiStatus plan={plan} />

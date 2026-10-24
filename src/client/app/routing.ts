@@ -23,6 +23,8 @@ export const paths = {
   newPlan: (type?: string) => (type ? `/new?type=${encodeURIComponent(type)}` : '/new'),
   plan: (id: string, section: PlanSection = 'overview') =>
     section === 'overview' ? `/plan/${id}` : `/plan/${id}/${section}`,
+  /** A read-only shared plan. */
+  shared: (shareId: string) => `/s/${shareId}`,
 };
 
 /** Sets the browser tab title as "<page> · Mehfil". */
@@ -30,6 +32,19 @@ export function useDocumentTitle(title: string): void {
   useEffect(() => {
     document.title = title ? `${title} · ${APP_NAME}` : APP_NAME;
   }, [title]);
+}
+
+/** How long to wait for a lazily loaded page's heading: about two seconds. */
+const HEADING_WAIT_FRAMES = 120;
+
+/**
+ * The first matching element that is actually shown. While the next page's code loads, React
+ * keeps the previous page mounted but hidden, and its heading must not be picked.
+ */
+function visibleTarget(selector: string): HTMLElement | null {
+  const shown = (element: HTMLElement) =>
+    typeof element.checkVisibility === 'function' ? element.checkVisibility() : true;
+  return [...document.querySelectorAll<HTMLElement>(selector)].find(shown) ?? null;
 }
 
 /** The /plan/<id> part of a path, used to tell a section change from a page change. */
@@ -50,15 +65,23 @@ export function useRouteFocus(): void {
     previous.current = location;
     if (before === null || before === location) return;
     const sameplan = planPrefix(before) !== null && planPrefix(before) === planPrefix(location);
-    // Wait a frame so lazily loaded pages have rendered their heading.
-    const frame = requestAnimationFrame(() => {
-      const target =
-        (sameplan ? document.querySelector<HTMLElement>('[data-route-focus="section"]') : null) ??
-        document.querySelector<HTMLElement>('[data-route-focus="page"]') ??
-        document.getElementById('main');
-      target?.focus({ preventScroll: sameplan });
+    let frame = 0;
+    let waited = 0;
+    const moveFocus = () => {
+      const heading =
+        (sameplan ? visibleTarget('[data-route-focus="section"]') : null) ??
+        visibleTarget('[data-route-focus="page"]');
+      // A lazily loaded page renders its heading once its code has arrived: keep checking
+      // each frame for a while before settling for the main region.
+      if (!heading && waited < HEADING_WAIT_FRAMES) {
+        waited += 1;
+        frame = requestAnimationFrame(moveFocus);
+        return;
+      }
+      (heading ?? document.getElementById('main'))?.focus({ preventScroll: sameplan });
       if (!sameplan) window.scrollTo({ top: 0 });
-    });
+    };
+    frame = requestAnimationFrame(moveFocus);
     return () => {
       cancelAnimationFrame(frame);
     };

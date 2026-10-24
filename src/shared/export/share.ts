@@ -3,7 +3,7 @@
  * personal data: no guest names or contacts, no vendor phone numbers, no private notes.
  * Snapshots read back from storage are untrusted and re-validated with `SharedPlan`.
  */
-import * as z from 'zod';
+import * as z from '../zod';
 import { summariseGuests } from '../domain/guests';
 import { BudgetCategory, VendorCategory } from '../schemas/categories';
 import { Idea, Risk, ScheduleItem, type EventPlan } from '../schemas/plan';

@@ -561,8 +561,10 @@
   position: fixed;
   z-index: 50;
   bottom: max(20px, env(safe-area-inset-bottom, 0px));
-  left: 50%;
-  transform: translateX(-50%);
+  /* Centred with auto margins: a left: 50% box shifted back by a transform still sticks out
+     past the right edge before the shift, which makes phones widen the whole page. */
+  inset-inline: 0;
+  margin-inline: auto;
   display: grid;
   gap: 8px;
   width: min(92vw, 460px);

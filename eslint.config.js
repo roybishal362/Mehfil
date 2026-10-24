@@ -37,19 +37,29 @@ export default defineConfig([
       ],
       '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
       '@typescript-eslint/switch-exhaustiveness-check': 'error',
-      'no-restricted-syntax': [
+      '@typescript-eslint/no-restricted-imports': [
         'error',
         {
-          selector:
-            "ImportDeclaration[source.value='zod'][importKind!='type'] > ImportSpecifier[imported.name='z'][importKind!='type']",
-          message:
-            "Use `import * as z from 'zod'`: with the named import, esbuild keeps all of zod's locales (about 250 KB).",
+          paths: [
+            {
+              name: 'zod',
+              allowTypeImports: true,
+              message:
+                "Import Zod through src/shared/zod.ts (`import * as z from '…/shared/zod'`): it turns off Zod's eval-based parsers, which the Content-Security-Policy forbids, before any schema is defined.",
+            },
+          ],
         },
       ],
       eqeqeq: ['error', 'smart'],
       'no-console': 'error',
       'prefer-const': 'error',
     },
+  },
+
+  {
+    name: 'mehfil/zod-entry',
+    files: ['src/shared/zod.ts'],
+    rules: { '@typescript-eslint/no-restricted-imports': 'off' },
   },
 
   {

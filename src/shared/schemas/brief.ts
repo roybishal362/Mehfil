@@ -3,7 +3,7 @@
  * Produced by the step-by-step wizard or by Gemini from a free-text description,
  * and always validated with this schema before a plan is built.
  */
-import * as z from 'zod';
+import * as z from '../zod';
 import {
   ClockTime,
   Currency,

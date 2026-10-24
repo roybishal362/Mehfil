@@ -37,6 +37,8 @@ export interface PlansState {
   removePlan: (id: string) => EventPlan | undefined;
   /** Puts back a deleted plan (for "Undo" after a delete). */
   restorePlan: (plan: EventPlan) => void;
+  /** Stores plans exactly as given (from another device): no new revision, no undo history. */
+  putPlans: (plans: readonly EventPlan[]) => void;
   /** Validates and applies edits as one undoable step. */
   apply: (id: string, operations: readonly PlanOperationInput[], source?: Source) => ApplyResult;
   /** Replaces a plan with a computed version (AI merges). `undoable` records it in history. */
@@ -53,9 +55,13 @@ export interface PlansStoreOptions {
   now?: () => Date;
 }
 
-/** Marks a changed plan: a new revision and timestamp. */
-function touch(plan: EventPlan, now: Date): EventPlan {
-  return { ...plan, revision: plan.revision + 1, updatedAt: now.toISOString() };
+/**
+ * Marks `next` as the plan that replaces `current`: the next revision and a fresh timestamp.
+ * Revisions only ever go up (an undo is a new revision too), which is what sync relies on to
+ * tell a changed plan from an unchanged one.
+ */
+function touch(next: EventPlan, current: EventPlan, now: Date): EventPlan {
+  return { ...next, revision: current.revision + 1, updatedAt: now.toISOString() };
 }
 
 export function createPlansStore({ now = () => new Date() }: PlansStoreOptions = {}) {
@@ -95,6 +101,22 @@ export function createPlansStore({ now = () => new Date() }: PlansStoreOptions =
       get().hydrate([...Object.values(get().plans), plan]);
     },
 
+    putPlans: (incoming) => {
+      if (incoming.length === 0) return;
+      set((state) => {
+        const plans = { ...state.plans };
+        let history = state.history;
+        for (const plan of incoming) {
+          plans[plan.id] = plan;
+          history = omitKey(history, plan.id);
+        }
+        const order = Object.values(plans)
+          .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+          .map((plan) => plan.id);
+        return { plans, order, history };
+      });
+    },
+
     apply: (id, operations, source = 'user') => {
       const plan = get().plans[id];
       if (!plan) return { ok: false, code: 'unknown_plan', message: `Plan ${id} was not found` };
@@ -109,6 +131,7 @@ export function createPlansStore({ now = () => new Date() }: PlansStoreOptions =
             makeId: createId,
             source,
           }),
+          plan,
           now(),
         );
         set((state) => {
@@ -131,7 +154,7 @@ export function createPlansStore({ now = () => new Date() }: PlansStoreOptions =
     transform: (id, update, { undoable = false } = {}) => {
       const plan = get().plans[id];
       if (!plan) return;
-      const next = touch(update(plan), now());
+      const next = touch(update(plan), plan, now());
       set((state) => ({
         plans: { ...state.plans, [id]: next },
         ...(undoable
@@ -154,7 +177,7 @@ export function createPlansStore({ now = () => new Date() }: PlansStoreOptions =
       const previous = history[id]?.past.at(-1);
       if (!plan || !previous) return false;
       set((state) => ({
-        plans: { ...state.plans, [id]: touch(previous, now()) },
+        plans: { ...state.plans, [id]: touch(previous, plan, now()) },
         history: {
           ...state.history,
           [id]: {
@@ -172,7 +195,7 @@ export function createPlansStore({ now = () => new Date() }: PlansStoreOptions =
       const following = history[id]?.future[0];
       if (!plan || !following) return false;
       set((state) => ({
-        plans: { ...state.plans, [id]: touch(following, now()) },
+        plans: { ...state.plans, [id]: touch(following, plan, now()) },
         history: {
           ...state.history,
           [id]: {

@@ -10,6 +10,8 @@ import { Feedback } from './feedback';
 import { paths, useRouteFocus } from './routing';
 import { useRuntimeConfig } from './runtime-config';
 import { useTheme } from './theme';
+import { AccountButton } from '../features/cloud/AccountButton';
+import { ConflictPrompt } from '../features/cloud/ConflictPrompt';
 
 function LanguageSwitch() {
   const { t, locale } = useI18n();
@@ -69,6 +71,7 @@ function SiteHeader({ overlay }: { overlay: boolean }) {
       </nav>
       <div className="tools">
         <LanguageSwitch />
+        <AccountButton />
         <ThemeToggle />
       </div>
     </header>
@@ -125,6 +128,7 @@ export function Shell({ children }: { children: ReactNode }) {
         </main>
       </div>
       <SiteFooter />
+      <ConflictPrompt />
       <Feedback />
     </>
   );

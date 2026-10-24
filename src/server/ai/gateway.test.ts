@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import * as z from 'zod';
+import * as z from '../../shared/zod';
 import { silentLogger } from '../logger';
 import { AiGateway } from './gateway';
 import {

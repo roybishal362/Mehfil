@@ -2,7 +2,7 @@
  * Server configuration, read once from the environment and validated.
  * Secrets (the Gemini key) stay on the server; only the public Firebase web config is exposed.
  */
-import * as z from 'zod';
+import * as z from '../shared/zod';
 
 const Env = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
@@ -13,6 +13,8 @@ const Env = z.object({
   GEMINI_MODEL_SMART: z.string().trim().min(1).default('gemini-3.8-flash'),
   GEMINI_MODEL_FAST: z.string().trim().min(1).default('gemini-3.5-flash-lite'),
   AI_MAX_RPM: z.coerce.number().int().min(1).max(1000).default(12),
+  /** AI tokens each visitor gets per 10 minutes (personalising a plan costs 4). */
+  AI_RATE_LIMIT: z.coerce.number().int().min(1).max(100_000).default(24),
   /** Simulated latency for the mock provider, so demo mode shows the streaming UI. */
   MOCK_AI_DELAY_MS: z.coerce.number().int().min(0).max(10_000).default(0),
   FIREBASE_PROJECT_ID: z.string().trim().optional(),
@@ -40,6 +42,8 @@ export interface AppConfig {
     models: { smart: string; fast: string };
     maxRequestsPerMinute: number;
     mockDelayMs: number;
+    /** Per-visitor allowance of AI tokens, refilled over 10 minutes. */
+    rateLimit: number;
   };
   /** Public Firebase web config, or null when cloud features are not configured. */
   firebase: FirebaseWebConfig | null;
@@ -86,6 +90,7 @@ export function loadConfig(source: Record<string, string | undefined> = process.
       models: { smart: env.GEMINI_MODEL_SMART, fast: env.GEMINI_MODEL_FAST },
       maxRequestsPerMinute: env.AI_MAX_RPM,
       mockDelayMs: env.MOCK_AI_DELAY_MS,
+      rateLimit: env.AI_RATE_LIMIT,
     },
     firebase,
     requireAuthForAi: firebase !== null && env.REQUIRE_AUTH_FOR_AI !== 'false',

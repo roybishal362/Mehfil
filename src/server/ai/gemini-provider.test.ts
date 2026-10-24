@@ -1,6 +1,6 @@
 import { ApiError, FinishReason, ThinkingLevel, type GoogleGenAI } from '@google/genai';
 import { describe, expect, it } from 'vitest';
-import * as z from 'zod';
+import * as z from '../../shared/zod';
 import { GeminiProvider, classifyError, thinkingFor } from './gemini-provider';
 import { AiError, withTimeout } from './provider';
 

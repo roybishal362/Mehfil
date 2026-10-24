@@ -1,10 +1,13 @@
 import '@testing-library/jest-dom/vitest';
-import { cleanup } from '@testing-library/react';
+import { cleanup, configure } from '@testing-library/react';
 import { toHaveNoViolations } from 'jest-axe';
 import { afterEach, beforeEach, expect, vi } from 'vitest';
 import { resetAppState } from './helpers';
 
 expect.extend(toHaveNoViolations);
+
+// Waits for async UI (findBy…, waitFor) get headroom for slow runs, such as under coverage.
+configure({ asyncUtilTimeout: 5000 });
 
 // jsdom does not implement modal dialogs, scrolling or clipboard; give them minimal behaviour.
 HTMLDialogElement.prototype.showModal = function showModal(this: HTMLDialogElement) {

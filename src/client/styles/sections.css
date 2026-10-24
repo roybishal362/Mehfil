@@ -28,6 +28,9 @@
 }
 
 .table-wrap {
+  /* Positioned, so visually hidden labels (position: absolute) stay inside the scroll box
+     instead of stretching the page sideways on phones. */
+  position: relative;
   overflow-x: auto;
   margin-inline: -8px;
   padding-inline: 8px;

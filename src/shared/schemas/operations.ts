@@ -2,7 +2,7 @@
  * Plan operations: the only way a plan changes. The UI, the Copilot and imports all produce
  * these, so every mutation is validated, previewable as a diff and undoable.
  */
-import * as z from 'zod';
+import * as z from '../zod';
 import { MAX_GUESTS, MIN_BUDGET, PartialBrief } from './brief';
 import { Guest, Idea, LIMITS, ScheduleItem, VendorOption } from './plan';
 import {

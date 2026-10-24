@@ -1,4 +1,4 @@
-import { defineConfig, mergeConfig } from 'vitest/config';
+import { configDefaults, defineConfig, mergeConfig } from 'vitest/config';
 import viteConfig from './vite.config.ts';
 
 /**
@@ -25,6 +25,8 @@ export default mergeConfig(
             name: 'dom',
             environment: 'jsdom',
             include: ['src/client/**/*.test.{ts,tsx}'],
+            // These need the Firebase emulators: see vitest.rules.config.ts.
+            exclude: [...configDefaults.exclude, 'src/client/**/*.emulator.test.ts'],
             setupFiles: ['./src/client/test/setup.ts'],
             // CSS is stubbed in tests, except the tokens file the contrast test reads.
             css: { include: [/tokens\.css/] },
@@ -42,6 +44,8 @@ export default mergeConfig(
           'src/client/test/**',
           'src/shared/test/**',
           'src/client/main.tsx',
+          // Tested against the Firebase emulators instead (npm run test:rules).
+          'src/client/cloud/firebase.ts',
           'src/server/node.ts',
           'src/server/vercel.ts',
         ],

@@ -1,0 +1,15 @@
+{
+  "indexes": [],
+  "fieldOverrides": [
+    {
+      "collectionGroup": "plans",
+      "fieldPath": "json",
+      "indexes": []
+    },
+    {
+      "collectionGroup": "shares",
+      "fieldPath": "json",
+      "indexes": []
+    }
+  ]
+}

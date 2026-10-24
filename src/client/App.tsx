@@ -14,6 +14,9 @@ const NewPlanPage = lazy(() =>
 const PlanPage = lazy(() =>
   import('./pages/PlanPage').then((module) => ({ default: module.PlanPage })),
 );
+const SharedPlanPage = lazy(() =>
+  import('./pages/SharedPlanPage').then((module) => ({ default: module.SharedPlanPage })),
+);
 
 function PageLoading() {
   const { t } = useI18n();
@@ -65,6 +68,7 @@ export function App({ ssrPath }: AppProps) {
               <Route path="/" component={HomePage} />
               <Route path="/new" component={NewPlanPage} />
               <Route path="/plan/:id/:section?" component={PlanPage} />
+              <Route path="/s/:id" component={SharedPlanPage} />
               <Route component={NotFoundPage} />
             </Switch>
           </Suspense>

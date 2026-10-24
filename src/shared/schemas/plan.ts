@@ -2,7 +2,7 @@
  * The event plan and its parts. Every edit — from the UI or the Copilot — produces a value
  * that still satisfies these schemas, and stored plans are re-validated when loaded.
  */
-import * as z from 'zod';
+import * as z from '../zod';
 import { EventBrief } from './brief';
 import { BudgetCategory, VendorCategory } from './categories';
 import {

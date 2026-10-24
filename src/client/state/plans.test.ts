@@ -88,4 +88,36 @@ describe('plans store', () => {
     if (removed) store.getState().restorePlan(removed);
     expect(store.getState().order).toEqual(['evt_newer', 'evt_older']);
   });
+
+  it('only ever moves revisions forward, so sync can tell every change apart', () => {
+    const { store, plan } = storeWithPlan();
+    const revisions = [plan.revision];
+    const record = () => revisions.push(store.getState().plans[plan.id]?.revision ?? -1);
+    store
+      .getState()
+      .apply(plan.id, [{ type: 'guests.setCount', guestCount: 120, keepBudget: true }]);
+    record();
+    store.getState().undo(plan.id);
+    record();
+    store.getState().redo(plan.id);
+    record();
+    store.getState().transform(plan.id, (current) => ({ ...current, summary: 'Merged' }));
+    record();
+    expect(revisions).toEqual([0, 1, 2, 3, 4].map((step) => plan.revision + step));
+  });
+
+  it('stores plans from another device as they are, without undo history', () => {
+    const { store, plan } = storeWithPlan();
+    store
+      .getState()
+      .apply(plan.id, [{ type: 'guests.setCount', guestCount: 120, keepBudget: true }]);
+    const fromCloud = { ...plan, revision: 9, summary: 'Edited on the phone' };
+    const other = { ...weddingPlan(), id: 'evt_other', createdAt: '2027-01-01T00:00:00.000Z' };
+    store.getState().putPlans([fromCloud, other]);
+    expect(store.getState().plans[plan.id]).toBe(fromCloud);
+    expect(store.getState().history[plan.id]).toBeUndefined();
+    expect(store.getState().order).toEqual(['evt_other', plan.id]);
+    store.getState().putPlans([]);
+    expect(store.getState().order).toHaveLength(2);
+  });
 });

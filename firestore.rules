@@ -1,0 +1,78 @@
+rules_version = '2';
+
+// Firestore Security Rules for Mehfil. Anything not allowed below is denied.
+//
+//   users/{uid}/plans/{planId}  Plans synced by a signed-in Google account. Only the owner can
+//                               read or write them.
+//   shares/{shareId}            Read-only copies behind unguessable 128-bit links, with no
+//                               personal data. Anyone holding a link can read it until it
+//                               expires; only its owner can change, list or delete it.
+//
+// Plans and shared copies are stored as JSON text that the app validates whenever it reads
+// them, so the rules check each document's shape, owner, size and timestamps.
+// Tests: tests/firestore.rules.test.ts (npm run test:rules).
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function hasExactly(fields) {
+      return request.resource.data.keys().hasAll(fields)
+        && request.resource.data.keys().hasOnly(fields);
+    }
+
+    function validPlan(planId) {
+      let data = request.resource.data;
+      return planId.matches('^[A-Za-z0-9_-]{1,64}$')
+        && hasExactly(['json', 'revision', 'updatedAt', 'v'])
+        && data.json is string
+        && data.json.size() > 0
+        && data.json.size() <= 700000
+        && data.revision is int
+        && data.revision >= 0
+        && data.updatedAt == request.time
+        && data.v == 1;
+    }
+
+    match /users/{uid}/plans/{planId} {
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid) && validPlan(planId);
+    }
+
+    function validShare(shareId) {
+      let data = request.resource.data;
+      return shareId.matches('^[A-Za-z0-9_-]{22}$')
+        && hasExactly(['owner', 'json', 'createdAt', 'expiresAt', 'v'])
+        && data.owner == request.auth.uid
+        && data.json is string
+        && data.json.size() > 0
+        && data.json.size() <= 200000
+        && data.expiresAt is timestamp
+        && data.expiresAt > request.time
+        && data.expiresAt <= request.time + duration.value(91, 'd')
+        && data.v == 1;
+    }
+
+    match /shares/{shareId} {
+      // Unknown and expired links fail alike, so a link's existence never leaks.
+      allow get: if resource.data.expiresAt > request.time;
+      // Only an owner's own links, so they can be deleted along with the account.
+      allow list: if signedIn() && resource.data.owner == request.auth.uid;
+      allow create: if signedIn()
+        && validShare(shareId)
+        && request.resource.data.createdAt == request.time;
+      allow update: if signedIn()
+        && resource.data.owner == request.auth.uid
+        && validShare(shareId)
+        && request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if signedIn() && resource.data.owner == request.auth.uid;
+    }
+  }
+}

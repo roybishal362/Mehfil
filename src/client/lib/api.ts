@@ -3,7 +3,7 @@
  * (the browser never trusts a payload's shape), failures become an ApiError carrying the
  * server's stable error code, and every call can be cancelled with an AbortSignal.
  */
-import * as z from 'zod';
+import * as z from '../../shared/zod';
 
 export class ApiError extends Error {
   /** HTTP status, or 0 when the server could not be reached. */
@@ -30,11 +30,22 @@ export function setTokenProvider(provider: TokenProvider | null): void {
   tokenProvider = provider;
 }
 
-async function requestHeaders(withJsonBody: boolean): Promise<Headers> {
+/**
+ * GET endpoints (config, health) are public and never carry a token; POSTs to the AI endpoints
+ * carry one. Keeping the config request token-free also matters because the token provider
+ * itself waits for the config.
+ */
+async function requestHeaders({
+  json,
+  token,
+}: {
+  json: boolean;
+  token: boolean;
+}): Promise<Headers> {
   const headers = new Headers({ Accept: 'application/json' });
-  if (withJsonBody) headers.set('Content-Type', 'application/json');
-  const token = tokenProvider ? await tokenProvider() : null;
-  if (token) headers.set('Authorization', `Bearer ${token}`);
+  if (json) headers.set('Content-Type', 'application/json');
+  const idToken = token && tokenProvider ? await tokenProvider() : null;
+  if (idToken) headers.set('Authorization', `Bearer ${idToken}`);
   return headers;
 }
 
@@ -82,7 +93,7 @@ export async function getJson<T>(
 ): Promise<T> {
   const response = await send(path, {
     method: 'GET',
-    headers: await requestHeaders(false),
+    headers: await requestHeaders({ json: false, token: false }),
     ...(signal ? { signal } : {}),
   });
   return validated(schema, await response.json());
@@ -96,7 +107,7 @@ export async function postJson<T>(
 ): Promise<T> {
   const response = await send(path, {
     method: 'POST',
-    headers: await requestHeaders(true),
+    headers: await requestHeaders({ json: true, token: true }),
     body: JSON.stringify(body),
     ...(signal ? { signal } : {}),
   });
@@ -149,7 +160,7 @@ export async function postNdjson<T>(
 ): Promise<void> {
   const response = await send(path, {
     method: 'POST',
-    headers: await requestHeaders(true),
+    headers: await requestHeaders({ json: true, token: true }),
     body: JSON.stringify(body),
     ...(signal ? { signal } : {}),
   });

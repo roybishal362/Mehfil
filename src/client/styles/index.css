@@ -13,3 +13,4 @@
 @import './workspace.css' layer(components);
 @import './wizard.css' layer(components);
 @import './sections.css' layer(components);
+@import './cloud.css' layer(components);

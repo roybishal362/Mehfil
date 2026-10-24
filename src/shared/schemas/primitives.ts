@@ -3,7 +3,7 @@
  * These are the single source of truth for validation on the client, on the server,
  * and for the JSON schemas sent to Gemini.
  */
-import * as z from 'zod';
+import * as z from '../zod';
 
 /** Calendar date in `YYYY-MM-DD` form. Validated as a real date (no 2026-02-30). */
 export const IsoDate = z

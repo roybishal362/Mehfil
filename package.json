@@ -26,7 +26,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:rules": "npx --yes firebase-tools@15 emulators:exec --only firestore --project demo-mehfil \"npx vitest run --config vitest.rules.config.ts\"",
+    "test:rules": "npx --yes firebase-tools@15 emulators:exec --only auth,firestore --project demo-mehfil \"npx vitest run --config vitest.rules.config.ts\"",
     "e2e": "playwright test",
     "e2e:install": "playwright install chromium",
     "eval": "tsx evals/run.ts",

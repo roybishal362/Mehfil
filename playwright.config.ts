@@ -12,7 +12,9 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: isCI,
   retries: isCI ? 1 : 0,
-  workers: isCI ? 2 : undefined,
+  // Each test drives a full browser and runs axe scans; a few at a time keeps them steady.
+  workers: isCI ? 2 : 3,
+  timeout: 60_000,
   reporter: isCI ? [['github'], ['html', { open: 'never' }]] : [['list']],
   use: {
     baseURL: `http://localhost:${String(PORT)}`,
@@ -31,6 +33,8 @@ export default defineConfig({
     env: {
       PORT: String(PORT),
       AI_PROVIDER: 'mock',
+      // Every test runs from the same address; the production limit is far lower.
+      AI_RATE_LIMIT: '10000',
       NODE_ENV: 'production',
       MEHFIL_DISABLE_ENV_FILE: '1',
     },

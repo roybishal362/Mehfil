@@ -1,0 +1,285 @@
+/*
+ * Account, sync and sharing: the header's account button, the account, share and conflict
+ * dialogs, and the read-only page that a share link opens.
+ */
+
+/* ---------------------------------------------------------------- dialogs */
+
+.dialog-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dialog-head .icon-btn {
+  margin: -8px -10px 0 0;
+  flex: none;
+}
+
+.dialog-actions--start {
+  justify-content: flex-start;
+}
+
+.dialog-actions--stack {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.dialog .notice {
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* The header's account button, with a dot when sync needs attention. */
+.roundbtn {
+  position: relative;
+}
+
+.attention-dot {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #ff8a6b;
+  box-shadow: 0 0 0 2px #140b2e;
+}
+
+.account-who {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 650;
+  color: var(--ink);
+}
+
+.account-privacy,
+.share-private {
+  align-items: flex-start;
+}
+
+.account-privacy .i,
+.share-private .i {
+  flex: none;
+  margin-top: 1px;
+  color: var(--ok-ink);
+}
+
+.account-data {
+  display: grid;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.account-data h3 {
+  font-size: 20px;
+}
+
+.share-label {
+  font-weight: 650;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+.share-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.share-row .input {
+  flex: 1 1 220px;
+  min-width: 0;
+  font-size: 14px;
+}
+
+/* The plan page's action row: saved state, undo and redo, then Share. */
+.plan-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.plan-actions .plan-toolbar {
+  flex: 1 1 auto;
+  margin-top: 0;
+}
+
+/* ---------------------------------------------------------------- shared plan page */
+
+.shared {
+  display: grid;
+  gap: 22px;
+  padding-block: 28px 56px;
+}
+
+.shared-head {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+}
+
+.shared-head h1 {
+  font-size: clamp(36px, 6vw, 58px);
+  line-height: 1.05;
+  text-wrap: balance;
+}
+
+.shared-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--ink-2);
+  font-weight: 600;
+}
+
+.shared-facts li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.shared-facts .i {
+  color: var(--label);
+}
+
+.shared-summary p {
+  font-family: var(--font-display);
+  font-size: 22px;
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+.shared-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+  gap: 22px;
+}
+
+.shared .card h2,
+.shared-section-title {
+  font-size: 28px;
+  margin-bottom: 12px;
+}
+
+.shared-total {
+  font-family: var(--font-display);
+  font-size: 38px;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+
+.shared-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+.shared-table th,
+.shared-table td {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  font-weight: 500;
+}
+
+.shared-table td {
+  text-align: right;
+  color: var(--ink);
+}
+
+.shared-list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.shared-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.shared-list li:last-child {
+  border-bottom: 0;
+}
+
+.shared-list li > :first-child {
+  flex: 1 1 220px;
+  min-width: 0;
+  color: var(--ink);
+}
+
+.shared-when {
+  flex: 0 0 auto !important;
+  min-width: 130px;
+  color: var(--label) !important;
+  font-weight: 650;
+}
+
+.shared-done {
+  text-decoration: line-through;
+  text-decoration-color: var(--muted);
+}
+
+.shared-ideas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.shared-ideas h3 {
+  font-size: 22px;
+  margin: 4px 0 6px;
+}
+
+.shared-ideas p:last-child {
+  color: var(--ink-2);
+  font-size: 15px;
+}
+
+.shared-risks {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.shared-risks li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+}
+
+.shared-risks p {
+  flex-basis: 100%;
+  color: var(--ink-2);
+  font-size: 15px;
+}
+
+.shared-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 8px;
+}
