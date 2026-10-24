@@ -84,6 +84,7 @@ function SiteFooter() {
     <footer className="site-footer">
       <div className="wrap">
         <p>{t.shell.footerNote}</p>
+        <p>{t.shell.aiPrivacy}</p>
         <p>{t.shell.footerMade}</p>
       </div>
     </footer>

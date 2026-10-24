@@ -40,6 +40,8 @@ export const en = {
     offline: 'You are offline. Your plans are saved on this device.',
     footerNote:
       'Plans are saved on this device. AI suggestions are estimates; check prices with vendors.',
+    aiPrivacy:
+      'Mehfil sends your event details to Google Gemini to draft the plan, never your guest list. On the free tier, Google may use them to improve its products.',
     footerMade: 'Made with Google Gemini for PromptWars 2026',
     saveFailed: 'Could not save on this device. Storage may be full or blocked.',
     source: 'Source code',
