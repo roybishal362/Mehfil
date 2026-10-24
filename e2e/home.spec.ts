@@ -43,10 +43,21 @@ test.describe('home page', () => {
     await expectAccessible(page);
   });
 
-  test('lists saved plans after a reload', async ({ page }) => {
+  test('lists saved plans after a reload, and confirms before deleting one', async ({ page }) => {
     await describeCelebration(page);
     await page.goto('/');
     await expect(page.getByRole('link', { name: /Ananya/ })).toBeVisible();
     await expectAccessible(page);
+
+    await page.getByRole('button', { name: /^Delete/ }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    // Modal dialogs open in the middle of the screen.
+    const box = await dialog.boundingBox();
+    const width = page.viewportSize()?.width ?? 0;
+    expect(Math.abs((box?.x ?? 0) * 2 + (box?.width ?? 0) - width)).toBeLessThan(4);
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+    await expect(dialog).toBeHidden();
+    await expect(page.getByRole('link', { name: /Ananya/ })).toBeVisible();
   });
 });

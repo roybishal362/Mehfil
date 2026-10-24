@@ -605,6 +605,11 @@
 
 .dialog {
   width: min(92vw, 520px);
+  /* The CSS reset zeroes margins; auto margins are what centre a modal dialog. */
+  margin: auto;
+  max-height: min(88dvh, 820px);
+  overflow: auto;
+  overscroll-behavior: contain;
   padding: 0;
   border: 0;
   border-radius: var(--radius);
