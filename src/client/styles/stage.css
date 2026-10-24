@@ -445,6 +445,27 @@
   }
 }
 
+/* Phones: the brand word and every control fit side by side; round buttons stay 44 px. */
+@media (max-width: 440px) {
+  .top,
+  .brand {
+    gap: 8px;
+  }
+
+  .brand-word {
+    font-size: 28px;
+  }
+
+  .tools {
+    gap: 6px;
+  }
+
+  .langs button {
+    min-width: 38px;
+    padding-inline: 8px;
+  }
+}
+
 @media (max-width: 380px) {
   .brand-word {
     display: none;

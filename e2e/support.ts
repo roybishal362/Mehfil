@@ -41,10 +41,22 @@ export async function expectAccessible(page: Page): Promise<void> {
       `${violation.id}: ${violation.nodes.map((node) => node.target.join(' ')).join(' | ')}`,
   );
   expect(violations, 'axe violations').toEqual([]);
-  // WCAG 1.4.10 Reflow: nothing may make the page scroll sideways.
-  const width = page.viewportSize()?.width ?? 0;
-  const pageWidth = await page.evaluate(() => document.documentElement.scrollWidth);
-  expect(pageWidth, 'page width (no sideways scrolling)').toBeLessThanOrEqual(width);
+  await expectNoSidewaysScrolling(page);
+}
+
+/**
+ * WCAG 1.4.10 Reflow: nothing may make the page scroll sideways, at the device's width or on
+ * narrow phones (390 px is a common iPhone width; 320 px is the WCAG reference).
+ */
+async function expectNoSidewaysScrolling(page: Page): Promise<void> {
+  const original = page.viewportSize();
+  if (!original) return;
+  for (const width of new Set([original.width, 390, 320])) {
+    await page.setViewportSize({ width, height: original.height });
+    const pageWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+    expect(pageWidth, `page width at ${String(width)} px`).toBeLessThanOrEqual(width);
+  }
+  await page.setViewportSize(original);
 }
 
 export const WEDDING =
