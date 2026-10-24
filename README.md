@@ -189,25 +189,19 @@ One TypeScript codebase. Vercel serves the React app from its CDN and runs the A
 Node function in Mumbai; Firebase holds identity and synced data.
 
 ```mermaid
-flowchart LR
-    subgraph Browser["Browser"]
-        UI["React 19 app<br/>prerendered home page<br/>routes loaded on demand"]
-        Engine["Planning engine<br/>budgets, dates, readiness"]
-        Local[("Plans on this device<br/>localStorage")]
+flowchart TB
+    App["<b>Browser</b><br/>React 19 app<br/>planning engine<br/>plans on the device"]
+    Gateway["<b>AI gateway</b><br/>Hono on Vercel, Mumbai<br/>validation, rate limits<br/>cache, model fallback"]
+    subgraph Google["Google services"]
+        Gemini["<b>Gemini API</b><br/>3.5 Flash, Flash-Lite"]
+        Auth["<b>Firebase Auth</b><br/>anonymous, Google"]
+        Firestore[("<b>Cloud Firestore</b><br/>Security Rules")]
     end
-    subgraph Server["Vercel · Node 24 · Mumbai"]
-        Gateway["Hono AI gateway<br/>validation, rate limits, cache<br/>model fallback, circuit breaker"]
-    end
-    Gemini["Gemini API<br/>3.5 Flash and Flash-Lite"]
-    Auth["Firebase Authentication<br/>anonymous and Google"]
-    Firestore[("Cloud Firestore<br/>tested Security Rules")]
-
-    UI --> Engine --> Local
-    UI -- "JSON and streamed sections" --> Gateway
+    App -- "AI requests" --> Gateway
     Gateway -- "@google/genai" --> Gemini
     Gateway -. "verifies ID tokens" .-> Auth
-    UI -- "sign-in" --> Auth
-    UI -- "sync and share links" --> Firestore
+    App -- "sign-in" --> Auth
+    App -- "sync, share links" --> Firestore
 ```
 
 Key decisions, each recorded as an [architecture decision record](docs/adr/):
