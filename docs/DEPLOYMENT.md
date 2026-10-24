@@ -98,7 +98,7 @@ The Node server serves the precompressed (Brotli and gzip) client files itself.
 | --------------------- | -------------------------------- | ----------------------------------------------------------------- |
 | `GEMINI_API_KEY`      | none                             | Gemini key. Without it the server runs in demo mode.              |
 | `AI_PROVIDER`         | `gemini` with a key, else `mock` | Force `mock` for demos and tests.                                 |
-| `GEMINI_MODEL_SMART`  | `gemini-3.8-flash`               | Ideas, refinements and the Copilot.                               |
+| `GEMINI_MODEL_SMART`  | `gemini-3.5-flash`               | Ideas, refinements and the Copilot.                               |
 | `GEMINI_MODEL_FAST`   | `gemini-3.5-flash-lite`          | Briefs, budgets, timelines, vendors, invitations.                 |
 | `AI_MAX_RPM`          | `12`                             | Gemini calls per minute per model, per server instance.           |
 | `AI_RATE_LIMIT`       | `24`                             | AI tokens per visitor per 10 minutes (a full plan costs about 5). |

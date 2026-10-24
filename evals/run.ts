@@ -162,13 +162,21 @@ async function evaluate(sample: Sample): Promise<Result> {
   checks['dates in range'] = plan.tasks.every(
     (task) => task.dueDate >= today && (task.daysBefore < 0 || task.dueDate <= lastDay),
   );
-  const text = strings({ ideas: plan.ideas, schedule: plan.schedule, summary: plan.summary });
+  // Only prose Gemini wrote (not IDs, dates or the built-in English template items).
+  const text = [
+    ...plan.ideas
+      .filter((idea) => idea.source === 'ai')
+      .flatMap((idea) => [idea.title, idea.description]),
+    ...plan.schedule.filter((slot) => slot.source === 'ai').map((slot) => slot.title),
+    ...(plan.summary ? [plan.summary] : []),
+  ];
   checks['no contact details'] = !strings(plan).some((value) => CONTACT.test(value));
   if (sample.diet) {
     const food = plan.ideas.filter((idea) => idea.kind === 'food').flatMap(strings);
-    checks['respects the diet'] =
-      !food.some((value) => NON_VEG.test(value)) &&
-      (sample.diet !== 'jain' || !food.some((value) => JAIN_AVOID.test(value)));
+    const avoid = sample.diet === 'jain' ? [NON_VEG, JAIN_AVOID] : [NON_VEG];
+    const offending = food.find((value) => avoid.some((pattern) => pattern.test(value)));
+    // Quote the dish so a reviewer can tell a real slip from "made without onion".
+    checks['respects the diet'] = offending === undefined || `"${offending.slice(0, 80)}"`;
   }
   // The demo provider always answers in English, so only Gemini's language is checked.
   const script = mock ? undefined : SCRIPT[sample.language];
@@ -187,7 +195,11 @@ async function evaluate(sample: Sample): Promise<Result> {
 }
 
 const results: Result[] = [];
-for (const [index, sample] of SAMPLES.entries()) {
+// `npm run eval -- --only jain` runs the samples whose name contains the given text.
+const onlyIndex = process.argv.indexOf('--only');
+const only = onlyIndex > 0 ? (process.argv[onlyIndex + 1] ?? '').toLowerCase() : '';
+const selected = SAMPLES.filter((sample) => sample.name.toLowerCase().includes(only));
+for (const [index, sample] of selected.entries()) {
   if (index > 0 && PAUSE_MS > 0) await new Promise((resolve) => setTimeout(resolve, PAUSE_MS));
   process.stdout.write(`${sample.name}… `);
   const result = await evaluate(sample);

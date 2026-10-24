@@ -21,7 +21,7 @@ import {
 } from './provider';
 
 /** Bump when prompts change so cached answers from older prompts are not reused. */
-export const PROMPT_VERSION = 'v1';
+export const PROMPT_VERSION = 'v2';
 
 export interface AiOutcome<T> {
   data: T;

@@ -149,7 +149,7 @@ describe('platform endpoints', () => {
     expect(await res.json()).toMatchObject({
       status: 'ok',
       name: 'Mehfil',
-      ai: { mode: 'mock', models: { smart: 'gemini-3.8-flash', fast: 'gemini-3.5-flash-lite' } },
+      ai: { mode: 'mock', models: { smart: 'gemini-3.5-flash', fast: 'gemini-3.5-flash-lite' } },
       time: new Date(FIXED_NOW).toISOString(),
     });
     expect(res.headers.get('Cache-Control')).toBe('no-store');

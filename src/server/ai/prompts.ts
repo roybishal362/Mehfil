@@ -6,7 +6,7 @@
  */
 import type { EventBrief } from '../../shared/schemas/brief';
 import type { CopilotPlanContext, InvitationRequest } from '../../shared/schemas/ai';
-import type { AiSection, OutputLanguage } from '../../shared/schemas/primitives';
+import type { AiSection, DietaryNeed, OutputLanguage } from '../../shared/schemas/primitives';
 import { getTemplate } from '../../shared/templates';
 import { diffDays } from '../../shared/utils/dates';
 import { escapeForPrompt } from '../../shared/utils/text';
@@ -142,13 +142,37 @@ function sectionFacts(section: AiSection, brief: EventBrief): Record<string, unk
 }
 
 /** Prompt for one personalised plan section. */
+/**
+ * What each diet rules out, spelled out: "respect the dietary needs" alone still let the model
+ * suggest, say, potato dishes for a Jain dinner now and then (seen in `npm run eval`).
+ */
+const DIET_RULES: Readonly<Record<DietaryNeed, string>> = {
+  vegetarian: 'vegetarian: no meat, fish, seafood or eggs',
+  vegan: 'vegan: no animal products at all, including milk, ghee, paneer, honey and eggs',
+  jain: 'Jain: vegetarian, no eggs, and no onion, garlic, potato, carrot, radish, beetroot or other root vegetables',
+  halal: 'halal: only halal meat, no pork and no alcohol',
+  no_onion_garlic: 'no onion and no garlic',
+  gluten_free: 'gluten-free: no wheat, barley or rye',
+  nut_free: 'nut-free: no nuts or nut pastes',
+  non_vegetarian: 'non-vegetarian dishes are welcome alongside vegetarian ones',
+};
+
+/** The food rule for a brief's diets, or an empty string when none were given. */
+export function dietRules(dietary: readonly DietaryNeed[]): string {
+  if (dietary.length === 0) return '';
+  return `Every dish and food idea must suit these diets: ${dietary.map((need) => DIET_RULES[need]).join('; ')}.`;
+}
+
 export function sectionPrompt(section: AiSection, brief: EventBrief, today: string): string {
   return [
     `Personalise the ${section} section of this celebration plan.`,
     SECTION_INSTRUCTIONS[section],
+    dietRules(brief.dietary),
     facts(brief, today, sectionFacts(section, brief)),
     userBrief(brief),
-  ].join('\n\n');
+  ]
+    .filter(Boolean)
+    .join('\n\n');
 }
 
 /** Prompt for regenerating a section with the user's change request. */

@@ -5,7 +5,7 @@ test is fast, free and repeatable.
 
 | Layer                           | Command                                            | Count                   | What it covers                                                                             |
 | ------------------------------- | -------------------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------ |
-| Unit, integration and component | `npm test` (`npm run test:coverage` for the gates) | 679 tests in 55 files   | Planning engine, AI gateway and API, client state, sync, every page and section with axe   |
+| Unit, integration and component | `npm test` (`npm run test:coverage` for the gates) | 680 tests in 55 files   | Planning engine, AI gateway and API, client state, sync, every page and section with axe   |
 | Firebase emulators              | `npm run test:rules` (needs Java 21)               | 13 tests                | Firestore Security Rules and the Firebase adapter against the Auth and Firestore emulators |
 | Browser journeys                | `npm run e2e` (after `npm run build`)              | 19 journeys × 2 devices | Real Chromium on desktop and a Pixel 7, with axe and reflow checks on every page           |
 | Lighthouse                      | `npx @lhci/cli@0.15.1 autorun` (CI)                | 2 pages × 3 runs        | Accessibility 100 and best practices ≥ 95 enforced; performance and SEO tracked            |

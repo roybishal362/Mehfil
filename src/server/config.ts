@@ -10,7 +10,9 @@ const Env = z.object({
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
   AI_PROVIDER: z.enum(['gemini', 'mock']).optional(),
   GEMINI_API_KEY: z.string().trim().optional(),
-  GEMINI_MODEL_SMART: z.string().trim().min(1).default('gemini-3.8-flash'),
+  // Measured on the free tier (evals/models.ts): 3.5 Flash answers the ideas task in about
+  // 5 seconds, while 3.7 and 3.8 Flash timed out. Override per deployment if that changes.
+  GEMINI_MODEL_SMART: z.string().trim().min(1).default('gemini-3.5-flash'),
   GEMINI_MODEL_FAST: z.string().trim().min(1).default('gemini-3.5-flash-lite'),
   AI_MAX_RPM: z.coerce.number().int().min(1).max(1000).default(12),
   /** AI tokens each visitor gets per 10 minutes (personalising a plan costs 4). */

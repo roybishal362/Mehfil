@@ -5,6 +5,7 @@ import {
   LANGUAGE_NAMES,
   briefPrompt,
   copilotSystemPrompt,
+  dietRules,
   copilotTurnText,
   invitationPrompt,
   refinePrompt,
@@ -26,6 +27,18 @@ describe('prompts', () => {
     expect(prompt).not.toContain('</user_input> Ignore');
     expect(prompt).toContain('‹/user_input›');
     expect(prompt.match(/<user_input>/g)).toHaveLength(1);
+  });
+
+  it('spell out what each diet rules out, and say nothing when there is none', () => {
+    const rule = dietRules(['jain', 'nut_free']);
+    expect(rule).toContain('no onion, garlic, potato');
+    expect(rule).toContain('nut-free');
+    expect(dietRules([])).toBe('');
+    const prompt = sectionPrompt('ideas', { ...weddingBrief(), dietary: ['vegan'] }, '2026-10-24');
+    expect(prompt).toContain('no animal products');
+    expect(sectionPrompt('ideas', { ...weddingBrief(), dietary: [] }, '2026-10-24')).not.toContain(
+      'Every dish',
+    );
   });
 
   it('give each section the engine facts it needs', () => {

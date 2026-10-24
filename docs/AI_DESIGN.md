@@ -10,13 +10,15 @@ server; the browser never holds a key.
 | Task                 | Endpoint                                   | Model (default)                                                                  | What Gemini returns                                                                                                     | What code does with it                                                                                                                    |
 | -------------------- | ------------------------------------------ | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | Read a description   | `POST /api/ai/brief`                       | `gemini-3.5-flash-lite`, minimal thinking                                        | Structured fields: occasion, date, city, guests, budget, styles, food, needs                                            | Validates and prefills the form; a local parser already shows what it understood while you type                                           |
-| Tailor a plan        | `POST /api/ai/personalize` (NDJSON stream) | Budget, timeline and vendors: `gemini-3.5-flash-lite`; ideas: `gemini-3.8-flash` | Budget percentages with reasons, extra tasks as day offsets, run-sheet slots, risks, vendor advice, ideas and a summary | Turns percentages into amounts that add up exactly, offsets into dates before the event, then merges each section as it arrives           |
-| Refine ideas         | `POST /api/ai/refine`                      | `gemini-3.8-flash`, low thinking                                                 | New ideas following "more budget-friendly" or your own words                                                            | Keeps the ideas you marked, replaces the rest                                                                                             |
-| Copilot              | `POST /api/ai/copilot`                     | `gemini-3.8-flash`, low thinking, function calling                               | Calls to ten tools such as `add_task`, `set_guest_count` or `set_budget_line`                                           | Converts each call into a typed `PlanOperation`, drops any that point at unknown IDs, and shows a before-and-after list the user approves |
+| Tailor a plan        | `POST /api/ai/personalize` (NDJSON stream) | Budget, timeline and vendors: `gemini-3.5-flash-lite`; ideas: `gemini-3.5-flash` | Budget percentages with reasons, extra tasks as day offsets, run-sheet slots, risks, vendor advice, ideas and a summary | Turns percentages into amounts that add up exactly, offsets into dates before the event, then merges each section as it arrives           |
+| Refine ideas         | `POST /api/ai/refine`                      | `gemini-3.5-flash`, low thinking                                                 | New ideas following "more budget-friendly" or your own words                                                            | Keeps the ideas you marked, replaces the rest                                                                                             |
+| Copilot              | `POST /api/ai/copilot`                     | `gemini-3.5-flash`, low thinking, function calling                               | Calls to ten tools such as `add_task`, `set_guest_count` or `set_budget_line`                                           | Converts each call into a typed `PlanOperation`, drops any that point at unknown IDs, and shows a before-and-after list the user approves |
 | Write the invitation | `POST /api/ai/invitation`                  | `gemini-3.5-flash-lite`, minimal thinking                                        | Two or three versions in the chosen tone, channel and language                                                          | Cleans the text and offers copy and WhatsApp share                                                                                        |
 
 Models are set by environment variables (`GEMINI_MODEL_SMART`, `GEMINI_MODEL_FAST`) and reported
-by `/api/health`. The calls use `@google/genai` `models.generateContent` with
+by `/api/health`. The defaults were chosen by measurement on the free tier (`evals/models.ts`):
+`gemini-3.5-flash` returned the ideas section in about 5 seconds, while `gemini-3.7-flash`,
+`gemini-3.8-flash` and `gemini-flash-latest` timed out at the 25-second section limit. The calls use `@google/genai` `models.generateContent` with
 `responseMimeType: application/json` and a `responseJsonSchema` generated from the same Zod
 schemas the app uses (`src/server/ai/json-schema.ts` keeps only the keywords Gemini supports).
 
@@ -28,13 +30,16 @@ schemas the app uses (`src/server/ai/json-schema.ts` keeps only the keywords Gem
 2. **Structured output only.** Every answer must parse as JSON, match the Zod schema, and stay
    within bounds (lengths, counts, percentages, day offsets). Anything else is rejected and the
    deterministic section stays in place.
-3. **No invented facts.** The schemas have no fields for vendor names, phone numbers or prices.
+3. **Diets are spelled out.** Every section prompt states what each requested diet rules out
+   (for example, Jain means no onion, garlic, potato or other root vegetables), because a bare
+   "respect the dietary needs" occasionally let a wrong dish through.
+4. **No invented facts.** The schemas have no fields for vendor names, phone numbers or prices.
    A post-filter strips phone numbers, email addresses and links from every string. Real vendors
    are found through Google Maps search links built by code for each category and city.
-4. **The Copilot proposes, the user decides.** Tool calls become typed operations validated by
+5. **The Copilot proposes, the user decides.** Tool calls become typed operations validated by
    `PlanOperation`; operations on unknown IDs are dropped and reported. Applying them is one
    undoable step.
-5. **Privacy.** Guest names and contacts never leave the device for the AI; the prompts get
+6. **Privacy.** Guest names and contacts never leave the device for the AI; the prompts get
    counts only. The footer tells users that the free Gemini tier may use event details to improve
    Google's products.
 
@@ -54,6 +59,12 @@ schemas the app uses (`src/server/ai/json-schema.ts` keeps only the keywords Gem
   marked with a banner. All automated tests use it, so they are fast, free and repeatable.
 
 ## Evidence
+
+- `npm run eval` (`evals/run.ts`) runs six sample celebrations against real Gemini, including
+  descriptions in Hindi and Bengali, a Jain dinner and a short-notice party. On 24 October 2026
+  every sample passed every check: valid structured answers from Gemini for all four sections,
+  budgets that add up, dates before the event, no contact details, diets respected and text in
+  the requested language. `evals/models.ts` times candidate models on the heaviest task.
 
 - `src/server/app.test.ts`: the whole API with a scripted provider, including hostile model
   output (bad JSON, out-of-range values, injected instructions, invented phone numbers).

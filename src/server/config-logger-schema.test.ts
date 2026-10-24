@@ -20,7 +20,7 @@ describe('loadConfig', () => {
     expect(config.firebase).toBeNull();
     expect(config.requireAuthForAi).toBe(false);
     expect(config.clientIp).toBe('socket');
-    expect(config.ai.models).toEqual({ smart: 'gemini-3.8-flash', fast: 'gemini-3.5-flash-lite' });
+    expect(config.ai.models).toEqual({ smart: 'gemini-3.5-flash', fast: 'gemini-3.5-flash-lite' });
   });
 
   it('uses Gemini when a key is present and Firebase when fully configured', () => {
