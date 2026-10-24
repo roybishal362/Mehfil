@@ -44,9 +44,14 @@ returns the deterministic plan when Gemini is unavailable.
 
    (Or paste `firestore.rules` into **Firestore → Rules** and publish.)
 
-7. Restrict the browser key in [Google Cloud console → Credentials](https://console.cloud.google.com/apis/credentials):
-   - **Application restrictions → Websites**: `https://<your-domain>/*` and `http://localhost:*/*`.
-   - **API restrictions**: Identity Toolkit API, Token Service API, Cloud Firestore API.
+7. Restrict the browser key in [Google Cloud console → Credentials](https://console.cloud.google.com/apis/credentials)
+   (**Browser key (auto created by Firebase)**):
+   - **Application restrictions → Websites**: `https://<your-domain>/*` and
+     `https://<project-id>.firebaseapp.com/*`. The second one is required: the Google sign-in
+     window runs on that domain and calls Firebase with the same key. Add your local address too
+     (for example `http://localhost:5173/*`) if you develop against the real project.
+   - **API restrictions**: Firebase already limits its browser key to Firebase's own APIs. You can
+     narrow it further to Identity Toolkit API, Token Service API and Cloud Firestore API.
 
 When Firebase is configured, the AI endpoints require a Firebase ID token by default; the app signs
 visitors in anonymously behind the scenes, so nobody has to create an account to use the planner.

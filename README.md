@@ -10,6 +10,8 @@ Describe your celebration in one sentence, in English, Hindi or Bengali. Gemini 
 complete plan: a budget that adds up, a timeline counted back from your date, a vendor checklist,
 ideas that honour your traditions and a run sheet for the day. Every detail stays yours to change.
 
+### [Try Mehfil live →](https://mehfil-ivory.vercel.app)
+
 [![CI](https://github.com/roybishal362/Mehfil/actions/workflows/ci.yml/badge.svg)](https://github.com/roybishal362/Mehfil/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/roybishal362/Mehfil/actions/workflows/codeql.yml/badge.svg)](https://github.com/roybishal362/Mehfil/actions/workflows/codeql.yml)
 [![Tests](https://img.shields.io/badge/tests-735%20passing-2ea44f)](docs/TESTING.md)
@@ -23,7 +25,7 @@ ideas that honour your traditions and a run sheet for the day. Every detail stay
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](tsconfig.base.json)
 [![Vercel](https://img.shields.io/badge/Vercel-Node%2024-000000?logo=vercel&logoColor=white)](docs/DEPLOYMENT.md)
 
-[Why Mehfil](#why-mehfil) · [Screenshots](#screenshots) · [Features](#features) ·
+[Live app](https://mehfil-ivory.vercel.app) · [Why Mehfil](#why-mehfil) · [Screenshots](#screenshots) · [Features](#features) ·
 [How Gemini is used](#how-gemini-is-used) · [Architecture](#architecture) · [Quality](#quality) ·
 [Run it locally](#run-it-locally) · [Docs](#documentation)
 
@@ -239,7 +241,7 @@ The full picture, including the data model and the request pipeline, is in
 | Firestore Security Rules and the Firebase adapter (emulator)                                      | **13 passing**                                                                                |
 | Browser journeys (Playwright on desktop and a phone, axe on every page, reflow at 390 and 320 px) | **38 passing**                                                                                |
 | Gemini evaluation (six sample celebrations, real API)                                             | **6 of 6** pass every check                                                                   |
-| Lighthouse (simulated phone, local)                                                               | Performance 87–90 · Accessibility 100 · Best practices 100 · SEO 100                          |
+| Lighthouse on the live site (simulated phone, three runs)                                         | Performance 85–91 · Accessibility 100 · Best practices 100 · SEO 100                          |
 | Static analysis                                                                                   | Strict TypeScript, typescript-eslint strict type-checked rules, jsx-a11y, CodeQL, secret scan |
 
 Every push runs the full pipeline in [GitHub Actions](.github/workflows/ci.yml): secret scan, size
