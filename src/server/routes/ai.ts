@@ -16,7 +16,10 @@ import {
 } from '../../shared/schemas/ai';
 import type { AiGateway } from '../ai/gateway';
 import { AiError } from '../ai/provider';
-import { draftInvitation, extractBrief, generateSection, runCopilot } from '../ai/tasks';
+import { extractBrief } from '../ai/tasks/brief';
+import { runCopilot } from '../ai/tasks/copilot';
+import { draftInvitation } from '../ai/tasks/invitation';
+import { generateSection } from '../ai/tasks/sections';
 import { AppError } from '../errors';
 import { readJson } from '../http';
 import type { Logger } from '../logger';

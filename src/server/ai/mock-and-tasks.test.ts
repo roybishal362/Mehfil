@@ -14,15 +14,11 @@ import { silentLogger } from '../logger';
 import { AiGateway } from './gateway';
 import { MockProvider } from './mock-provider';
 import { AiError, type AiProvider, type AiTask } from './provider';
-import {
-  copilotTurns,
-  draftInvitation,
-  extractBrief,
-  generateSection,
-  runCopilot,
-  toOperation,
-  validExtractedFields,
-} from './tasks';
+import { extractBrief, validExtractedFields } from './tasks/brief';
+import { copilotTurns, runCopilot } from './tasks/copilot';
+import { toOperation } from './tasks/copilot-tools';
+import { draftInvitation } from './tasks/invitation';
+import { generateSection } from './tasks/sections';
 
 const TODAY = '2026-10-23';
 const gateway = () =>
