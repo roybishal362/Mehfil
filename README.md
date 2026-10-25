@@ -394,7 +394,10 @@ src/
 │   ├── templates/   Weddings, birthdays, community events and more: categories, rituals, lead times
 │   └── export/      Calendar files, Google Calendar and Maps links, CSV, share snapshots
 ├── server/          Hono AI gateway
-│   ├── ai/          Gemini and demo providers, prompts, tasks, the gateway (cache, fallback)
+│   ├── ai/          Gemini provider, prompts, the gateway (cache, fallback, circuit breaker)
+│   │   ├── tasks/   One module per AI task: brief, sections, invitation, Copilot and its tools
+│   │   └── mock/    Deterministic demo answers for key-less runs and tests
+│   ├── routes/      /api/health, /api/config and the AI routes
 │   ├── middleware/  Request context, client IP, rate limits, Firebase token checks
 │   └── security/    One header policy for the Node server and Vercel
 └── client/          React app
