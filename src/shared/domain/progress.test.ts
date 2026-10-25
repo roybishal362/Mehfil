@@ -17,7 +17,7 @@ describe('planProgress', () => {
     });
   });
 
-  it('fills petals as the plan comes together', () => {
+  it('fills each part as the plan comes together', () => {
     const plan = weddingPlan();
     const [firstTask] = plan.tasks;
     const [firstVendor] = plan.vendors;
@@ -49,7 +49,7 @@ describe('planProgress', () => {
     }
   });
 
-  it('caps every petal at full', () => {
+  it('caps every part at full', () => {
     const plan = weddingPlan({ guestCount: 10 });
     const guests = applyOperations(
       plan,

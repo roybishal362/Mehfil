@@ -1,6 +1,6 @@
 /**
- * How far along each part of the plan is, from 0 to 1. The home page and the invitation card
- * draw these as rangoli petals, and a diya is lit at every petal that has begun.
+ * How far along each part of the plan is, from 0 to 1. The plan's header and the saved-plan
+ * tiles show a diya for each part, lit once that part has begun.
  */
 import type { EventPlan } from '../schemas/plan';
 import { summariseBudget } from './budget';

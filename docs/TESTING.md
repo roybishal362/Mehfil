@@ -5,12 +5,12 @@ test is fast, free and repeatable.
 
 | Layer                           | Command                                            | Count                   | What it covers                                                                                         |
 | ------------------------------- | -------------------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------ |
-| Unit, integration and component | `npm test` (`npm run test:coverage` for the gates) | 687 tests in 56 files   | Planning engine, AI gateway and API, client state, sync, every page and section with axe               |
+| Unit, integration and component | `npm test` (`npm run test:coverage` for the gates) | 792 tests in 63 files   | Planning engine, AI gateway and API, client state, sync, every page and section with axe               |
 | Firebase emulators              | `npm run test:rules` (needs Java 21)               | 13 tests                | Firestore Security Rules and the Firebase adapter against the Auth and Firestore emulators             |
-| Browser journeys                | `npm run e2e` (after `npm run build`)              | 19 journeys × 2 devices | Real Chromium on desktop and a Pixel 7, with axe on every page and reflow checks at 390 and 320 px too |
+| Browser journeys                | `npm run e2e` (after `npm run build`)              | 22 journeys × 2 devices | Real Chromium on desktop and a Pixel 7, with axe on every page and reflow checks at 390 and 320 px too |
 | Lighthouse                      | `npx @lhci/cli@0.15.1 autorun` (CI)                | 2 pages × 3 runs        | Accessibility 100 and best practices ≥ 95 enforced; performance and SEO tracked                        |
 
-Coverage on the last run: **97.4 % of lines, 89.1 % of branches, 95.5 % of functions**. CI fails
+Coverage on the last run: **96.8 % of lines, 87.9 % of branches, 95.3 % of functions**. CI fails
 if the shared engine or the server drop below 90 % of lines, or the client below 80 %.
 
 ## What each layer proves
@@ -30,7 +30,9 @@ numbers, injected instructions, invented phone numbers) and log privacy.
 
 **Client (`src/client`).** Every page and plan section renders and passes axe in both themes; the
 form's error summary takes focus; budget, timeline, vendors, ideas, guests and Copilot edits go
-through the store with undo; the prerendered home page has no inline styles and hydrates without
+through the store with undo; every occasion's colours meet contrast in both themes; celebration
+moments end on time, on Skip or on any key and never play for reduced motion, and their canvas
+physics is replayed from a seed; the prerendered home page has no inline styles and hydrates without
 mismatches; the sync engine copies changes, follows deletions, survives going offline and asks
 about conflicts (with a property-based test that no changed plan is ever dropped); share links
 never include guest details; the account and share dialogs work end to end against an in-memory
@@ -45,7 +47,9 @@ change or delete them; everything else is denied.
 type; a plan made from one sentence is tailored section by section; the budget rebalances; a task
 is ticked off and the calendar file downloads with reminders; vendor quotes are kept; ideas are
 refined; a Copilot proposal is applied and undone; guests are added and an invitation is written;
-everything survives a reload; language and theme are remembered; the step-by-step form explains
+everything survives a reload; language and theme are remembered, and the theme follows the
+device until one is chosen; a new plan opens with its celebration moment, which any key ends, and
+none plays with reduced motion; the step-by-step form explains
 missing fields; unknown pages explain themselves; the whole flow works with the keyboard alone.
 Every test also fails on any console error, uncaught exception or Content-Security-Policy
 violation.

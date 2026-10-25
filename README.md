@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/images/banner.jpg" width="100%" alt="Mehfil: light up every celebration. String lights and paper lanterns over a night sky, the headline in gold, a rangoli that tracks a plan's progress, and a row of lit diyas">
+<img src="docs/images/banner.jpg" width="100%" alt="Mehfil: one planner for every celebration. The headline beside three plans, each in its occasion's colours: a wedding under a marigold toran in a red border, a Durga Puja with the dhak, and Diwali under lights and kandils on a night sky">
 
 # Mehfil
 
@@ -14,7 +14,7 @@ ideas that honour your traditions and a run sheet for the day. Every detail stay
 
 [![CI](https://github.com/roybishal362/Mehfil/actions/workflows/ci.yml/badge.svg)](https://github.com/roybishal362/Mehfil/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/roybishal362/Mehfil/actions/workflows/codeql.yml/badge.svg)](https://github.com/roybishal362/Mehfil/actions/workflows/codeql.yml)
-[![Tests](https://img.shields.io/badge/tests-738%20passing-2ea44f)](docs/TESTING.md)
+[![Tests](https://img.shields.io/badge/tests-849%20passing-2ea44f)](docs/TESTING.md)
 [![Coverage](https://img.shields.io/badge/coverage-97%25%20of%20lines-2ea44f)](docs/TESTING.md)
 [![WCAG 2.2 AA](https://img.shields.io/badge/WCAG%202.2-AA-6f42c1)](docs/ACCESSIBILITY.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
@@ -108,6 +108,18 @@ rules. Every Gemini answer passes through deterministic rules that react to the 
 
 ## Screenshots
 
+Every occasion gets its own look. The home page stays calm and neutral; a plan takes on its
+occasion's colours and decorations, recognised from what you wrote in any of the three
+languages, and the first time it opens, the occasion plays for a few seconds.
+
+<p align="center">
+  <img src="docs/images/moods.jpg" width="100%" alt="Six plan headers: a wedding in a red border under a toran of marigolds and mango leaves, a Durga Puja in a red and gold sari border with the dhak and falling shiuli, a Ganesh Chaturthi with a turning sunburst and modaks, a birthday under bunting with balloons, a Diwali on a night sky with string lights and kandils, and a neighbourhood festival under a toran">
+</p>
+<p align="center">
+  <img src="docs/images/moments.jpg" width="100%" alt="Six celebration moments: the couple circling the fire for the pheras under 'Shubh Vivah', a dhaki drumming before red curtains under 'Shubho Sharodiya', rockets bursting over 'Shubh Deepavali' above a row of diyas, a sunburst and modaks under 'Ganpati Bappa Morya!', balloons and confetti for 'Happy birthday!', and a ring of marigolds for 'Let the festival begin!'">
+</p>
+<p align="center"><sub>Celebration moments: the pheras round the fire, a dhaki drumming before the curtains part, rockets over Diwali, Ganpati, a birthday and other festivals. Each lasts a few seconds, ends on any key or a tap, and never plays for people who ask for reduced motion.</sub></p>
+
 The plan below was tailored by real Gemini from one sentence: _"A Bengali wedding of Ananya and
 Rohan in Kolkata on 14 Feb 2027 for about 300 guests. Budget ₹18 lakh, mostly vegetarian, and my
 grandparents need wheelchair access."_
@@ -115,27 +127,27 @@ grandparents need wheelchair access."_
 <table>
   <tr>
     <td width="50%" valign="top">
-      <img src="docs/images/invitation.jpg" alt="A Bengali wedding plan shown as a maroon and gold invitation: Ananya and Rohan in calligraphy, Sunday 14 February 2027 in Kolkata, a seal counting down 112 days, chips for 300 guests, ₹18,00,000, banquet hall and vegetarian, and a rangoli marked 20% ready">
-      <p><b>Every plan opens as an invitation.</b> A countdown seal, the key facts, and a rangoli that fills in as the plan gets ready.</p>
+      <img src="docs/images/wedding.jpg" alt="The wedding plan's header: a red border inside ivory paper under a toran of marigolds and mango leaves, 'Shubh Vivah · Together with their families', Ananya and Rohan, Sunday 14 February 2027 in Kolkata for 300 guests and ₹18,00,000, 112 days to go above six diyas, two of them lit, and 'Celebrate again'; below, the section tabs and Gemini's summary of the plan">
+      <p><b>Every plan takes on its occasion.</b> The countdown, the key facts, and a diya for each part of the plan that has begun.</p>
     </td>
     <td width="50%" valign="top">
-      <img src="docs/images/copilot.jpg" alt="The plan overview with the Copilot panel: the request for 50 more guests and a mehendi night, the answer 'I suggest 2 changes', and ticked proposals for guests from 300 to 350 and a new task to plan the mehendi night, with Apply 2 changes and Dismiss buttons">
-      <p><b>The Copilot proposes, you decide.</b> "We now expect 50 more guests, and we want a mehendi night too" becomes two changes to review, apply or dismiss.</p>
+      <img src="docs/images/copilot.jpg" alt="The Copilot beside Today's focus: the request for 50 more guests and a mehendi night, the answer 'I suggest 3 changes', and ticked proposals for guests from 300 to 350, a new task to organise the mehendi ceremony on 15 December and a new idea for a mehendi night, with Apply 3 changes and Dismiss buttons">
+      <p><b>The Copilot proposes, you decide.</b> "We now expect 50 more guests, and we want a mehendi night too" becomes three changes to review, apply or dismiss.</p>
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <img src="docs/images/budget.jpg" alt="Budget lines tagged Gemini: Venue 25% ₹4,45,000 for a banquet hall in Kolkata with wheelchair access, Catering 35% per guest ₹6,24,000 for a vegetarian Bengali feast, then Decor, Photo and video and Attire and beauty, each with planned, committed and paid amounts">
+      <img src="docs/images/budget.jpg" alt="Budget lines tagged Gemini: Venue 25% ₹4,45,000 for a banquet hall in Kolkata with wheelchair access, Catering 35% per guest ₹6,24,000 for a vegetarian Bengali feast, then Decor, Photo and video, Attire and beauty and Entertainment, each with planned, committed and paid amounts">
       <p><b>A budget that adds up.</b> Gemini suggests each line's share and why; code computes every rupee, so the lines always meet the total.</p>
     </td>
     <td width="50%" valign="top">
-      <img src="docs/images/timeline.jpg" alt="The timeline: 0 of 26 tasks done, filters for all, to do, overdue and done, a Download calendar button, and tasks such as 'Set the total budget and guest-list size' due today and 'Book the venue' due 6 November, marked high priority and brought forward">
+      <img src="docs/images/timeline.jpg" alt="The timeline grouped by phase: '3 to 6 months before' with 'Set the total budget and guest-list size' due today and 'Book the venue' due 6 November, both high priority and brought forward, then '1 to 3 months before' with the caterer, the photographer, the ceremony timings, the decorator and the outfits">
       <p><b>A timeline counted back from the date.</b> Grouped by how far ahead each task falls, brought forward when time is short, and exported to any calendar with reminders.</p>
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <img src="docs/images/ideas.jpg" alt="Ideas tagged Gemini: the themes 'Royal Tagore Twilight' and 'Ganges Ivory Elegance', each with a four-colour palette and a description, followed by food and decor ideas such as an authentic vegetarian Bengali feast">
+      <img src="docs/images/ideas.jpg" alt="Ideas tagged Gemini: the themes 'Royal Tagore Twilight' and 'Ganges Ivory Elegance', each with a four-colour palette and a description, followed by food and decor ideas such as an authentic vegetarian Bengali feast and shola pith floral installations">
       <p><b>Ideas that fit your traditions.</b> Themes with colour palettes, food, decor and personal touches. Keep the ones you love; ask for different ones in your own words.</p>
     </td>
     <td width="50%" valign="top">
@@ -145,20 +157,20 @@ grandparents need wheelchair access."_
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <img src="docs/images/home-hindi.jpg" alt="The home page in Hindi: the headline 'हर उत्सव को रोशन करें' under string lights and lanterns, a box to describe the celebration, and the rangoli">
+      <img src="docs/images/home-hindi.jpg" alt="The home page in Hindi: the headline 'हर उत्सव के लिए एक योजनाकार।' with 'उत्सव' marked in marigold, a box to describe the celebration, and a plate that turns through the occasions">
       <p><b>English, Hindi and Bengali.</b> The whole interface switches language, and Gemini can write the plan in 16 languages.</p>
     </td>
     <td width="50%" valign="top">
-      <img src="docs/images/day-theme.jpg" alt="The same wedding invitation in the day theme: a cream page around the maroon and gold invitation card">
-      <p><b>Night and day themes.</b> Both are checked for colour contrast in the tests.</p>
+      <img src="docs/images/night-theme.jpg" alt="The same wedding plan in the night theme: warm ink black around the red border, the marigold toran and the countdown">
+      <p><b>Day and night themes.</b> The day theme follows the device's setting until you choose. Every colour pair, in every occasion's colours, is checked for contrast in the tests.</p>
     </td>
   </tr>
 </table>
 
 <p align="center">
-  <img src="docs/images/phones.jpg" width="100%" alt="Three phones: the home page in Bengali, the wedding plan as an invitation with its 112-day countdown, and the Copilot suggesting one change, guests from 300 to 350">
+  <img src="docs/images/phones.jpg" width="100%" alt="Three phones: the home page in Bengali, the wedding plan with its 112-day countdown, and the Durga Puja moment with a dhaki drumming before red curtains">
 </p>
-<p align="center"><sub>On a phone: the home page in Bengali, a wedding plan, and the Copilot suggesting a change.</sub></p>
+<p align="center"><sub>On a phone: the home page in Bengali, a wedding plan, and the Durga Puja moment.</sub></p>
 
 ## Features
 
@@ -170,6 +182,7 @@ grandparents need wheelchair access."_
 | **Timelines**                                | Tasks scheduled back from the date and brought forward when time is short, grouped by phase, with priorities, filters and a countdown. A calendar file with reminders, "Add to Google Calendar" on every task, and a printable day-of run sheet for multi-day celebrations.                                         |
 | **Vendor checklists**                        | What to book and by when, a status pipeline from "not started" to "paid", questions to ask and red flags, quote comparison (the chosen quote counts in the budget), and a Google Maps search for each category in your city.                                                                                        |
 | **Personalised ideas**                       | Themes with colour palettes, food, decor, entertainment, activities, personal touches, favours and greener choices, shaped by your traditions, diets and budget. Keep the ones you like; ask for different ones in your own words.                                                                                  |
+| **Made for the occasion**                    | The plan takes on its occasion's colours and decorations (wedding, Durga Puja, Ganpati, birthday, Diwali or another festival), and the first time it opens it plays a few seconds of that celebration.                                                                                                              |
 | **Beyond the brief**                         | A guest list with RSVPs and diets that feeds catering numbers (CSV import and export), an invitation writer for WhatsApp, email, cards and social posts, readiness at a glance, sync across devices, and read-only share links.                                                                                     |
 
 ## How Gemini is used
@@ -305,15 +318,15 @@ The full picture, including the data model and the request pipeline, is in
 | **Cloud Firestore**              | Synced plans and share links through the lightweight `firestore/lite` SDK, protected by Security Rules that are tested on the emulator.                                                           |
 | **Google Calendar**              | "Add to Google Calendar" on every task, plus a calendar file with reminders for any calendar app.                                                                                                 |
 | **Google Maps**                  | A search link for each vendor category in the event's city, so people find real vendors.                                                                                                          |
-| **Google Fonts**                 | Inter, Cormorant Garamond, Great Vibes, Noto Sans and Tiro for Devanagari and Bengali, self-hosted, with each script's font loaded only when it is used.                                          |
+| **Google Fonts**                 | Eczar and Mukta for Latin and Devanagari, Tiro Bangla and Noto Sans Bengali for Bengali, self-hosted; each script's font loads only when it is used.                                              |
 
 ## Quality
 
 | Check                                                                                             | Result                                                                                        |
 | ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| Unit, integration and component tests (Vitest, Testing Library, jest-axe, fast-check)             | **687 passing**; 97.4 % of lines and 89.1 % of branches covered, with per-layer gates in CI   |
+| Unit, integration and component tests (Vitest, Testing Library, jest-axe, fast-check)             | **792 passing**; 96.8 % of lines and 87.9 % of branches covered, with per-layer gates in CI   |
 | Firestore Security Rules and the Firebase adapter (emulator)                                      | **13 passing**                                                                                |
-| Browser journeys (Playwright on desktop and a phone, axe on every page, reflow at 390 and 320 px) | **38 passing**                                                                                |
+| Browser journeys (Playwright on desktop and a phone, axe on every page, reflow at 390 and 320 px) | **44 passing**                                                                                |
 | Gemini evaluation (six sample celebrations, real API)                                             | **6 of 6** pass every check                                                                   |
 | Lighthouse on the live site (simulated phone, three runs)                                         | Performance 85–91 · Accessibility 100 · Best practices 100 · SEO 100                          |
 | Static analysis                                                                                   | Strict TypeScript, typescript-eslint strict type-checked rules, jsx-a11y, CodeQL, secret scan |
@@ -331,7 +344,7 @@ dependency audit. Details in [docs/TESTING.md](docs/TESTING.md).
 | **Code quality**      | Strict TypeScript and strict type-checked lint rules; one shared schema contract for browser, server and Gemini; one pure function for every edit, so undo is free; a dependency-injected server; typed translations, where a missing string fails the build; documented decisions. | `src/shared/`, `eslint.config.js`, [ADRs](docs/adr/)                                     |
 | **Security**          | The key stays on the server; a strict CSP with no inline code or `eval`; rate limits and Firebase token checks on AI calls; prompt-injection containment and output cleaning; tested Firestore rules; a CSV-injection guard; a secret scan in CI.                                   | [SECURITY.md](SECURITY.md), `firestore.rules`, `src/server/security/`                    |
 | **Efficiency**        | AI suggests and code computes; sections stream in parallel; a response cache and per-model request budget for the free tier; a prerendered home page; the React Compiler memoises components; routes, languages, Firebase and dialogs load on demand; Brotli; fonts per script.     | [ARCHITECTURE.md](docs/ARCHITECTURE.md), [ADR 5](docs/adr/0005-prerender-and-hydrate.md) |
-| **Testing**           | 687 unit, integration and component tests (97.4 % of lines), 13 emulator tests for the Firestore rules and Firebase adapter, 38 browser journeys on desktop and phone, and an evaluation against real Gemini.                                                                       | [TESTING.md](docs/TESTING.md)                                                            |
+| **Testing**           | 792 unit, integration and component tests (96.8 % of lines), 13 emulator tests for the Firestore rules and Firebase adapter, 44 browser journeys on desktop and phone, and an evaluation against real Gemini.                                                                       | [TESTING.md](docs/TESTING.md)                                                            |
 | **Accessibility**     | WCAG 2.2 AA: landmarks, focus management, labelled forms with an error summary, native dialogs, live announcements, tested contrast in both themes, reflow down to 320 px, reduced motion; axe in component and browser tests, and a keyboard-only journey.                         | [ACCESSIBILITY.md](docs/ACCESSIBILITY.md)                                                |
 | **Google services**   | Gemini, Firebase Authentication, Cloud Firestore, Google Calendar, Google Maps and Google Fonts.                                                                                                                                                                                    | [Google services](#google-services)                                                      |
 
@@ -430,10 +443,12 @@ The threat model, with evidence for each item, is in [SECURITY.md](SECURITY.md).
 
 - Built to WCAG 2.2 AA: landmarks, a skip link, focus moved to each new page's heading, labelled
   forms with an error summary, native dialogs and announcements for streamed AI results.
-- Colour contrast is checked in code for both themes; motion stops with `prefers-reduced-motion`.
+- Colour contrast is checked in code for both themes and every occasion's colours; motion
+  stops with `prefers-reduced-motion`, and celebration moments never play then.
 - No sideways scrolling down to 320 px, checked in the browser tests.
-- The interface is in English, Hindi and Bengali, and AI-written text carries its own `lang`, so
-  screen readers pronounce it correctly.
+- The interface is in English, Hindi and Bengali. AI-written text, and Hindi or Bengali words
+  inside text in another language, carry their own `lang`, so screen readers pronounce them
+  correctly.
 
 Details in [docs/ACCESSIBILITY.md](docs/ACCESSIBILITY.md).
 
@@ -446,7 +461,7 @@ Details in [docs/ACCESSIBILITY.md](docs/ACCESSIBILITY.md).
 | [Security](SECURITY.md)                     | Threat model with evidence, data and privacy                       |
 | [Accessibility](docs/ACCESSIBILITY.md)      | WCAG 2.2 AA approach and how it is tested                          |
 | [Testing](docs/TESTING.md)                  | Test layers, coverage gates and how to run each suite              |
-| [Design](docs/DESIGN.md)                    | The festival-of-lights visual language, tokens and motion          |
+| [Design](docs/DESIGN.md)                    | Occasion looks, tokens, type, motion and the celebration moments   |
 | [Deployment](docs/DEPLOYMENT.md)            | Free deployment on Vercel and Firebase, step by step               |
 | [Decisions](docs/adr/)                      | Architecture decision records                                      |
 | [AGENTS.md](AGENTS.md)                      | Conventions for AI coding agents and new contributors              |
