@@ -3,7 +3,21 @@ import type { BriefExtraction } from '../../../shared/schemas/ai';
 import type { EventBrief } from '../../../shared/schemas/brief';
 import { quickParse } from '../../../shared/domain/quick-parse';
 
-/** A title the way a person would write it: the couple's or the birthday person's name if given. */
+/** Festivals a description may name, as Gemini would put them in "kind of celebration". */
+const FESTIVALS: readonly (readonly [RegExp, string])[] = [
+  [/diwali|deepavali|दिवाली|दीपावली|দীপাবলি/iu, 'Diwali'],
+  [/durga|pujo\b|दुर्गा|দুর্গা|পুজো/iu, 'Durga Puja'],
+  [/ganesh|ganpati|गणेश|गणपति|গণেশ|গণপতি/iu, 'Ganesh Chaturthi'],
+];
+
+export function mockFestival(text: string): string | undefined {
+  return FESTIVALS.find(([pattern]) => pattern.test(text))?.[1];
+}
+
+/**
+ * A title the way a person would write it: the couple's or the birthday person's name if given,
+ * otherwise the city and the festival or occasion.
+ */
 export function mockTitle(
   text: string,
   type: EventBrief['type'] | undefined,
@@ -17,6 +31,8 @@ export function mockTitle(
     return `${birthday[1]}'s ${birthday[2]} Birthday`;
   }
   if (!type || !city) return undefined;
+  const festival = type === 'wedding' || type === 'birthday' ? undefined : mockFestival(text);
+  if (festival) return `${city} ${festival}`;
   const occasion = {
     wedding: 'Wedding',
     birthday: 'Birthday',
@@ -43,6 +59,9 @@ export function mockBriefExtraction(
   };
   const title = mockTitle(text, quick.type, quick.city);
   if (title) brief.title = title;
+  const festival =
+    quick.type === 'wedding' || quick.type === 'birthday' ? undefined : mockFestival(text);
+  if (festival) brief.subtype = festival;
   const ritual = /(gaye holud|haldi|mehendi|mehndi|sangeet)[^,.;]*/i.exec(text);
   if (ritual) brief.traditions = ritual[0].trim();
   if (/wheelchair|elderly|grandparent|accessib/i.test(text)) {

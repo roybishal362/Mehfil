@@ -49,6 +49,20 @@ describe('mockBriefExtraction', () => {
     expect(result.missing).toEqual([]);
     expect(result.question).toBeUndefined();
     expect(result.brief.currency).toBe('INR');
+    expect(result.brief.subtype).toBeUndefined();
+  });
+
+  it('names the festival a description mentions, so the plan takes on its look', () => {
+    const result = mockBriefExtraction(
+      'Durga Puja for our para in Kolkata on 4 Oct 2027 for 800 people, budget ₹6 lakh',
+      TODAY,
+      'en',
+    );
+    expect(result.brief).toMatchObject({
+      type: 'community',
+      subtype: 'Durga Puja',
+      title: 'Kolkata Durga Puja',
+    });
   });
 });
 
@@ -57,7 +71,11 @@ describe('mockTitle', () => {
     ['A wedding of Ananya and Rohan in Kolkata', 'wedding', 'Kolkata', "Ananya & Rohan's Wedding"],
     ["Aarav's 7th birthday party", 'birthday', 'Pune', "Aarav's 7th Birthday"],
     ['A wedding in Kolkata', 'wedding', 'Kolkata', 'Kolkata Wedding'],
-    ['Durga Puja in Kolkata', 'community', 'Kolkata', 'Kolkata Celebration'],
+    ['Durga Puja in Kolkata', 'community', 'Kolkata', 'Kolkata Durga Puja'],
+    ['Our para’s pujo', 'community', 'Kolkata', 'Kolkata Durga Puja'],
+    ['Diwali dinner for the family', 'other', 'Jaipur', 'Jaipur Diwali'],
+    ['गणेश उत्सव', 'community', 'Mumbai', 'Mumbai Ganesh Chaturthi'],
+    ['A street fair', 'community', 'Delhi', 'Delhi Celebration'],
     ['Something', undefined, undefined, undefined],
   ] as const)('titles "%s"', (text, type, city, title) => {
     expect(mockTitle(text, type, city)).toBe(title);
