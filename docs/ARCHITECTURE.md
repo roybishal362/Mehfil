@@ -47,6 +47,7 @@ src/server/     Hono app (createApp with injected dependencies)
   middleware/   Request IDs, security headers, rate limits, Firebase ID token checks
   ai/           Provider interface, Gemini and mock providers, gateway, prompts
     tasks/      One module per AI task: brief, sections, invitation, Copilot (and its tools)
+    mock/       Deterministic demo answers, one module per task (demo mode and tests)
   routes/       /api/health, /api/config, /api/ai/*
   node.ts       Node entry (local, Docker); vercel.ts: Vercel function entry
 src/client/     React app
