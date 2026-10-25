@@ -10,15 +10,15 @@ or a Diwali evening each has its own colours, decorations and sounds.
 from its name, kind of celebration and traditions, in English, Hindi or Bengali. The plan page
 puts the mood on `<html data-mood>`, so buttons, tabs, links and the focus ring all follow it.
 
-| Mood            | Recognised from                                 | Accent (day) | The plan's header                                                  | Celebration moment                                                 |
-| --------------- | ----------------------------------------------- | ------------ | ------------------------------------------------------------------ | ------------------------------------------------------------------ |
-| Neutral         | Anything else; the home page                    | Ink black    | A fine gold rule inside the paper, alpana in the corners           | None                                                               |
-| Wedding         | The wedding type                                | Sindoor red  | A red border inside the paper (a lal paar) under a marigold toran  | The couple circles the havan fire for the pheras                   |
-| Durga Puja      | durga, navratri, pujo, दुर्गा, দুর্গা, শারদ …   | Durga red    | Bands of a garad sari with a gold thread, the dhak, falling shiuli | A dhaki drums, then curtains in a garad sari part to show the plan |
-| Ganpati         | ganesh, ganpati, chaturthi, गणेश, গণেশ …        | Saffron      | A slowly turning sunburst, a stack of modaks, a toran              | The sunburst, modaks and a shower of marigolds                     |
-| Birthday        | The birthday type                               | Rani pink    | Bunting and balloons                                               | Balloons rise and two cannons fire confetti                        |
-| Diwali          | diwali, deepavali, kali puja, दिवाली, দীপাবলি … | Brass        | A night sky in both themes, string lights and paper kandils        | Rockets burst over a row of diyas lit from the middle outwards     |
-| Other festivals | Community events                                | Marigold     | A marigold toran                                                   | A ring of marigolds around a diya                                  |
+| Mood            | Recognised from                                 | Accent (day) | The plan's header                                                   | Celebration moment                                                 |
+| --------------- | ----------------------------------------------- | ------------ | ------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Neutral         | Anything else; the home page                    | Ink black    | A fine gold rule inside the paper, alpana corners, a gift           | None                                                               |
+| Wedding         | The wedding type                                | Sindoor red  | A red border (a lal paar) under a marigold toran, a ring, flowers   | The couple circles the havan fire for the pheras                   |
+| Durga Puja      | durga, navratri, pujo, दुर्गा, দুর্গা, শারদ …   | Durga red    | Bands of a garad sari, falling shiuli, a lotus and a hibiscus       | A dhaki drums, then curtains in a garad sari part to show the plan |
+| Ganpati         | ganesh, ganpati, chaturthi, गणेश, গণেশ …        | Saffron      | A slowly turning sunburst, a toran, an elephant and a coconut       | An elephant under the sunburst and a shower of marigolds           |
+| Birthday        | The birthday type                               | Rani pink    | Bunting, balloons and a cake                                        | Balloons rise and two cannons fire confetti                        |
+| Diwali          | diwali, deepavali, kali puja, दिवाली, দীপাবলি … | Brass        | A night sky in both themes, string lights, hanging lanterns, a diya | Rockets burst over a row of diyas lit from the middle outwards     |
+| Other festivals | Community events                                | Marigold     | A marigold toran, a kite and a lantern                              | A ring of marigolds around a diya                                  |
 
 ## Themes
 
@@ -51,9 +51,23 @@ four small font files.
 
 ## Motifs
 
-Everything is drawn in code (SVG and CSS), so there are no images to download. Repeated motifs
-(marigolds, mango leaves, shiuli, the diya, kandils, modaks and balloons) are SVG symbols defined
-once (`src/client/motifs/svg.tsx`) and placed with `<use>`. Colour comes from `currentColor` or
+**Objects are 3D pictures.** Diyas, marigolds, the lotus, Ganpati's elephant, the ring, the cake,
+balloons, lanterns and the rest come from Microsoft's
+[Fluent Emoji](https://github.com/microsoft/fluentui-emoji) 3D set (MIT License, kept in
+`src/client/art/LICENSE`). Each is a WebP at 256 pixels with a 96-pixel copy for small sizes:
+50 files, 200 KB in all, and a page fetches only the ones it shows. The `Art` component draws
+them, always with empty alt text, because the words beside a picture carry its meaning.
+
+- **The home page's scene** (`CelebrationPlate`) is a puja thali with a lit diya and the things
+  each celebration brings floating around it. It is one image with a spoken description; with a
+  mouse, its objects shift with depth as the pointer moves.
+- **Each plan's header** has a small cluster of objects for its occasion (`MoodArt`).
+- **Pictures on the first screen wait for the page to load** (`afterLoad`): they hold their space,
+  so nothing jumps, and fade in once the text and fonts are in. The rest load lazily.
+
+**Patterns are drawn in code** (SVG and CSS): the toran, bunting, string lights, the sunburst,
+falling shiuli, alpana corners and the wedding couple and dhaki of the moments. A toran's
+marigolds are the same 3D picture placed with `<image>`. Colour comes from `currentColor` or
 classes, never inline styles, because the Content-Security-Policy forbids them.
 
 A row of diyas measures each plan: one per part (budget, timeline, vendors, guests, ideas, the
@@ -65,16 +79,18 @@ day itself), lit once that part has begun, with the whole picture as its accessi
   loaded, so the first paint is not competing with them, and stop under
   `prefers-reduced-motion`. Pivots use `transform-box: fill-box`, so no element needs an inline
   style.
-- **The home page's plate** turns through the occasions in CSS alone.
+- **The home page's scene** floats, each object at its own pace, and follows the pointer with
+  depth.
 - **Cards rise into view** as you scroll, driven by CSS scroll timelines: no script, nothing can
   flash, and anything on screen at load is already in place.
 - **Pages cross-fade** with the View Transitions API (`src/client/app/view-transition.ts`).
 - **The countdown counts up** and the diyas light with a small flare.
 - **Celebration moments** (`src/client/features/moments`) play the first time a plan opens on a
-  device, for three to four seconds. They are loaded only when they play (about 8 KB), end on
-  Skip, a click or any key, return focus to the plan's heading, never play for people who ask for
-  reduced motion, and can be replayed with "Celebrate again". The Diwali rockets and birthday
-  confetti are a small canvas particle system with seeded, tested physics (`show.ts`).
+  device, for three to four seconds. They are loaded only when they play (about 10 KB
+  compressed, plus their pictures), end on Skip, a click or any key, return focus to the plan's
+  heading, never play for people who ask for reduced motion, and can be replayed with "Celebrate
+  again". The Diwali rockets and birthday confetti are a small canvas particle system with
+  seeded, tested physics (`show.ts`).
 
 Nothing that conveys information moves; every animation is decoration on top of content that
 reads the same without it.

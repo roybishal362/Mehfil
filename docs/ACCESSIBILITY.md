@@ -30,8 +30,9 @@ Bengali. Automated checks run at three levels, and the patterns below are used t
   returns to the button that opened them.
 - Status is never shown by colour alone: pills, checkboxes and badges always carry text or icons.
 - Charts and decorative drawings are either hidden from assistive technology or given a text
-  equivalent (the row of diyas reads out each part's progress; the home page's turning plate is
-  one labelled picture).
+  equivalent (the row of diyas reads out each part's progress; the home page's 3D scene is one
+  labelled picture). Every 3D picture has empty alt text, because the words beside it carry its
+  meaning.
 - Celebration moments are decorative and hidden from assistive technology. They never take
   focus; Skip, a click or any key ends one at once, so keyboard focus never lands behind it, and
   if focus was on its Skip button it returns to the plan's heading.

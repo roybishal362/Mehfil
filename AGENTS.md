@@ -46,6 +46,9 @@ what every automated test uses.
     `src/shared/domain/mood.ts`; give a new mood its tokens in `tokens.css` (the contrast test
     covers them), its header art in `MoodArt.tsx` and, if it has one, a moment in
     `features/moments`.
+11. **Pictures are decoration.** 3D artwork lives in `src/client/art` as a 256-pixel WebP and a
+    `-sm` copy; add its name to `ART_NAMES` and draw it with `<Art>`, which gives it empty alt
+    text. Pictures on the first screen take `afterLoad`, so text and fonts arrive first.
 
 ## Writing style
 
