@@ -25,6 +25,9 @@ export interface AppDeps {
   now?: () => number;
 }
 
+/** How many users' AI allowance one address shares between its signed-in users. */
+const ADDRESS_SHARE = 4;
+
 export function createApp({
   config,
   logger,
@@ -40,6 +43,13 @@ export function createApp({
   const aiLimiter = new TokenBucketLimiter({
     capacity: config.ai.rateLimit,
     refillPerSecond: config.ai.rateLimit / 600,
+    now,
+  });
+  // Every signed-in user at one address shares four users' worth, so new anonymous accounts
+  // cannot multiply an address's AI allowance (offices and colleges still have room).
+  const aiAddressLimiter = new TokenBucketLimiter({
+    capacity: config.ai.rateLimit * ADDRESS_SHARE,
+    refillPerSecond: (config.ai.rateLimit * ADDRESS_SHARE) / 600,
     now,
   });
 
@@ -79,6 +89,7 @@ export function createApp({
       limiter: aiLimiter,
       clientIpMode: config.clientIp,
       cost: (c) => AI_ROUTE_COST[c.req.path.split('/').pop() ?? ''] ?? 1,
+      addressLimiter: aiAddressLimiter,
     }),
   );
   app.route('/api/ai', aiRoutes(gateway, logger));

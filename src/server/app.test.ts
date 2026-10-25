@@ -359,6 +359,24 @@ describe('sign-in for AI routes', () => {
     expect(other.status).toBe(200);
     await other.text();
   });
+
+  it('caps what one address can spend, however many accounts it signs in with', async () => {
+    const shared = app();
+    const plan = (uid: string) =>
+      shared.request('/api/ai/personalize', post(personalizeBody(['ideas']), signedIn(uid)));
+    // Four users' worth of plans (6 each) fit in one address's shared allowance…
+    for (const uid of ['u1', 'u2', 'u3', 'u4']) {
+      for (let i = 0; i < 6; i += 1) {
+        const res = await plan(uid);
+        expect(res.status).toBe(200);
+        await res.text();
+      }
+    }
+    // …and a fresh account from the same address gets no more.
+    const fresh = await plan('u5');
+    expect(fresh.status).toBe(429);
+    expect(Number(fresh.headers.get('Retry-After'))).toBeGreaterThan(0);
+  });
 });
 
 describe('AI routes', () => {

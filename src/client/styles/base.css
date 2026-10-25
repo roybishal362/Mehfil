@@ -108,7 +108,10 @@ a:not([class]):hover {
   visibility: hidden;
 }
 
-#main:focus {
+#main:focus,
+[data-route-focus]:focus {
+  /* Headings take focus after navigation so screen readers start there; they are not
+     controls, so they need no focus ring. */
   outline: none;
 }
 

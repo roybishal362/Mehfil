@@ -38,6 +38,14 @@ what every automated test uses.
    whitelist (`src/shared/export/share.ts`).
 8. **Tests come with changes.** Unit tests sit next to the code (`*.test.ts(x)`); journeys live
    in `e2e/`; rules tests in `tests/`.
+9. **Motion is decoration.** Nothing that carries information moves, and everything stops under
+   `prefers-reduced-motion` (moments never play then). Loops get the `.motion` class so they wait
+   for the page to load. Name the keyframes in every `animation` shorthand: the CSS minifier turns
+   a shorthand without a name into `animation: none`.
+10. **Occasions come from data.** A plan's look comes from `moodFor()` in
+    `src/shared/domain/mood.ts`; give a new mood its tokens in `tokens.css` (the contrast test
+    covers them), its header art in `MoodArt.tsx` and, if it has one, a moment in
+    `features/moments`.
 
 ## Writing style
 
