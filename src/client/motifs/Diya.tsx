@@ -31,7 +31,7 @@ export function DiyaShape({ lit }: { lit: boolean }) {
   );
 }
 
-export function Diya({ lit = true }: { lit?: boolean }) {
+function Diya({ lit = true }: { lit?: boolean }) {
   return (
     <svg viewBox="-30 -64 60 76" aria-hidden="true" focusable="false">
       <DiyaShape lit={lit} />

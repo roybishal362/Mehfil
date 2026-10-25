@@ -193,7 +193,7 @@ export const SECTION_DATA_SCHEMAS = {
 // Model output: brief extraction and invitations
 // ------------------------------------------------------------------------------------------
 
-export const BRIEF_KEY_FIELDS = ['type', 'date', 'city', 'guestCount', 'budget'] as const;
+const BRIEF_KEY_FIELDS = ['type', 'date', 'city', 'guestCount', 'budget'] as const;
 
 export const BriefExtraction = z.object({
   brief: z
@@ -271,7 +271,7 @@ export type InvitationDraft = z.infer<typeof InvitationDraft>;
 // AI gateway API: requests and responses
 // ------------------------------------------------------------------------------------------
 
-export const UiLanguage = z.enum(['en', 'hi', 'bn']);
+const UiLanguage = z.enum(['en', 'hi', 'bn']);
 export type UiLanguage = z.infer<typeof UiLanguage>;
 
 export const BriefRequest = z.object({

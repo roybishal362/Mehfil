@@ -59,7 +59,7 @@ async function expectNoSidewaysScrolling(page: Page): Promise<void> {
   await page.setViewportSize(original);
 }
 
-export const WEDDING =
+const WEDDING =
   'A Bengali wedding of Ananya and Rohan in Kolkata on 14 Feb 2027 for about 300 guests. ' +
   'Budget ₹18 lakh, mostly vegetarian, and my grandparents need wheelchair access.';
 

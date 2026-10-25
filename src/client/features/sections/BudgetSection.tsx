@@ -14,6 +14,7 @@ import { announce, toast } from '../../app/feedback';
 import { AmountInput } from '../../components/AmountInput';
 import { Field } from '../../components/Field';
 import { useI18n } from '../../i18n';
+import { writtenIn } from '../../i18n/written-in';
 import { useEdit } from '../plan/use-edit';
 import { SectionHead } from './SectionHead';
 
@@ -126,7 +127,7 @@ export function BudgetSection({ plan }: { plan: EventPlan }) {
               {t.budgetSection.levels[budget.assessment.level]}
             </span>
           </header>
-          <p lang={plan.brief.language}>{budget.assessment.note}</p>
+          <p {...writtenIn(plan.brief.language)}>{budget.assessment.note}</p>
         </div>
       )}
 
@@ -223,7 +224,7 @@ export function BudgetSection({ plan }: { plan: EventPlan }) {
                         {line.source === 'ai' && <span className="pill pill--ai">Gemini</span>}
                       </span>
                       {line.rationale && (
-                        <span className="line-why" lang={plan.brief.language}>
+                        <span className="line-why" {...writtenIn(plan.brief.language)}>
                           {line.rationale}
                         </span>
                       )}
@@ -320,7 +321,7 @@ export function BudgetSection({ plan }: { plan: EventPlan }) {
             </span>
             <h3>{t.budgetSection.tips}</h3>
           </header>
-          <ul className="tips" lang={plan.brief.language}>
+          <ul className="tips" {...writtenIn(plan.brief.language)}>
             {budget.savingTips.map((tip) => (
               <li key={tip.id}>{tip.tip}</li>
             ))}

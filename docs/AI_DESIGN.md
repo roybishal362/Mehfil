@@ -67,7 +67,7 @@ schemas the app uses (`src/server/ai/json-schema.ts` keeps only the keywords Gem
   descriptions in Hindi and Bengali, a Jain dinner and a short-notice party. On 24 October 2026
   every sample passed every check: valid structured answers from Gemini for all four sections,
   budgets that add up, dates before the event, no contact details, diets respected and text in
-  the requested language. `evals/models.ts` times candidate models on the heaviest task.
+  the requested language. `npm run eval:models` (`evals/models.ts`) times candidate models on the heaviest task.
 
 - `src/server/app.test.ts`: the whole API with a scripted provider, including hostile model
   output (bad JSON, out-of-range values, injected instructions, invented phone numbers).

@@ -6,7 +6,7 @@ import type { EventPlan } from '../../../shared/schemas/plan';
 import type { Formatters, Messages } from '../../i18n';
 import type { RangoliPetal } from '../../motifs/Rangoli';
 
-export const PART_COLORS: Readonly<Record<ProgressPart, string>> = {
+const PART_COLORS: Readonly<Record<ProgressPart, string>> = {
   budget: '#F28C28',
   timeline: '#E0457B',
   vendors: '#2CB6B0',
@@ -15,7 +15,7 @@ export const PART_COLORS: Readonly<Record<ProgressPart, string>> = {
   dayOf: '#F7B500',
 };
 
-export function partLabel(part: ProgressPart, t: Messages): string {
+function partLabel(part: ProgressPart, t: Messages): string {
   return part === 'dayOf' ? t.sections.dayOf : t.sections[part];
 }
 

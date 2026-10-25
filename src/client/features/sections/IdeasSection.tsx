@@ -8,6 +8,7 @@ import type { EventPlan, Idea } from '../../../shared/schemas/plan';
 import { IDEA_KINDS, type IdeaKind } from '../../../shared/schemas/primitives';
 import { announce, toast } from '../../app/feedback';
 import { useI18n } from '../../i18n';
+import { writtenIn } from '../../i18n/written-in';
 import { refineSection } from '../../state/ai';
 import { useEdit } from '../plan/use-edit';
 import { SectionHead } from './SectionHead';
@@ -29,7 +30,7 @@ function IdeaCard({ plan, idea }: { plan: EventPlan; idea: Idea }) {
           </span>
         )}
       </div>
-      <h3 lang={plan.brief.language}>{idea.title}</h3>
+      <h3 {...writtenIn(plan.brief.language)}>{idea.title}</h3>
       {idea.palette && idea.palette.length > 0 && (
         <ul className="palette" aria-label={t.ideasSection.palette(String(idea.palette.length))}>
           {idea.palette.map((color) => (
@@ -37,7 +38,7 @@ function IdeaCard({ plan, idea }: { plan: EventPlan; idea: Idea }) {
           ))}
         </ul>
       )}
-      <p lang={plan.brief.language}>{idea.description}</p>
+      <p {...writtenIn(plan.brief.language)}>{idea.description}</p>
       <div className="idea-actions">
         <button
           type="button"

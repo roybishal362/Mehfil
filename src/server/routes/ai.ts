@@ -26,7 +26,7 @@ import type { Logger } from '../logger';
 import type { AppEnv } from '../types';
 
 /** User-facing message for a failed AI call (never the upstream error text). */
-export function aiFailureMessage(error: AiError): string {
+function aiFailureMessage(error: AiError): string {
   switch (error.kind) {
     case 'blocked':
       return 'Gemini could not answer that request. Try rephrasing it.';

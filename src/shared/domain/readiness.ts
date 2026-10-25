@@ -22,7 +22,7 @@ export interface Readiness {
   attention: AttentionItem[];
 }
 
-export const READINESS_WEIGHTS = { tasks: 0.5, vendors: 0.3, budget: 0.2 } as const;
+const READINESS_WEIGHTS = { tasks: 0.5, vendors: 0.3, budget: 0.2 } as const;
 
 export function readiness(plan: EventPlan, today: string): Readiness {
   const tasks = taskStats(plan.tasks, today).progress;

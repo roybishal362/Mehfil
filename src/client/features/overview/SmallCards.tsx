@@ -6,6 +6,7 @@ import { googleMapsSearchLink, vendorSearchQuery } from '../../../shared/export/
 import type { EventPlan } from '../../../shared/schemas/plan';
 import { paths } from '../../app/routing';
 import { useI18n } from '../../i18n';
+import { writtenIn } from '../../i18n/written-in';
 
 const LIKELIHOOD_PILL = { low: 'pill--ok', medium: 'pill--warn', high: 'pill--danger' } as const;
 
@@ -97,8 +98,8 @@ export function ThemeCard({ plan }: { plan: EventPlan }) {
             </div>
           )}
           <div>
-            <h3>{theme.title}</h3>
-            <p>{theme.description}</p>
+            <h3 {...writtenIn(plan.brief.language)}>{theme.title}</h3>
+            <p {...writtenIn(plan.brief.language)}>{theme.description}</p>
           </div>
         </div>
       ) : (
@@ -126,12 +127,14 @@ export function RisksCard({ plan }: { plan: EventPlan }) {
         {plan.risks.map((risk) => (
           <li key={risk.id}>
             <div>
-              <p className="t">{risk.title}</p>
+              <p className="t" {...writtenIn(plan.brief.language)}>
+                {risk.title}
+              </p>
               <p className="m">
                 <span className={`pill ${LIKELIHOOD_PILL[risk.likelihood]}`}>
                   {t.overview.likelihood[risk.likelihood]}
                 </span>
-                <span>{risk.mitigation}</span>
+                <span {...writtenIn(plan.brief.language)}>{risk.mitigation}</span>
               </p>
             </div>
           </li>
@@ -153,7 +156,7 @@ export function SummaryCard({ plan }: { plan: EventPlan }) {
         <h2 id="summary-title">{t.overview.summaryTitle}</h2>
         <span className="pill pill--ai">Gemini</span>
       </header>
-      <p className="summary-text" lang={plan.brief.language}>
+      <p className="summary-text" {...writtenIn(plan.brief.language)}>
         {plan.summary}
       </p>
     </article>

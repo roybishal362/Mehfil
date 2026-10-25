@@ -5,7 +5,7 @@
  */
 
 /** Google origins that Firebase Authentication (Google sign-in) and Firestore need. */
-export const FIREBASE_ORIGINS = {
+const FIREBASE_ORIGINS = {
   scripts: ['https://apis.google.com'],
   connect: [
     'https://identitytoolkit.googleapis.com',

@@ -8,7 +8,7 @@ import { en } from './en';
 import { formatters, type Formatters } from './format';
 import { isLocale, type Locale, type Messages } from './types';
 
-export { LOCALES, LOCALE_NAMES, isLocale, type Locale, type Messages } from './types';
+export { LOCALES, LOCALE_NAMES, type Locale, type Messages } from './types';
 export type { Formatters } from './format';
 
 const STORAGE_KEY = 'mehfil:lang';

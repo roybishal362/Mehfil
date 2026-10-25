@@ -14,6 +14,7 @@ import { parseAmount } from '../../../shared/utils/money';
 import { toast } from '../../app/feedback';
 import { Field } from '../../components/Field';
 import { useI18n } from '../../i18n';
+import { writtenIn } from '../../i18n/written-in';
 import { useEdit } from '../plan/use-edit';
 import { SectionHead } from './SectionHead';
 
@@ -177,7 +178,7 @@ function VendorCard({ plan, vendor }: { plan: EventPlan; vendor: Vendor }) {
       )}
 
       {(vendor.questions.length > 0 || vendor.redFlags.length > 0 || vendor.tip) && (
-        <details className="advice" lang={plan.brief.language}>
+        <details className="advice" {...writtenIn(plan.brief.language)}>
           <summary>{t.vendorsSection.advice}</summary>
           {vendor.questions.length > 0 && (
             <>

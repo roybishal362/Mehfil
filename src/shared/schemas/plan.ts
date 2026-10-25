@@ -59,14 +59,14 @@ export const BudgetLine = z.object({
 });
 export type BudgetLine = z.infer<typeof BudgetLine>;
 
-export const SavingTip = z.object({
+const SavingTip = z.object({
   id: Id,
   tip: requiredText(220),
   category: BudgetCategory.optional(),
 });
 export type SavingTip = z.infer<typeof SavingTip>;
 
-export const BudgetAssessment = z.object({
+const BudgetAssessment = z.object({
   level: z.enum(['comfortable', 'tight', 'very_tight']),
   note: requiredText(260),
 });
@@ -172,14 +172,14 @@ export const Risk = z.object({
 });
 export type Risk = z.infer<typeof Risk>;
 
-export const SectionMeta = z.object({
+const SectionMeta = z.object({
   status: z.enum(['template', 'ai', 'failed']),
   model: text(60).optional(),
   updatedAt: z.iso.datetime().optional(),
 });
 export type SectionMeta = z.infer<typeof SectionMeta>;
 
-export const AiMeta = z.object({
+const AiMeta = z.object({
   sections: z.record(AiSection, SectionMeta),
 });
 export type AiMeta = z.infer<typeof AiMeta>;

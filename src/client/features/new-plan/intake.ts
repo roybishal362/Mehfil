@@ -12,7 +12,7 @@ import { postJson } from '../../lib/api';
 
 export type DraftBrief = Partial<EventBriefInput>;
 
-export function draftFromQuickParse(quick: QuickParse): DraftBrief {
+function draftFromQuickParse(quick: QuickParse): DraftBrief {
   return {
     ...(quick.type ? { type: quick.type } : {}),
     ...(quick.date ? { date: quick.date } : {}),

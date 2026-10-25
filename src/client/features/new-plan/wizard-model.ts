@@ -75,7 +75,7 @@ export type WizardError = keyof Messages['wizard']['errors'];
 export type WizardErrors = Partial<Record<WizardField, WizardError>>;
 
 /** The fields each step checks before moving on. */
-export const STEP_FIELDS: readonly (readonly WizardField[])[] = [
+const STEP_FIELDS: readonly (readonly WizardField[])[] = [
   ['type', 'title', 'date', 'endDate', 'city'],
   ['guestCount', 'budget'],
   [],

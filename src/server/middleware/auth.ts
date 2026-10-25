@@ -10,7 +10,7 @@ import { createRemoteJWKSet, jwtVerify, type JWTVerifyGetKey } from 'jose';
 import { unauthorized } from '../errors';
 import type { AppEnv } from '../types';
 
-export const GOOGLE_JWKS_URL =
+const GOOGLE_JWKS_URL =
   'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com';
 
 export interface VerifiedUser {

@@ -50,7 +50,7 @@ export function ShareButton({ plan }: { plan: EventPlan }) {
 
 type Busy = 'create' | 'update' | 'stop' | null;
 
-export function ShareDialog({ plan, onClose }: { plan: EventPlan; onClose: () => void }) {
+function ShareDialog({ plan, onClose }: { plan: EventPlan; onClose: () => void }) {
   const { t, f } = useI18n();
   const link = useShareLinks((state) => state.links[plan.id]);
   const [includeBudget, setIncludeBudget] = useState(link?.includeBudget ?? true);

@@ -80,6 +80,23 @@ describe('PlanPage', () => {
     expect(screen.getByText('Shubho Alo')).toBeInTheDocument();
   });
 
+  it('marks AI-written text in the plan language, right-to-left for Urdu', async () => {
+    const user = userEvent.setup();
+    mockApi({
+      '/api/ai/personalize': () =>
+        ndjsonResponse([
+          { type: 'section', section: 'ideas', data: ideasData, meta: META },
+          { type: 'done', ms: 10 },
+        ]),
+    });
+    const plan = seedPlan({ language: 'ur' });
+    renderAt(<PlanPage params={{ id: plan.id }} />, `/plan/${plan.id}`);
+    await user.click(screen.getByRole('button', { name: 'Tailor with Gemini' }));
+    const theme = await screen.findByText('Shubho Alo');
+    expect(theme).toHaveAttribute('lang', 'ur');
+    expect(theme).toHaveAttribute('dir', 'rtl');
+  });
+
   it('asks the Copilot and applies its proposal', async () => {
     const user = userEvent.setup();
     mockApi({

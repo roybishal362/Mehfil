@@ -23,7 +23,7 @@ export interface PlanContext {
 }
 
 /** Template tasks scheduled backward from the event date, in the plan's language. */
-export function createTasks(template: EventTemplate, brief: EventBrief, ctx: PlanContext): Task[] {
+function createTasks(template: EventTemplate, brief: EventBrief, ctx: PlanContext): Task[] {
   const dates = scheduleLeadTimes(
     template.tasks.map((t) => t.daysBefore),
     brief.date,

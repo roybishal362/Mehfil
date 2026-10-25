@@ -4,7 +4,7 @@
  * random bits, so it cannot be guessed; the owner can refresh the copy or turn the link off.
  * Which plans are shared is remembered on this device (share-links.ts).
  */
-export { SHARES_KEY, forgetShareLinks, useShareLinks, type ShareLink } from './share-links';
+export { SHARES_KEY, useShareLinks, type ShareLink } from './share-links';
 import { SHARE_TTL_DAYS, SharedPlan, ShareId, toShareSnapshot } from '../../shared/export/share';
 import type { EventPlan } from '../../shared/schemas/plan';
 import { omitKey } from '../../shared/utils/collections';

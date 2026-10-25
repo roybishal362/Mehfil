@@ -28,7 +28,7 @@ export function weddingBrief(overrides: Partial<EventBriefInput> = {}): EventBri
   return EventBrief.parse({ ...weddingBriefInput, ...overrides });
 }
 
-export function testContext(today = TODAY): PlanContext {
+function testContext(today = TODAY): PlanContext {
   return { today, now: NOW, makeId: sequentialIds() };
 }
 

@@ -60,7 +60,7 @@ export function parseCsv(input: string): string[][] {
   return rows.filter((r) => r.some((c) => c.trim() !== ''));
 }
 
-export const GUEST_CSV_HEADERS = [
+const GUEST_CSV_HEADERS = [
   'Name',
   'Group',
   'Party size',

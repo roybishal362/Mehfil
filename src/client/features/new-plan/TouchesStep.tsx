@@ -2,6 +2,7 @@
 import { DIETARY_NEEDS, OUTPUT_LANGUAGES } from '../../../shared/schemas/primitives';
 import { Field } from '../../components/Field';
 import { useI18n } from '../../i18n';
+import { writtenIn } from '../../i18n/written-in';
 import type { StepProps } from './step-props';
 import { LANGUAGE_ENDONYMS, STYLE_KEYS, type WizardValues } from './wizard-model';
 
@@ -95,7 +96,7 @@ export function TouchesStep({ values, set }: Pick<StepProps, 'values' | 'set'>) 
               }}
             >
               {OUTPUT_LANGUAGES.map((code) => (
-                <option key={code} value={code} lang={code}>
+                <option key={code} value={code} {...writtenIn(code)}>
                   {LANGUAGE_ENDONYMS[code]}
                 </option>
               ))}

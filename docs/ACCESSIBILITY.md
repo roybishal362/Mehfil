@@ -50,7 +50,7 @@ Bengali. Automated checks run at three levels, and the patterns below are used t
 
 - The interface is available in English, Hindi and Bengali; `<html lang>` follows the choice, and
   AI-written text carries the `lang` of the language it was written in, so screen readers switch
-  pronunciation.
+  pronunciation. Text in Urdu or Arabic is also set right-to-left (`dir="rtl"`).
 - Language names in the switcher are written in their own script and marked with `lang`.
 - Typography is tuned per script: Devanagari and Bengali get more line height and no letter
   spacing on headings.

@@ -16,6 +16,7 @@ import { OUTPUT_LANGUAGES, type OutputLanguage } from '../../../shared/schemas/p
 import { toast } from '../../app/feedback';
 import { Field } from '../../components/Field';
 import { useI18n } from '../../i18n';
+import { writtenIn } from '../../i18n/written-in';
 import { postJson } from '../../lib/api';
 import { LANGUAGE_ENDONYMS } from '../new-plan/wizard-model';
 
@@ -125,7 +126,7 @@ export function InvitationWriter({ plan }: { plan: EventPlan }) {
               }}
             >
               {OUTPUT_LANGUAGES.map((code) => (
-                <option key={code} value={code} lang={code}>
+                <option key={code} value={code} {...writtenIn(code)}>
                   {LANGUAGE_ENDONYMS[code]}
                 </option>
               ))}
@@ -168,7 +169,7 @@ export function InvitationWriter({ plan }: { plan: EventPlan }) {
           {variants.map((variant) => (
             <li key={variant.label} className="variant">
               <h4>{variant.label}</h4>
-              <p lang={language}>{variant.text}</p>
+              <p {...writtenIn(language)}>{variant.text}</p>
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"

@@ -104,11 +104,11 @@ export const PRIORITIES = ['high', 'medium', 'low'] as const;
 export const Priority = z.enum(PRIORITIES);
 export type Priority = z.infer<typeof Priority>;
 
-export const TASK_STATUSES = ['todo', 'in_progress', 'done'] as const;
+const TASK_STATUSES = ['todo', 'in_progress', 'done'] as const;
 export const TaskStatus = z.enum(TASK_STATUSES);
 export type TaskStatus = z.infer<typeof TaskStatus>;
 
-export const TASK_CATEGORIES = [
+const TASK_CATEGORIES = [
   'planning',
   'venue',
   'vendors',
@@ -150,16 +150,16 @@ export const IDEA_KINDS = [
 export const IdeaKind = z.enum(IDEA_KINDS);
 export type IdeaKind = z.infer<typeof IdeaKind>;
 
-export const COST_LEVELS = ['low', 'medium', 'high'] as const;
+const COST_LEVELS = ['low', 'medium', 'high'] as const;
 export const CostLevel = z.enum(COST_LEVELS);
 export type CostLevel = z.infer<typeof CostLevel>;
 
-export const LIKELIHOODS = ['low', 'medium', 'high'] as const;
+const LIKELIHOODS = ['low', 'medium', 'high'] as const;
 export const Likelihood = z.enum(LIKELIHOODS);
 export type Likelihood = z.infer<typeof Likelihood>;
 
 /** Where a piece of the plan came from: the built-in template, Gemini, or the user. */
-export const SOURCES = ['template', 'ai', 'user'] as const;
+const SOURCES = ['template', 'ai', 'user'] as const;
 export const Source = z.enum(SOURCES);
 export type Source = z.infer<typeof Source>;
 

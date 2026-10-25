@@ -10,6 +10,7 @@ import { toast } from '../../app/feedback';
 import { CommitInput } from '../../components/CommitInput';
 import { Field } from '../../components/Field';
 import { useI18n } from '../../i18n';
+import { writtenIn } from '../../i18n/written-in';
 import { useEdit } from '../plan/use-edit';
 import { SectionHead } from './SectionHead';
 
@@ -234,7 +235,7 @@ export function DayOfSection({ plan }: { plan: EventPlan }) {
             </span>
             <h3>{t.dayOfSection.planB}</h3>
           </header>
-          <ul className="tasks" lang={plan.brief.language}>
+          <ul className="tasks" {...writtenIn(plan.brief.language)}>
             {plan.risks.map((risk) => (
               <li key={risk.id}>
                 <div className="min-w-0 flex-1">

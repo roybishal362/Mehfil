@@ -20,7 +20,7 @@ import {
 } from './primitives';
 
 /** Brief fields that can be edited in place. Budget and guest count have dedicated operations. */
-export const BriefPatch = PartialBrief.omit({ type: true, budget: true, guestCount: true });
+const BriefPatch = PartialBrief.omit({ type: true, budget: true, guestCount: true });
 export type BriefPatch = z.infer<typeof BriefPatch>;
 
 const TaskInput = z.object({

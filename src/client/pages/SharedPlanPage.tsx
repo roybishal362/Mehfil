@@ -9,6 +9,7 @@ import type { SharedPlan } from '../../shared/export/share';
 import { paths, useDocumentTitle } from '../app/routing';
 import { loadSharedPlan, type SharedPlanResult } from '../cloud/shares';
 import { useI18n } from '../i18n';
+import { writtenIn } from '../i18n/written-in';
 
 type LoadState = { kind: 'loading' } | { kind: 'error' } | SharedPlanResult;
 
@@ -131,7 +132,7 @@ function SharedPlanView({ plan }: { plan: SharedPlan }) {
 
       {plan.summary && (
         <section className="card shared-summary">
-          <p lang={plan.language}>{plan.summary}</p>
+          <p {...writtenIn(plan.language)}>{plan.summary}</p>
         </section>
       )}
 
@@ -201,8 +202,8 @@ function SharedPlanView({ plan }: { plan: SharedPlan }) {
             {plan.ideas.map((idea, index) => (
               <li key={`${idea.kind}-${String(index)}`} className="card">
                 <p className="eyebrow smallcaps">{t.ideaKinds[idea.kind]}</p>
-                <h3 lang={plan.language}>{idea.title}</h3>
-                <p lang={plan.language}>{idea.description}</p>
+                <h3 {...writtenIn(plan.language)}>{idea.title}</h3>
+                <p {...writtenIn(plan.language)}>{idea.description}</p>
               </li>
             ))}
           </ul>
@@ -218,7 +219,7 @@ function SharedPlanView({ plan }: { plan: SharedPlan }) {
                 <span className="tabular shared-when">
                   {f.dateShort(slot.day)}, {f.time(slot.time)}
                 </span>
-                <span lang={plan.language}>{slot.title}</span>
+                <span {...writtenIn(plan.language)}>{slot.title}</span>
               </li>
             ))}
           </ol>
@@ -231,9 +232,9 @@ function SharedPlanView({ plan }: { plan: SharedPlan }) {
           <ul className="shared-risks">
             {plan.risks.map((risk, index) => (
               <li key={`${risk.title}-${String(index)}`}>
-                <b lang={plan.language}>{risk.title}</b>
+                <b {...writtenIn(plan.language)}>{risk.title}</b>
                 <span className="pill pill--plain">{t.overview.likelihood[risk.likelihood]}</span>
-                <p lang={plan.language}>{risk.mitigation}</p>
+                <p {...writtenIn(plan.language)}>{risk.mitigation}</p>
               </li>
             ))}
           </ul>
