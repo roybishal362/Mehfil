@@ -223,6 +223,9 @@ describe('shared plan page', () => {
     const link = await createShareLink(plan, true);
     const { container } = renderAt(<SharedPlanPage params={{ id: link.id }} />, `/s/${link.id}`);
     expect(await screen.findByRole('heading', { level: 1, name: plan.brief.title })).toBeVisible();
+    // The shared copy wears its occasion's look, like the plan itself.
+    expect(document.documentElement.dataset.mood).toBe('wedding');
+    expect(screen.getByText(en.moods.greeting.wedding)).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: en.shared.budgetTitle })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: en.shared.tasksTitle })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: en.shared.makeYourOwn })).toHaveAttribute(

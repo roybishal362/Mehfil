@@ -119,37 +119,16 @@
   padding-block: 28px 56px;
 }
 
-.shared-head {
-  display: grid;
-  gap: 10px;
-  justify-items: start;
+/* The shared plan's header reuses the plan header (plan.css), with the read-only note under it. */
+.planhead--shared {
+  min-height: 0;
+  margin-top: 0;
 }
 
-.shared-head h1 {
-  font-size: clamp(36px, 6vw, 58px);
-  line-height: 1.05;
-  text-wrap: balance;
-}
-
-.shared-facts {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 22px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  color: var(--ink-2);
-  font-weight: 600;
-}
-
-.shared-facts li {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.shared-facts .i {
-  color: var(--label);
+.shared-note {
+  margin-top: 10px;
+  font-size: 14.5px;
+  color: var(--muted);
 }
 
 .shared-summary p {

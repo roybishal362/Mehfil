@@ -2,14 +2,16 @@
  * A plan opened from a share link: a read-only copy without personal details that anyone with
  * the link can see, without signing in, until it expires or the owner turns it off.
  */
-import { CalendarDays, MapPin, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'wouter';
+import { moodFor } from '../../shared/domain/mood';
 import type { SharedPlan } from '../../shared/export/share';
+import { usePageMood } from '../app/mood';
 import { paths, useDocumentTitle } from '../app/routing';
 import { loadSharedPlan, type SharedPlanResult } from '../cloud/shares';
 import { useI18n } from '../i18n';
 import { writtenIn } from '../i18n/written-in';
+import { MoodArt } from '../motifs/MoodArt';
 
 type LoadState = { kind: 'loading' } | { kind: 'error' } | SharedPlanResult;
 
@@ -104,30 +106,40 @@ function SharedPlanView({ plan }: { plan: SharedPlan }) {
   const vendors = [...plan.vendors].sort(byDate((vendor) => vendor.bookBy));
   const schedule = [...plan.schedule].sort(byDate((slot) => `${slot.day}T${slot.time}`));
   const { budget } = plan;
+  // Family opening a shared link see the plan in its occasion's colours too.
+  const mood = moodFor({ type: plan.type, title: plan.title });
+  usePageMood(mood);
 
   return (
     <div className="wrap shared">
-      <header className="shared-head">
-        <p className="kicker">{t.shared.eyebrow}</p>
-        <h1 data-route-focus="page" tabIndex={-1}>
-          {plan.title}
-        </h1>
-        <ul className="shared-facts">
-          <li>
-            <CalendarDays />
-            {f.dateLong(plan.date)}
-            {plan.endDate ? ` – ${f.dateLong(plan.endDate)}` : ''}
-          </li>
-          <li>
-            <MapPin />
-            {plan.city}
-          </li>
-          <li>
-            <Users />
-            {t.shared.guests(f.number(plan.guests.confirmed), f.number(plan.guests.expected))}
-          </li>
-        </ul>
-        <p className="note">{t.shared.readOnly(f.date(plan.sharedAt.slice(0, 10)))}</p>
+      <header className="planhead planhead--shared" data-mood={mood}>
+        <div className="planhead-art" aria-hidden="true">
+          <MoodArt mood={mood} />
+        </div>
+        <div className="planhead-copy">
+          <p className="greet">
+            {t.moods.greeting[mood]}
+            <span className="greet-sub">{t.shared.eyebrow}</span>
+          </p>
+          <h1
+            className={plan.title.length > 28 ? 'plan-name plan-name--long' : 'plan-name'}
+            data-route-focus="page"
+            tabIndex={-1}
+          >
+            {plan.title}
+          </h1>
+          <p className="when">
+            <b>
+              {f.dateLong(plan.date)}
+              {plan.endDate ? ` – ${f.dateLong(plan.endDate)}` : ''}
+            </b>
+            <span>{plan.city}</span>
+            <span>
+              {t.shared.guests(f.number(plan.guests.confirmed), f.number(plan.guests.expected))}
+            </span>
+          </p>
+          <p className="shared-note">{t.shared.readOnly(f.date(plan.sharedAt.slice(0, 10)))}</p>
+        </div>
       </header>
 
       {plan.summary && (
