@@ -49,6 +49,15 @@ function toHttpError(error: unknown): unknown {
   return new AppError(503, 'ai_unavailable', aiFailureMessage(error), 30);
 }
 
+/** Runs one AI task, turning its failure into an HTTP error with a friendly message. */
+async function aiCall<T>(task: () => Promise<T>): Promise<T> {
+  try {
+    return await task();
+  } catch (error) {
+    throw toHttpError(error);
+  }
+}
+
 /** Cost in rate-limit tokens for each AI route. */
 export const AI_ROUTE_COST: Readonly<Record<string, number>> = {
   brief: 1,
@@ -72,12 +81,8 @@ export function aiRoutes(gateway: AiGateway, logger: Logger): Hono<AppEnv> {
 
   app.post('/brief', async (c) => {
     const request = await readJson(c, BriefRequest);
-    try {
-      const { response, meta } = await extractBrief(gateway, request, c.req.raw.signal);
-      return c.json({ ...response, meta });
-    } catch (error) {
-      throw toHttpError(error);
-    }
+    const { response, meta } = await aiCall(() => extractBrief(gateway, request, c.req.raw.signal));
+    return c.json({ ...response, meta });
   });
 
   app.post('/personalize', async (c) => {
@@ -125,39 +130,31 @@ export function aiRoutes(gateway: AiGateway, logger: Logger): Hono<AppEnv> {
 
   app.post('/refine', async (c) => {
     const request = await readJson(c, RefineRequest);
-    try {
-      const { result, meta } = await generateSection(gateway, {
+    const { result, meta } = await aiCall(() =>
+      generateSection(gateway, {
         section: request.section,
         brief: request.brief,
         today: request.today,
         instruction: request.instruction,
         existing: request.existing,
         signal: c.req.raw.signal,
-      });
-      return c.json({ ...result, meta });
-    } catch (error) {
-      throw toHttpError(error);
-    }
+      }),
+    );
+    return c.json({ ...result, meta });
   });
 
   app.post('/copilot', async (c) => {
     const request = await readJson(c, CopilotRequest);
-    try {
-      const { response, meta } = await runCopilot(gateway, request, c.req.raw.signal);
-      return c.json({ ...response, meta });
-    } catch (error) {
-      throw toHttpError(error);
-    }
+    const { response, meta } = await aiCall(() => runCopilot(gateway, request, c.req.raw.signal));
+    return c.json({ ...response, meta });
   });
 
   app.post('/invitation', async (c) => {
     const request = await readJson(c, InvitationRequest);
-    try {
-      const { variants, meta } = await draftInvitation(gateway, request, c.req.raw.signal);
-      return c.json({ variants, meta });
-    } catch (error) {
-      throw toHttpError(error);
-    }
+    const { variants, meta } = await aiCall(() =>
+      draftInvitation(gateway, request, c.req.raw.signal),
+    );
+    return c.json({ variants, meta });
   });
 
   return app;
