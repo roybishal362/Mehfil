@@ -7,15 +7,13 @@ import * as z from '../../shared/zod';
 import { BriefRequest, CopilotRequest, InvitationRequest } from '../../shared/schemas/ai';
 import { EventBrief } from '../../shared/schemas/brief';
 import { IsoDate } from '../../shared/schemas/primitives';
-import {
-  mockBriefExtraction,
-  mockBudgetSection,
-  mockCopilot,
-  mockIdeasSection,
-  mockInvitation,
-  mockTimelineSection,
-  mockVendorsSection,
-} from './mock-fixtures';
+import { mockBriefExtraction } from './mock/brief';
+import { mockBudgetSection } from './mock/budget';
+import { mockCopilot } from './mock/copilot';
+import { mockIdeasSection } from './mock/ideas';
+import { mockInvitation } from './mock/invitation';
+import { mockTimelineSection } from './mock/timeline';
+import { mockVendorsSection } from './mock/vendors';
 import {
   AiError,
   type AiProvider,

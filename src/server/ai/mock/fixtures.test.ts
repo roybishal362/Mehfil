@@ -7,17 +7,14 @@ import {
   IdeasSectionData,
   InvitationDraft,
   TimelineSectionData,
-} from '../../shared/schemas/ai';
-import { weddingBrief, weddingBriefInput } from '../../shared/test/fixtures';
-import {
-  mockBriefExtraction,
-  mockBudgetSection,
-  mockCopilot,
-  mockIdeasSection,
-  mockInvitation,
-  mockTimelineSection,
-  mockTitle,
-} from './mock-fixtures';
+} from '../../../shared/schemas/ai';
+import { weddingBrief, weddingBriefInput } from '../../../shared/test/fixtures';
+import { mockBriefExtraction, mockTitle } from './brief';
+import { mockBudgetSection } from './budget';
+import { mockCopilot } from './copilot';
+import { mockIdeasSection } from './ideas';
+import { mockInvitation } from './invitation';
+import { mockTimelineSection } from './timeline';
 
 const TODAY = '2026-10-23';
 
