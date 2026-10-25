@@ -222,7 +222,7 @@ export function VendorCard({ plan, vendor }: { plan: EventPlan; vendor: Vendor }
                 </div>
                 <button
                   type="button"
-                  className={chosen ? 'btn btn--gold btn--sm' : 'btn btn--ghost btn--sm'}
+                  className={chosen ? 'btn btn--primary btn--sm' : 'btn btn--ghost btn--sm'}
                   aria-pressed={chosen}
                   onClick={() =>
                     edit({

@@ -3,9 +3,10 @@ import { describeCelebration, expect, expectAccessible, test } from './support';
 test.describe('home page', () => {
   test('arrives already drawn, then reads a description as you type', async ({ page }) => {
     const response = await page.goto('/');
-    // The festive first screen is in the HTML itself, before any script runs.
-    expect(await response?.text()).toContain('Light up every');
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Light up every');
+    // The first screen is in the HTML itself, before any script runs.
+    expect(await response?.text()).toContain('One planner for every');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('One planner for every');
+    await expect(page.locator('html')).toHaveAttribute('data-mood', 'neutral');
     await expectAccessible(page);
 
     await page
@@ -25,17 +26,26 @@ test.describe('home page', () => {
     await expect(page).toHaveURL(/\/$/);
   });
 
+  test('follows the device’s light or dark setting until a theme is chosen', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await page.goto('/');
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'night');
+    await page.emulateMedia({ colorScheme: 'light' });
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'day');
+  });
+
   test('remembers the chosen theme and language', async ({ page }) => {
     await page.goto('/');
-    await page.getByRole('button', { name: 'Switch to the day theme' }).click();
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'day');
+    await page.getByRole('button', { name: 'Switch to the night theme' }).click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'night');
     await page.getByRole('button', { name: 'हिन्दी' }).click();
     await expect(page.locator('html')).toHaveAttribute('lang', 'hi');
-    await expect(page.getByRole('heading', { level: 1 })).not.toContainText('Light up every');
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('उत्सव');
 
     await page.reload();
     await expect(page.locator('html')).toHaveAttribute('lang', 'hi');
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'day');
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'night');
     await expectAccessible(page);
 
     await page.getByRole('button', { name: 'বাংলা' }).click();

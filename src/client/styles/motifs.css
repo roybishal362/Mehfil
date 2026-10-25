@@ -1,0 +1,618 @@
+/*
+ * Festive motifs and their motion. Every loop is gentle and slow, carries the .motion class (so it
+ * waits until the page has loaded, see base.css) and stops for reduced motion. Pivot points use
+ * transform-box: fill-box, so no element needs an inline style.
+ */
+
+@keyframes sway {
+  from {
+    transform: rotate(-3.5deg);
+  }
+
+  to {
+    transform: rotate(3.5deg);
+  }
+}
+
+@keyframes fall {
+  0% {
+    transform: translate3d(0, -40px, 0) rotate(0);
+    opacity: 0;
+  }
+
+  10%,
+  88% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate3d(var(--drift, 30px), 330px, 0) rotate(300deg);
+    opacity: 0;
+  }
+}
+
+@keyframes bob {
+  from {
+    transform: translateY(0) rotate(-2deg);
+  }
+
+  to {
+    transform: translateY(-14px) rotate(2deg);
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes flicker {
+  0%,
+  100% {
+    transform: scale(1, 1);
+  }
+
+  30% {
+    transform: scale(0.94, 1.06) translateY(-0.4px);
+  }
+
+  60% {
+    transform: scale(1.04, 0.96);
+  }
+}
+
+@keyframes turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/*
+ * The plate's scenes take turns: each is shown for four of the cycle's twenty seconds. At the
+ * cycle's start only the first scene is visible, so the paused first frame (before the page
+ * has loaded) shows one scene, not none.
+ */
+@keyframes cycle {
+  0%,
+  16% {
+    opacity: 1;
+    transform: none;
+  }
+
+  20% {
+    opacity: 0;
+    transform: scale(1.04) rotate(2deg);
+  }
+
+  96% {
+    opacity: 0;
+    transform: scale(0.94) rotate(-3deg);
+  }
+
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------------------------------------------------------------- loops */
+
+.sway {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  animation: sway 3.6s ease-in-out infinite alternate;
+}
+
+.sway:nth-child(3n) {
+  animation-duration: 4.4s;
+  animation-delay: -1.2s;
+}
+
+.sway:nth-child(3n + 1) {
+  animation-duration: 3.2s;
+  animation-delay: -2.1s;
+}
+
+.flag {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+  animation: sway 2.8s ease-in-out infinite alternate;
+}
+
+.flag:nth-child(2n) {
+  animation-delay: -1.4s;
+}
+
+.flag:nth-child(3n) {
+  animation-duration: 3.4s;
+}
+
+.bulb {
+  animation: twinkle 2.6s ease-in-out infinite;
+}
+
+.bulb:nth-child(3n) {
+  animation-delay: -0.9s;
+}
+
+.bulb:nth-child(4n) {
+  animation-delay: -1.7s;
+}
+
+.bulb:nth-child(5n) {
+  animation-duration: 3.4s;
+}
+
+.flame {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: flicker 1.6s ease-in-out infinite;
+}
+
+.plume {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: sway 2.4s ease-in-out infinite alternate;
+}
+
+.sunburst {
+  color: #f3b04a;
+  animation: turn 90s linear infinite;
+}
+
+/* ---------------------------------------------------------------- hanging and floating things */
+
+.kandils {
+  display: flex;
+  gap: 22px;
+  align-items: flex-start;
+}
+
+.kandil {
+  width: 62px;
+  height: auto;
+  transform-origin: 50% 0;
+  animation: sway 4s ease-in-out infinite alternate;
+}
+
+.kandil:nth-child(2) {
+  animation-delay: -1.6s;
+  animation-duration: 3.4s;
+}
+
+.kandil:nth-child(3) {
+  animation-delay: -2.6s;
+}
+
+.kandil--red {
+  color: #b3241c;
+}
+
+.kandil--saffron {
+  color: #e27b2b;
+}
+
+.kandil--teal {
+  color: #1f7a74;
+}
+
+.balloons {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.balloon {
+  width: 56px;
+  height: 140px;
+  animation: bob 3.2s ease-in-out infinite alternate;
+}
+
+.balloon:nth-child(2) {
+  margin-top: -26px;
+  animation-delay: -1.1s;
+}
+
+.balloon:nth-child(3) {
+  margin-top: 10px;
+  animation-delay: -2s;
+}
+
+.balloon--pink {
+  color: #d63a8a;
+}
+
+.balloon--teal {
+  color: #1f9a94;
+}
+
+.balloon--gold {
+  color: #e6ad12;
+}
+
+/* Shiuli flowers fall across their container, each on its own path and pace. */
+.shiuli-rain {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.shiuli {
+  position: absolute;
+  top: 0;
+  width: 28px;
+  height: 30px;
+  animation: fall 9s linear infinite;
+}
+
+.shiuli:nth-child(1) {
+  left: 6%;
+  animation-delay: -1s;
+}
+
+.shiuli:nth-child(2) {
+  left: 18%;
+  --drift: -40px;
+  animation-delay: -4s;
+  animation-duration: 11s;
+}
+
+.shiuli:nth-child(3) {
+  left: 33%;
+  animation-delay: -6.5s;
+}
+
+.shiuli:nth-child(4) {
+  left: 47%;
+  --drift: -20px;
+  animation-delay: -2.5s;
+  animation-duration: 10s;
+}
+
+.shiuli:nth-child(5) {
+  left: 61%;
+  animation-delay: -8s;
+}
+
+.shiuli:nth-child(6) {
+  left: 74%;
+  --drift: 50px;
+  animation-delay: -3.5s;
+  animation-duration: 12s;
+}
+
+.shiuli:nth-child(7) {
+  left: 86%;
+  animation-delay: -7s;
+}
+
+.shiuli:nth-child(8) {
+  left: 94%;
+  --drift: -30px;
+  animation-delay: -5.2s;
+  animation-duration: 10.5s;
+}
+
+.garland,
+.bunting,
+.lights {
+  display: block;
+  overflow: visible;
+}
+
+/* ---------------------------------------------------------------- diyas */
+
+.diya {
+  width: 26px;
+  height: 26px;
+  flex: none;
+}
+
+.diya--unlit {
+  color: var(--line-strong);
+}
+
+.diya-row {
+  display: flex;
+  gap: 3px;
+}
+
+/* A lamp lights with a little flare when its part of the plan begins (or the page opens). */
+.diya-row .diya--lit {
+  animation: diya-light 0.7s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+.diya-row .diya--lit:nth-child(2) {
+  animation-delay: 0.08s;
+}
+
+.diya-row .diya--lit:nth-child(3) {
+  animation-delay: 0.16s;
+}
+
+.diya-row .diya--lit:nth-child(4) {
+  animation-delay: 0.24s;
+}
+
+.diya-row .diya--lit:nth-child(5) {
+  animation-delay: 0.32s;
+}
+
+.diya-row .diya--lit:nth-child(6) {
+  animation-delay: 0.4s;
+}
+
+@keyframes diya-light {
+  from {
+    opacity: 0.3;
+    transform: translateY(4px) scale(0.7);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.lamp-icon {
+  flex: none;
+}
+
+.occasion-art {
+  overflow: visible;
+}
+
+/* ---------------------------------------------------------------- SVG colour helpers */
+
+.fill-c1 {
+  fill: var(--c1);
+}
+
+.fill-c2 {
+  fill: var(--c2);
+}
+
+.fill-c3 {
+  fill: var(--c3);
+}
+
+.fill-c4 {
+  fill: var(--c4);
+}
+
+.fill-c5 {
+  fill: var(--c5);
+}
+
+.fill-c6 {
+  fill: var(--c6);
+}
+
+.fill-bg-c1 {
+  background: var(--c1);
+}
+
+.fill-bg-c2 {
+  background: var(--c2);
+}
+
+.fill-bg-c3 {
+  background: var(--c3);
+}
+
+.fill-bg-c4 {
+  background: var(--c4);
+}
+
+.fill-bg-c5 {
+  background: var(--c5);
+}
+
+.fill-bg-c6 {
+  background: var(--c6);
+}
+
+.fill-ink {
+  fill: var(--ink);
+}
+
+.fill-line {
+  fill: var(--line-strong);
+}
+
+.stroke-line,
+.stroke-ink,
+.stroke-accent {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.stroke-line {
+  stroke: var(--line-strong);
+}
+
+.stroke-ink {
+  stroke: var(--ink);
+}
+
+.stroke-accent {
+  stroke: var(--accent);
+  stroke-width: 2.5;
+}
+
+/* ---------------------------------------------------------------- the home page's plate */
+
+.plate {
+  position: relative;
+  width: 100%;
+  max-width: 470px;
+  aspect-ratio: 1;
+  margin: 0 0 48px auto;
+}
+
+.plate-rim {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow:
+    inset 0 0 0 10px var(--surface-3),
+    inset 0 0 0 11px var(--frame),
+    var(--shadow-lift);
+}
+
+.plate-dots {
+  position: absolute;
+  inset: 22px;
+  animation: turn 120s linear infinite;
+}
+
+.plate-dots .dot-a {
+  fill: var(--frame);
+}
+
+.plate-dots .dot-b {
+  fill: #b3241c;
+}
+
+.vignettes {
+  position: absolute;
+  inset: 17%;
+}
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  animation: cycle 20s infinite;
+}
+
+.vignette > svg,
+.vignette > div {
+  width: 100%;
+  max-height: 100%;
+}
+
+.vignette svg {
+  overflow: visible;
+}
+
+/* Each scene starts four seconds after the one before. */
+.vignette:nth-child(2),
+.plate-scene:nth-child(2) {
+  animation-delay: -16s;
+}
+
+.vignette:nth-child(3),
+.plate-scene:nth-child(3) {
+  animation-delay: -12s;
+}
+
+.vignette:nth-child(4),
+.plate-scene:nth-child(4) {
+  animation-delay: -8s;
+}
+
+.vignette:nth-child(5),
+.plate-scene:nth-child(5) {
+  animation-delay: -4s;
+}
+
+/* Without the animation (reduced motion), the first scene stays. */
+.vignette:not(:first-child),
+.plate-scene:not(:first-child) {
+  opacity: 0;
+}
+
+.vignette--durga {
+  grid-template: 1fr / 1fr;
+}
+
+/* The flowers fall across the whole plate, clipped to its circle. */
+.vignette--durga .shiuli-rain {
+  inset: -14%;
+  border-radius: 50%;
+}
+
+.vignette--durga .dhak {
+  width: 92%;
+  align-self: end;
+}
+
+.vignette--ganpati .sunburst {
+  position: absolute;
+  inset: -8%;
+  width: 116%;
+  opacity: 0.35;
+}
+
+.vignette--ganpati .modaks {
+  position: relative;
+  width: 76%;
+}
+
+.vignette--birthday .balloons {
+  position: absolute;
+  top: -6%;
+  right: -4%;
+  width: auto;
+  transform: scale(0.8);
+  transform-origin: 100% 0;
+}
+
+.vignette--birthday > svg {
+  width: 80%;
+  margin-top: 16%;
+}
+
+.vignette--diwali .kandils {
+  position: absolute;
+  top: -6%;
+  left: 6%;
+  width: auto;
+  gap: 18%;
+}
+
+.vignette--diwali .kandil {
+  width: 54px;
+}
+
+.vignette--diwali .plate-diya {
+  width: 46%;
+  margin-top: 34%;
+}
+
+.plate-caption {
+  position: absolute;
+  inset: auto 0 -48px;
+  height: 36px;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.plate-scene {
+  position: absolute;
+  inset: 0;
+  animation: cycle 20s infinite;
+}
+
+/* ---------------------------------------------------------------- reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+  .vignette,
+  .plate-scene {
+    animation: none;
+  }
+}

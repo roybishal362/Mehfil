@@ -35,7 +35,7 @@ export function AccountButton() {
     <>
       <button
         type="button"
-        className="roundbtn"
+        className="icon-btn"
         aria-label={label}
         title={label}
         aria-haspopup="dialog"

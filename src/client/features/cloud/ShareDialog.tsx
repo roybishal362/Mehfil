@@ -120,7 +120,7 @@ function ShareDialog({ plan, onClose }: { plan: EventPlan; onClose: () => void }
                 event.currentTarget.select();
               }}
             />
-            <button type="button" className="btn btn--gold btn--sm" onClick={() => void copy()}>
+            <button type="button" className="btn btn--primary btn--sm" onClick={() => void copy()}>
               <Copy />
               {t.share.copy}
             </button>
@@ -155,7 +155,7 @@ function ShareDialog({ plan, onClose }: { plan: EventPlan; onClose: () => void }
       ) : (
         <button
           type="button"
-          className="btn btn--gold justify-self-start"
+          className="btn btn--primary justify-self-start"
           disabled={busy !== null}
           onClick={() => void run('create', () => createShareLink(plan, includeBudget))}
         >

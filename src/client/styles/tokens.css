@@ -1,123 +1,284 @@
 /*
- * Design tokens for "Festival of Lights".
- * Night is the brand theme (a Diwali sky); Day is ivory paper and gold. Components use these
- * variables only, so both themes stay in step. Contrast is checked in tokens.test.ts.
+ * Design tokens. Day ("Shubho") is Bengali wedding stationery: ivory paper, sindoor red, ink
+ * and a little flat gold. Night ("Deepavali") is the evening mehfil: warm ink black, brass and
+ * lamplight. Components use these variables only, so both themes stay in step. There are no
+ * gradients or glows; colour is flat, like print. Contrast is checked in tokens.test.ts.
  */
 :root {
-  /* night sky, always used by the hero stage whatever the theme */
-  --sky-0: #08051a;
-  --sky-1: #140b2e;
-  --sky-2: #2a1140;
-  --sky-3: #4a1430;
-  --ember: #7a2a1c;
-
-  /* surfaces */
-  --page: #100a24;
-  --surface: #1b1236;
-  --surface-2: #241848;
-  --surface-3: #2f1f58;
-  --field: rgb(8 5 26 / 0.55);
-  --tint: rgb(255 255 255 / 0.05);
-  --line: rgb(242 201 122 / 0.22);
-  --line-strong: rgb(242 201 122 / 0.45);
+  --page: #f6efe4;
+  --surface: #fffcf6;
+  --surface-2: #faf3e7;
+  --surface-3: #efe5d4;
+  --field: #fffdf9;
+  --line: #e1d5c2;
+  --line-strong: #cbb99d;
   /* outlines of interactive controls: at least 3:1 against the page */
-  --control-line: rgb(242 201 122 / 0.62);
-  --marigold-off: #6e5a9a;
+  --control-line: #8a7a69;
 
-  /* gold */
-  --gold-50: #fff8e2;
-  --gold-100: #ffefc2;
-  --gold-300: #f6d27a;
-  --gold-500: #d9a441;
-  --gold-700: #9c6b1e;
-  --foil: linear-gradient(
-    100deg,
-    #9c6b1e 0%,
-    #e9c26a 18%,
-    #fff3c9 34%,
-    #f2cf79 48%,
-    #b98a2e 64%,
-    #f6d27a 82%,
-    #9c6b1e 100%
-  );
-  --on-foil: #2a1608;
+  --ink: #1c1612;
+  --ink-2: #4e433a;
+  --muted: #6b5f55;
+  /* small accent text: kickers, links, active marks */
+  --label: #9f1f18;
+  --focus: #9f1f18;
 
-  /* jewel accents */
-  --saffron: #f28c28;
-  --marigold: #f7b500;
-  --rani: #e0457b;
-  --peacock: #2cb6b0;
-  --emerald: #33a46f;
-  --amethyst: #9b7bf0;
-  --vermilion: #e2543b;
+  /* sindoor: primary actions and the lal-paar border */
+  --accent: #b3241c;
+  --accent-strong: #8b1912;
+  --on-accent: #ffffff;
+  --frame: #b3241c;
+  /* the plan header's paper */
+  --head: #fffcf6;
+  /* flat gold foil: ornaments and large display text only */
+  --foil: #9c7428;
+  /* the marigold highlighter stroke under a headline word */
+  --highlight: #f2d9a0;
 
-  /* text */
-  --ink: #fbf3e4;
-  --ink-2: #e9ddf3;
-  --muted: #c8bad9;
-  --label: #f6d27a;
-  --focus: #f6d27a;
+  /* status: text on its own tint */
+  --ai-ink: #8a2252;
+  --ai-bg: #f7e5ed;
+  --danger-ink: #a51d17;
+  --danger-bg: #fbe7e3;
+  --warn-ink: #84510a;
+  --warn-bg: #fbeed6;
+  --ok-ink: #24603a;
+  --ok-bg: #e3efe4;
 
-  /* status (text on tinted pills) */
-  --ai-ink: #ff9ec0;
-  --ai-bg: rgb(224 69 123 / 0.16);
-  --danger-ink: #ffb3a3;
-  --danger-bg: rgb(226 84 59 / 0.18);
-  --warn-ink: #ffd66e;
-  --warn-bg: rgb(247 181 0 / 0.16);
-  --ok-ink: #8fe3b8;
-  --ok-bg: rgb(51 164 111 / 0.18);
+  /* chart colours for budget lines and plan parts */
+  --c1: #b3241c;
+  --c2: #c98a12;
+  --c3: #2f6a40;
+  --c4: #3d4f8a;
+  --c5: #c46b7d;
+  --c6: #8a6d4e;
 
-  /* invitation card */
-  --maroon-0: #3a0716;
-  --maroon-1: #5a0e22;
-  --maroon-2: #74122c;
+  /* lamp colours: the same in both themes */
+  --flame: #e7a33d;
+  --flame-core: #fbe3a6;
+  --clay: #a8532a;
 
-  /* shape and type */
-  --radius: 24px;
-  --radius-sm: 14px;
-  --font-display:
-    'Cormorant Garamond Variable', 'Tiro Devanagari Hindi', 'Tiro Bangla', Georgia, serif;
-  --font-script:
-    'Great Vibes', 'Cormorant Garamond Variable', 'Tiro Devanagari Hindi', 'Tiro Bangla', cursive;
+  /* paper grain: a faint, fixed noise texture */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .27 0 0 0 0 .18 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+
+  --radius: 14px;
+  --radius-sm: 10px;
+  --radius-xs: 6px;
+  --font-display: 'Eczar Variable', 'Tiro Bangla', Georgia, 'Times New Roman', serif;
   --font-body:
-    'Inter Variable', 'Noto Sans Devanagari Variable', 'Noto Sans Bengali Variable', system-ui,
-    -apple-system, 'Segoe UI', sans-serif;
-  --shadow-card: 0 30px 60px -40px rgb(0 0 0 / 0.9);
+    'Mukta', 'Noto Sans Bengali Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --shadow-card: 0 1px 0 rgb(60 30 10 / 0.04), 0 18px 32px -28px rgb(60 30 10 / 0.35);
+  --shadow-lift: 0 24px 44px -30px rgb(60 30 10 / 0.5);
+
+  color-scheme: light;
+}
+
+:root[data-theme='night'] {
+  --page: #13100d;
+  --surface: #1b1612;
+  --surface-2: #211b16;
+  --surface-3: #2a221b;
+  --field: #100d0b;
+  --line: #3a2f26;
+  --line-strong: #56473a;
+  --control-line: #8f7b62;
+
+  --ink: #f4ebdd;
+  --ink-2: #dacdb9;
+  --muted: #ab9c8b;
+  --label: #e4c98e;
+  --focus: #e4c98e;
+
+  --accent: #c9a35a;
+  --accent-strong: #e4c98e;
+  --on-accent: #13100d;
+  --frame: #c9a35a;
+  --head: #1b1612;
+  --foil: #e4c98e;
+  --highlight: rgb(201 163 90 / 0.34);
+
+  --ai-ink: #f2abc8;
+  --ai-bg: rgb(224 69 123 / 0.15);
+  --danger-ink: #f3a593;
+  --danger-bg: rgb(226 84 59 / 0.16);
+  --warn-ink: #f0c56d;
+  --warn-bg: rgb(240 180 40 / 0.14);
+  --ok-ink: #a8d394;
+  --ok-bg: rgb(139 176 122 / 0.16);
+
+  --c1: #e27b2b;
+  --c2: #c9a35a;
+  --c3: #8bb07a;
+  --c4: #6f8fc9;
+  --c5: #d77064;
+  --c6: #8f7b62;
+
+  --grain: none;
+  /* Not 'none': it sits in lists of shadows, where 'none' would void them all. */
+  --shadow-card: 0 0 0 0 transparent;
+  --shadow-lift: 0 24px 44px -30px rgb(0 0 0 / 0.8);
 
   color-scheme: dark;
 }
 
-:root[data-theme='day'] {
-  --page: #fbf4e7;
-  --surface: #fffdf8;
-  --surface-2: #fff6e6;
-  --surface-3: #fcebd0;
-  --field: #ffffff;
-  --tint: #fff8ec;
-  --line: rgb(156 107 30 / 0.25);
-  --line-strong: rgb(156 107 30 / 0.5);
-  --control-line: #9c6b1e;
-  --marigold-off: #c9a15a;
+/*
+ * Moods. A plan takes on its occasion's colours: <html data-mood> while it is open, and any
+ * element with data-mood (the occasion cards, the plan tiles) for itself. The accent drives
+ * buttons, tabs and links; --head is the plan header's paper and --frame its border colour.
+ * The home page is neutral: ink-black actions with a little gold.
+ */
+[data-mood='neutral'] {
+  --accent: #1c1612;
+  --accent-strong: #000000;
+  --on-accent: #fffcf6;
+  --label: #7a5a1e;
+  --focus: #7a5a1e;
+  --frame: #c9a35a;
+  --head: #fffcf6;
+}
 
-  --ink: #2a1610;
-  --ink-2: #4b3027;
-  --muted: #6e5446;
-  --label: #8a4f0c;
-  --focus: #8a4f0c;
+[data-mood='wedding'] {
+  --accent: #b3241c;
+  --accent-strong: #8b1912;
+  --on-accent: #ffffff;
+  --label: #9f1f18;
+  --focus: #9f1f18;
+  --frame: #b3241c;
+  --head: #fffcf6;
+}
 
-  --ai-ink: #a0104a;
-  --ai-bg: #fce3ee;
-  --danger-ink: #b42318;
-  --danger-bg: #fdecea;
-  --warn-ink: #8f5400;
-  --warn-bg: #fff0d2;
-  --ok-ink: #1e6b3a;
-  --ok-bg: #e3f4e8;
+[data-mood='durga'] {
+  --accent: #b8141f;
+  --accent-strong: #8f0f18;
+  --on-accent: #ffffff;
+  --label: #a3111a;
+  --focus: #a3111a;
+  --frame: #b8141f;
+  --head: #fffdf8;
+}
 
-  --shadow-card: 0 30px 60px -44px rgb(90 50 10 / 0.45);
+[data-mood='ganpati'] {
+  --accent: #b8520b;
+  --accent-strong: #8f3f08;
+  --on-accent: #ffffff;
+  --label: #9a4508;
+  --focus: #9a4508;
+  --frame: #e68a1e;
+  --head: #fdecd2;
+}
 
-  color-scheme: light;
+[data-mood='birthday'] {
+  --accent: #a8196d;
+  --accent-strong: #84134f;
+  --on-accent: #ffffff;
+  --label: #93155f;
+  --focus: #93155f;
+  --frame: #a8196d;
+  --head: #fff7ef;
+}
+
+[data-mood='diwali'] {
+  --accent: #7c4f12;
+  --accent-strong: #5e3b0b;
+  --on-accent: #ffffff;
+  --label: #7c4f12;
+  --focus: #7c4f12;
+  --frame: #c9a35a;
+  --head: #15110e;
+}
+
+[data-mood='utsav'] {
+  --accent: #a1520a;
+  --accent-strong: #7d3f07;
+  --on-accent: #ffffff;
+  --label: #8c4708;
+  --focus: #8c4708;
+  --frame: #ef8f1c;
+  --head: #fffaf1;
+}
+
+:root[data-theme='night'] [data-mood='neutral'],
+:root[data-theme='night'][data-mood='neutral'] {
+  --accent: #c9a35a;
+  --accent-strong: #e4c98e;
+  --on-accent: #13100d;
+  --label: #e4c98e;
+  --focus: #e4c98e;
+  --head: #1b1612;
+}
+
+:root[data-theme='night'] [data-mood='wedding'],
+:root[data-theme='night'][data-mood='wedding'] {
+  --accent: #e0705f;
+  --accent-strong: #f0a493;
+  --on-accent: #13100d;
+  --label: #f0a493;
+  --focus: #f0a493;
+  --frame: #c4483a;
+  --head: #1f1512;
+}
+
+:root[data-theme='night'] [data-mood='durga'],
+:root[data-theme='night'][data-mood='durga'] {
+  --accent: #ef6a62;
+  --accent-strong: #f4a29a;
+  --on-accent: #13100d;
+  --label: #f4a29a;
+  --focus: #f4a29a;
+  --frame: #c9302f;
+  --head: #1f1311;
+}
+
+:root[data-theme='night'] [data-mood='ganpati'],
+:root[data-theme='night'][data-mood='ganpati'] {
+  --accent: #f39a3d;
+  --accent-strong: #f6b979;
+  --on-accent: #13100d;
+  --label: #f6b979;
+  --focus: #f6b979;
+  --head: #22180f;
+}
+
+:root[data-theme='night'] [data-mood='birthday'],
+:root[data-theme='night'][data-mood='birthday'] {
+  --accent: #ef7ab8;
+  --accent-strong: #f5a7cf;
+  --on-accent: #13100d;
+  --label: #f5a7cf;
+  --focus: #f5a7cf;
+  --frame: #c74b8c;
+  --head: #21141a;
+}
+
+:root[data-theme='night'] [data-mood='diwali'],
+:root[data-theme='night'][data-mood='diwali'] {
+  --accent: #c9a35a;
+  --accent-strong: #e4c98e;
+  --on-accent: #13100d;
+  --label: #e4c98e;
+  --focus: #e4c98e;
+  --head: #15110e;
+}
+
+:root[data-theme='night'] [data-mood='utsav'],
+:root[data-theme='night'][data-mood='utsav'] {
+  --accent: #f0a24a;
+  --accent-strong: #f5bf7e;
+  --on-accent: #13100d;
+  --label: #f5bf7e;
+  --focus: #f5bf7e;
+  --head: #20180f;
+}
+
+/*
+ * The Diwali header is a night sky in both themes, so its text takes the night colours there.
+ */
+.planhead[data-mood='diwali'] {
+  --ink: #f4ebdd;
+  --ink-2: #dacdb9;
+  --muted: #b9a993;
+  --label: #e4c98e;
+  --accent: #e4c98e;
+  --line: #3a2f26;
 }
 
 /* Expose the colour tokens to Tailwind utilities (bg-surface, text-muted, ...). */
@@ -128,5 +289,6 @@
   --color-ink-2: var(--ink-2);
   --color-muted: var(--muted);
   --color-label: var(--label);
-  --color-gold: var(--gold-300);
+  --color-accent: var(--accent);
+  --color-head: var(--head);
 }

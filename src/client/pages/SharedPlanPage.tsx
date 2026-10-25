@@ -83,7 +83,7 @@ function Message({ title, text, onRetry }: { title: string; text: string; onRetr
               {t.common.retry}
             </button>
           )}
-          <Link className="btn btn--gold" href={paths.newPlan()}>
+          <Link className="btn btn--primary" href={paths.newPlan()}>
             {t.shared.makeYourOwn}
           </Link>
         </div>
@@ -108,7 +108,7 @@ function SharedPlanView({ plan }: { plan: SharedPlan }) {
   return (
     <div className="wrap shared">
       <header className="shared-head">
-        <p className="eyebrow smallcaps">{t.shared.eyebrow}</p>
+        <p className="kicker">{t.shared.eyebrow}</p>
         <h1 data-route-focus="page" tabIndex={-1}>
           {plan.title}
         </h1>
@@ -201,7 +201,7 @@ function SharedPlanView({ plan }: { plan: SharedPlan }) {
           <ul className="shared-ideas">
             {plan.ideas.map((idea, index) => (
               <li key={`${idea.kind}-${String(index)}`} className="card">
-                <p className="eyebrow smallcaps">{t.ideaKinds[idea.kind]}</p>
+                <p className="kicker">{t.ideaKinds[idea.kind]}</p>
                 <h3 {...writtenIn(plan.language)}>{idea.title}</h3>
                 <p {...writtenIn(plan.language)}>{idea.description}</p>
               </li>
@@ -243,7 +243,7 @@ function SharedPlanView({ plan }: { plan: SharedPlan }) {
 
       <p className="shared-cta">
         <span className="note mt-0">{t.shared.madeWith}</span>
-        <Link className="btn btn--gold" href={paths.newPlan()}>
+        <Link className="btn btn--primary" href={paths.newPlan()}>
           {t.shared.makeYourOwn}
         </Link>
       </p>

@@ -1,4 +1,4 @@
-/** The budget at a glance: total, health and a zari-striped split of the biggest lines. */
+/** The budget at a glance: total, health and a split of the biggest lines in chart colours. */
 import { Info, Wallet } from 'lucide-react';
 import { Link } from 'wouter';
 import { budgetHealth, summariseBudget } from '../../../shared/domain/budget';
@@ -7,9 +7,13 @@ import type { EventPlan } from '../../../shared/schemas/plan';
 import { paths } from '../../app/routing';
 import { useI18n } from '../../i18n';
 
-const SEGMENT_COLORS = ['#F28C28', '#E0457B', '#2CB6B0', '#9B7BF0', '#33A46F'];
-const OTHERS_COLOR = '#C9A15A';
+/** Chart colour classes (tokens --c1 to --c6); the last one groups the smaller lines. */
+const SEGMENT_TONES = ['c1', 'c2', 'c3', 'c4', 'c5'] as const;
+const OTHERS_TONE = 'c6';
 const SHOWN_LINES = 5;
+/** The bar is drawn in a 1000-unit-wide SVG with a 4-unit gap between segments. */
+const BAR_WIDTH = 1000;
+const GAP = 4;
 
 const HEALTH_PILL = { healthy: 'pill--ok', watch: 'pill--warn', over: 'pill--danger' } as const;
 
@@ -30,7 +34,7 @@ export function BudgetCard({ plan }: { plan: EventPlan }) {
       key: line.id,
       label: line.label ?? t.budgetCategories[line.category],
       amount: line.planned,
-      color: SEGMENT_COLORS[index] ?? OTHERS_COLOR,
+      tone: SEGMENT_TONES[index] ?? OTHERS_TONE,
     })),
     ...(rest.length > 0
       ? [
@@ -38,11 +42,18 @@ export function BudgetCard({ plan }: { plan: EventPlan }) {
             key: 'others',
             label: t.overview.others(f.number(rest.length)),
             amount: restTotal,
-            color: OTHERS_COLOR,
+            tone: OTHERS_TONE,
           },
         ]
       : []),
   ];
+  const widths = segments.map((segment) => (segment.amount / base) * BAR_WIDTH);
+  const bars = segments.map((segment, index) => ({
+    key: segment.key,
+    tone: segment.tone,
+    x: widths.slice(0, index).reduce((sum, width) => sum + width, 0),
+    width: Math.max(0, (widths[index] ?? 0) - GAP),
+  }));
   const split = segments
     .map((segment) => `${segment.label} ${f.percent(segment.amount / base)}`)
     .join(', ');
@@ -68,21 +79,27 @@ export function BudgetCard({ plan }: { plan: EventPlan }) {
         </div>
         <span className={`pill ${HEALTH_PILL[health]}`}>{t.overview.health[health]}</span>
       </div>
-      <div className="zari" role="img" aria-label={t.overview.budgetSplitLabel(split)}>
-        {segments.map((segment) => (
-          <i
-            key={segment.key}
-            style={{
-              width: `${String((segment.amount / base) * 100)}%`,
-              background: segment.color,
-            }}
+      <svg
+        className="budget-bar"
+        viewBox={`0 0 ${String(BAR_WIDTH)} 24`}
+        preserveAspectRatio="none"
+        role="img"
+        aria-label={t.overview.budgetSplitLabel(split)}
+      >
+        {bars.map((bar) => (
+          <rect
+            key={bar.key}
+            className={`fill-${bar.tone}`}
+            x={bar.x}
+            width={bar.width}
+            height="24"
           />
         ))}
-      </div>
+      </svg>
       <ul className="legend">
         {segments.map((segment) => (
           <li key={segment.key}>
-            <i style={{ background: segment.color }} />
+            <i className={`swatch fill-bg-${segment.tone}`} />
             <span>{segment.label}</span>
             <b>{f.money(segment.amount, budget.currency)}</b>
           </li>

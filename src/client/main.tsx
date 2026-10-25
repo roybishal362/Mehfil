@@ -1,14 +1,14 @@
 /**
  * Entry point. Fonts are self-hosted (no third-party requests) and split by script, so Hindi
- * and Bengali glyphs download only when they appear on the page.
+ * and Bengali glyphs download only when they appear on the page. Eczar (display) and Mukta
+ * (text) cover Latin and Devanagari; Tiro Bangla and Noto Sans Bengali cover Bengali.
  */
-import '@fontsource-variable/inter/wght.css';
-import '@fontsource-variable/cormorant-garamond/wght.css';
-import '@fontsource-variable/cormorant-garamond/wght-italic.css';
-import '@fontsource/great-vibes/latin-400.css';
-import '@fontsource/tiro-devanagari-hindi/devanagari-400.css';
+import '@fontsource-variable/eczar/wght.css';
+import '@fontsource/mukta/400.css';
+import '@fontsource/mukta/500.css';
+import '@fontsource/mukta/600.css';
+import '@fontsource/mukta/700.css';
 import '@fontsource/tiro-bangla/bengali-400.css';
-import '@fontsource-variable/noto-sans-devanagari/wght.css';
 import '@fontsource-variable/noto-sans-bengali/wght.css';
 import './styles/fonts.css';
 import './styles/index.css';

@@ -97,6 +97,23 @@ export function CopilotPanel({ plan }: { plan: EventPlan }) {
           )}
         </ol>
 
+        {conversation.messages.length === 0 && !conversation.busy && (
+          <ul className="co-suggest" aria-label={t.overview.askTitle}>
+            {t.overview.askSuggestions.map((question) => (
+              <li key={question}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    void askCopilot(plan.id, question);
+                  }}
+                >
+                  {question}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+
         {conversation.failed && (
           <p className="notice notice--danger" role="alert">
             {t.copilot.error}
@@ -170,7 +187,7 @@ export function CopilotPanel({ plan }: { plan: EventPlan }) {
               {proposal.operations.length > 0 && (
                 <button
                   type="button"
-                  className="btn btn--gold btn--sm"
+                  className="btn btn--primary btn--sm"
                   disabled={selectedCount === 0 || preview === null}
                   onClick={apply}
                 >

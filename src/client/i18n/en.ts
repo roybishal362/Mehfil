@@ -49,13 +49,14 @@ export const en = {
 
   home: {
     title: 'Plan your celebration',
-    eyebrow: 'Weddings · Birthdays · Pujas & community nights',
-    titleLead: 'Light up every',
-    titleScript: 'celebration',
-    ledeBefore: 'Tell Mehfil about your occasion. ',
+    eyebrow: 'Weddings · Pujas · Birthdays · Festivals',
+    heroTitle: { before: 'One planner for every ', em: 'celebration', after: '.' },
+    ledeBefore: 'Tell Mehfil what you are celebrating. ',
     ledeGemini: 'Gemini',
     ledeAfter:
-      ' drafts the budget, the timeline, the vendor checklist and ideas that honour your traditions, in English, हिन्दी or বাংলা, and you shape every detail.',
+      ' drafts the budget, the timeline, the vendors and ideas from your traditions, and the whole plan takes on the colours of the occasion, in English, हिन्दी or বাংলা.',
+    plateLabel: 'Mehfil plans weddings, Durga Puja, Ganpati, birthdays and Diwali.',
+    plateScenes: ['Weddings', 'Durga Puja', 'Ganpati', 'Birthdays', 'Diwali'],
     describeLabel: 'Describe your celebration',
     describeHint: 'In your own words. Mehfil picks out the details as you type.',
     describePlaceholder:
@@ -83,12 +84,9 @@ export const en = {
     emptyError: 'Tell us a little about your celebration first.',
     aiFallback:
       'The AI could not read that right now, so we filled in what we could. Please check the details.',
-    rangoliCaption: 'A lamp is lit for every part of your plan that comes together.',
-    rangoliSample: (summary: string) =>
-      `Plan rangoli for a sample wedding: ${summary}. A diya is lit for each part that has begun.`,
     occasionsTitle: 'What are we celebrating?',
-    occasionsText: 'Every occasion starts with a plan built for its traditions.',
-    begin: 'Begin',
+    occasionsText: 'Each occasion starts with a plan built for its traditions, and its own look.',
+    begin: 'Start planning',
     occasions: {
       wedding: { title: 'Wedding', text: 'Haldi to reception, every ritual and two families.' },
       birthday: {
@@ -104,6 +102,35 @@ export const en = {
         text: 'Anniversaries, baby showers, housewarmings, reunions.',
       },
     },
+    festivals: {
+      wedding: { title: 'Wedding', text: 'Haldi to bidaai, with both families.' },
+      durga: { title: 'Durga Puja', text: 'Pandal, bhog and dhakis for the whole para.' },
+      ganpati: { title: 'Ganpati', text: 'Sthapana to visarjan, all ten days.' },
+      birthday: { title: 'Birthday', text: 'First birthdays to big sixtieths.' },
+      diwali: { title: 'Diwali', text: 'Lamps, family and a feast.' },
+      other: { title: 'Something else', text: 'Anniversaries, baby showers, housewarmings.' },
+    },
+    howTitle: 'One sentence in. A plan you can actually run.',
+    howText:
+      'Gemini reads what you wrote and tailors every part. The arithmetic is done by code, so the numbers always add up.',
+    how: [
+      {
+        title: 'Budget',
+        text: 'Split into eleven lines with reasons, in lakh and crore, always adding up to your total.',
+      },
+      {
+        title: 'Timeline',
+        text: 'Counted back from the date, brought forward when time is short, ready for Google Calendar.',
+      },
+      {
+        title: 'Vendors',
+        text: 'What to book and by when, what to ask, and real vendors on Google Maps.',
+      },
+      {
+        title: 'Ideas',
+        text: 'Themes, food and rituals shaped by your traditions, your diet and your budget.',
+      },
+    ],
     yoursTitle: 'Your celebrations',
     yoursText: 'Saved on this device. Open one to keep planning.',
     open: 'Open',
@@ -313,6 +340,29 @@ export const en = {
     countdownLabel: (text: string) => `Countdown: ${text}`,
     readinessLabel: (percent: string) => `Plan ${percent} ready`,
     traditions: 'traditions',
+  },
+
+  moods: {
+    greeting: {
+      neutral: 'You are warmly invited',
+      wedding: 'Shubh Vivah · Together with their families',
+      birthday: 'Many happy returns',
+      durga: 'Shubho Sharodiya',
+      ganpati: 'Ganpati Bappa Morya',
+      diwali: 'Shubh Deepavali',
+      utsav: 'The neighbourhood comes together',
+    },
+    /** Said large over the celebration moment. */
+    cheer: {
+      wedding: 'Shubh Vivah',
+      birthday: 'Happy birthday!',
+      durga: 'Shubho Sharodiya',
+      ganpati: 'Ganpati Bappa Morya!',
+      diwali: 'Shubh Deepavali',
+      utsav: 'Let the festival begin!',
+    },
+    replay: 'Celebrate again',
+    skip: 'Skip',
   },
 
   plan: {
@@ -627,7 +677,7 @@ export const en = {
     label: 'Ask Copilot',
     send: 'Send',
     thinking: 'Thinking…',
-    empty: 'Try: “We now expect 50 more guests”',
+    empty: 'Ask about anything in this plan, or start with one of these:',
     review: 'Review the changes:',
     proposed: (count: string, n: number) => `I suggest ${count} ${plural(n, 'change', 'changes')}.`,
     noAnswer: 'I couldn’t find a change to suggest for that. Try asking another way.',

@@ -42,7 +42,7 @@ function IdeaCard({ plan, idea }: { plan: EventPlan; idea: Idea }) {
       <div className="idea-actions">
         <button
           type="button"
-          className={idea.favorite ? 'btn btn--gold btn--sm' : 'btn btn--ghost btn--sm'}
+          className={idea.favorite ? 'btn btn--primary btn--sm' : 'btn btn--ghost btn--sm'}
           aria-pressed={idea.favorite}
           onClick={() =>
             edit({ type: 'idea.update', id: idea.id, patch: { favorite: !idea.favorite } })

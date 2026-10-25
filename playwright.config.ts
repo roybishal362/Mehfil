@@ -20,6 +20,9 @@ export default defineConfig({
     baseURL: `http://localhost:${String(PORT)}`,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
+    // Celebration moments and page fades stay off, so every step is deterministic;
+    // e2e/moments.spec.ts turns motion on to test them.
+    reducedMotion: 'reduce',
   },
   projects: [
     { name: 'desktop', use: { ...devices['Desktop Chrome'] } },
@@ -33,8 +36,9 @@ export default defineConfig({
     env: {
       PORT: String(PORT),
       AI_PROVIDER: 'mock',
-      // Every test runs from the same address; the production limit is far lower.
+      // Every test runs from the same address; the production limits are far lower.
       AI_RATE_LIMIT: '10000',
+      AI_MAX_RPM: '1000',
       NODE_ENV: 'production',
       MEHFIL_DISABLE_ENV_FILE: '1',
     },

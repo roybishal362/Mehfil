@@ -1,0 +1,134 @@
+/* The site header: the wordmark, the navigation, languages, account and theme. */
+
+.top {
+  border-bottom: 1px solid var(--line);
+}
+
+.top-in {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 30px;
+  min-height: 76px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 3px;
+  padding-block: 8px;
+  font-family: var(--font-display);
+  font-size: 31px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+/* A sindoor dot, the same in every mood and theme. */
+.brand-dot {
+  width: 8px;
+  height: 8px;
+  margin-top: 1px;
+  border-radius: 50%;
+  background: #d0352a;
+}
+
+.nav {
+  display: flex;
+  gap: 24px;
+}
+
+.nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--ink-2);
+  text-decoration: none;
+  box-shadow: inset 0 -2px transparent;
+  transition:
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.nav a:hover {
+  color: var(--ink);
+}
+
+.nav a[aria-current='page'] {
+  color: var(--ink);
+  font-weight: 600;
+  box-shadow: inset 0 -2px var(--ink);
+}
+
+.tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.langs {
+  display: flex;
+  padding: 3px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+}
+
+/* System fonts: the English page should not download Hindi and Bengali web fonts for them. */
+.langs button {
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+  min-width: 42px;
+  min-height: 36px;
+  padding: 2px 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ink-2);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.langs button:hover {
+  color: var(--ink);
+}
+
+.langs button[aria-pressed='true'] {
+  background: var(--ink);
+  color: var(--page);
+}
+
+@media (max-width: 760px) {
+  .top-in {
+    gap: 0 16px;
+    min-height: 0;
+    padding-block: 10px 0;
+  }
+
+  .brand {
+    font-size: 27px;
+  }
+
+  /* The navigation takes its own row under the wordmark and tools. */
+  .nav {
+    order: 3;
+    width: 100%;
+    gap: 22px;
+  }
+}
+
+@media (max-width: 400px) {
+  .tools {
+    gap: 4px;
+  }
+
+  .langs button {
+    min-width: 36px;
+    padding-inline: 6px;
+  }
+}

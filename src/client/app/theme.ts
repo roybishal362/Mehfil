@@ -1,18 +1,19 @@
 /**
- * Night (the Diwali sky, default) or Day (ivory and gold). The choice is applied to
- * <html data-theme> and remembered; public/theme-init.js applies it before first paint.
+ * Day (ivory paper and sindoor, the default) or Night (warm ink and brass). The choice is
+ * applied to <html data-theme> and remembered; public/theme-init.js applies it before first
+ * paint, following the device's light or dark setting until the visitor picks one.
  */
 import { create } from 'zustand';
 
 export type Theme = 'night' | 'day';
 
 const STORAGE_KEY = 'mehfil:theme';
-const THEME_COLOR: Readonly<Record<Theme, string>> = { night: '#100a24', day: '#fbf4e7' };
+const THEME_COLOR: Readonly<Record<Theme, string>> = { night: '#13100d', day: '#f6efe4' };
 
 function currentTheme(): Theme {
-  // Build-time prerendering runs without a document; night is the default theme.
-  if (typeof document === 'undefined') return 'night';
-  return document.documentElement.dataset.theme === 'day' ? 'day' : 'night';
+  // Build-time prerendering runs without a document; day is the default theme.
+  if (typeof document === 'undefined') return 'day';
+  return document.documentElement.dataset.theme === 'night' ? 'night' : 'day';
 }
 
 function applyTheme(theme: Theme): void {
@@ -33,7 +34,7 @@ interface ThemeState {
 export const useTheme = create<ThemeState>()((set, get) => ({
   // The initial state is what the prerendered page shows; hydration renders with it and React
   // then re-renders with the saved theme (see src/client/lib/hydration.ts).
-  theme: 'night',
+  theme: 'day',
   toggle: () => {
     const theme: Theme = get().theme === 'night' ? 'day' : 'night';
     applyTheme(theme);

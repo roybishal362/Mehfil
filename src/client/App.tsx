@@ -4,6 +4,7 @@ import { lazy, Suspense, useLayoutEffect } from 'react';
 import { Link, Route, Router, Switch } from 'wouter';
 import { paths, useDocumentTitle } from './app/routing';
 import { Shell } from './app/Shell';
+import { aroundNav } from './app/view-transition';
 import { useI18n } from './i18n';
 import { SharedDefs } from './motifs/svg';
 import { HomePage } from './pages/HomePage';
@@ -39,7 +40,7 @@ function NotFoundPage() {
         <h1 data-route-focus="page" tabIndex={-1} className="text-4xl">
           {t.plan.notFoundTitle}
         </h1>
-        <Link className="btn btn--gold mt-4" href={paths.home}>
+        <Link className="btn btn--primary mt-4" href={paths.home}>
           {t.plan.backHome}
         </Link>
       </div>
@@ -61,7 +62,7 @@ export function App({ ssrPath }: AppProps) {
   return (
     <LucideProvider strokeWidth={1.75} className="i">
       <SharedDefs />
-      <Router {...(ssrPath ? { ssrPath } : {})}>
+      <Router aroundNav={aroundNav} {...(ssrPath ? { ssrPath } : {})}>
         <Shell>
           <Suspense fallback={<PageLoading />}>
             <Switch>

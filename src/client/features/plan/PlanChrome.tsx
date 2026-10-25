@@ -1,19 +1,5 @@
 /** The plan page's chrome: section tabs, undo/redo and the Gemini progress banner. */
-import {
-  Activity,
-  CalendarClock,
-  Check,
-  CircleAlert,
-  Lightbulb,
-  Redo2,
-  Sparkles,
-  Store,
-  Target,
-  Undo2,
-  Users,
-  Wallet,
-} from 'lucide-react';
-import type { ComponentType } from 'react';
+import { Check, CircleAlert, Redo2, Sparkles, Undo2 } from 'lucide-react';
 import { Link } from 'wouter';
 import type { EventPlan } from '../../../shared/schemas/plan';
 import { AI_SECTIONS, type AiSection } from '../../../shared/schemas/primitives';
@@ -23,16 +9,6 @@ import { useI18n, type Messages } from '../../i18n';
 import { personalizePlan, useAiRuns, type SectionState } from '../../state/ai';
 import { plansStore, usePlans } from '../../state/plans';
 
-const SECTION_ICONS: Readonly<Record<PlanSection, ComponentType>> = {
-  overview: Target,
-  budget: Wallet,
-  timeline: Activity,
-  vendors: Store,
-  ideas: Lightbulb,
-  guests: Users,
-  'day-of': CalendarClock,
-};
-
 export function sectionLabel(section: PlanSection, t: Messages): string {
   return section === 'day-of' ? t.sections.dayOf : t.sections[section];
 }
@@ -41,19 +17,15 @@ export function PlanTabs({ planId, current }: { planId: string; current: PlanSec
   const { t } = useI18n();
   return (
     <nav className="plan-tabs" aria-label={t.sectionsNav}>
-      {PLAN_SECTIONS.map((section) => {
-        const Icon = SECTION_ICONS[section];
-        return (
-          <Link
-            key={section}
-            href={paths.plan(planId, section)}
-            aria-current={section === current ? 'page' : undefined}
-          >
-            <Icon />
-            {sectionLabel(section, t)}
-          </Link>
-        );
-      })}
+      {PLAN_SECTIONS.map((section) => (
+        <Link
+          key={section}
+          href={paths.plan(planId, section)}
+          aria-current={section === current ? 'page' : undefined}
+        >
+          {sectionLabel(section, t)}
+        </Link>
+      ))}
     </nav>
   );
 }
@@ -172,7 +144,7 @@ export function AiStatus({ plan }: { plan: EventPlan }) {
         </span>
         <button
           type="button"
-          className="btn btn--gold btn--sm"
+          className="btn btn--primary btn--sm"
           onClick={() => {
             retry(AI_SECTIONS);
           }}

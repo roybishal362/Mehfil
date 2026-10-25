@@ -160,7 +160,7 @@ export function InvitationWriter({ plan }: { plan: EventPlan }) {
           )}
         </Field>
       </div>
-      <button type="submit" className="btn btn--gold justify-self-start" disabled={busy}>
+      <button type="submit" className="btn btn--primary justify-self-start" disabled={busy}>
         {busy ? <span className="spinner" aria-hidden="true" /> : <Sparkles />}
         {busy ? t.guestsSection.writing : t.guestsSection.write}
       </button>

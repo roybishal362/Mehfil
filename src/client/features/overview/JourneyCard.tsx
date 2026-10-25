@@ -1,6 +1,6 @@
 /**
- * The journey: planning phases strung as a marigold garland. Each flower fills as its tasks are
- * done, and a pin marks the phase you are in today.
+ * The journey: planning phases strung as a marigold garland. A phase's flower opens once its
+ * tasks are done (a bud while some are still open), and a pin marks the phase you are in today.
  */
 import { Route } from 'lucide-react';
 import { Link } from 'wouter';
@@ -40,23 +40,11 @@ const PHASE_KEYS: Readonly<Record<Phase, keyof Messages['overview']['phases']>> 
   after: 'after',
 };
 
-function Marigold({ fill }: { fill: number }) {
-  const petals = Math.round(fill * 10);
-  return (
-    <>
-      {fill > 0 && <circle r={20} fill="#F7B500" opacity={0.22} />}
-      {Array.from({ length: 10 }, (_, index) => (
-        <ellipse
-          key={index}
-          rx={4.5}
-          ry={9}
-          transform={`rotate(${String(index * 36)}) translate(0 -8)`}
-          className={index < petals ? 'petal-on' : fill > 0 ? 'petal-half' : 'petal-off'}
-        />
-      ))}
-      <circle r={4.6} className={fill > 0 ? 'heart-on' : 'heart-off'} />
-    </>
-  );
+/** A full marigold for a finished phase, a smaller bud for one under way, a ring otherwise. */
+function Flower({ fill }: { fill: number }) {
+  if (fill >= 1) return <use href="#m-marigold" x="-17" y="-17" width="34" height="34" />;
+  if (fill > 0) return <use href="#m-marigold-gold" x="-12" y="-12" width="24" height="24" />;
+  return <circle r="9" className="bud-off" />;
 }
 
 export function JourneyCard({ plan }: { plan: EventPlan }) {
@@ -94,38 +82,32 @@ export function JourneyCard({ plan }: { plan: EventPlan }) {
       </header>
       <svg viewBox="0 0 400 160" role="img" aria-label={t.overview.journeyLabel(currentLabel)}>
         <path
+          className="garland-cord"
           d="M8 46 C 70 96, 130 96, 200 50 C 270 96, 330 96, 392 46"
           fill="none"
-          stroke="#C9A15A"
-          strokeWidth={1.6}
         />
         {SHOWN.map((phase, index) => {
           const [x, y] = POINTS[index] ?? [0, 0];
           return (
             <g key={phase} transform={`translate(${String(x)} ${String(y)})`}>
-              <Marigold fill={fills[index] ?? 0} />
+              <Flower fill={fills[index] ?? 0} />
               <text y={40} textAnchor="middle" className="phase-label">
                 {t.overview.phases[PHASE_KEYS[phase]]}
               </text>
             </g>
           );
         })}
-        <g transform={`translate(${String(pinX)} 0)`}>
-          <path
-            d={`M0 26 V${String(pinY - 22)}`}
-            stroke="#E0457B"
-            strokeWidth={1.2}
-            strokeDasharray="2 3"
-          />
-          <path d="M0 26 C -10 12, -10 0, 0 0 C 10 0, 10 12, 0 26Z" fill="#E0457B" />
-          <circle cy={8} r={3.4} fill="#FFF3C9" />
+        <g transform={`translate(${String(pinX)} 0)`} className="pin">
+          <path className="pin-line" d={`M0 26 V${String(pinY - 22)}`} />
+          <path className="pin-head" d="M0 26 C -10 12, -10 0, 0 0 C 10 0, 10 12, 0 26Z" />
+          <circle className="pin-eye" cy={8} r={3.4} />
           <text
             x={pinX > 300 ? -14 : 14}
             y={12}
             className="here"
             textAnchor={pinX > 300 ? 'end' : 'start'}
           >
-            {t.overview.youAreHere.toUpperCase()}
+            {t.overview.youAreHere}
           </text>
         </g>
       </svg>

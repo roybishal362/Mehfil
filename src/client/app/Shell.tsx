@@ -1,11 +1,9 @@
-/** The page frame: skip link, festive header, main landmark, footer and notifications. */
+/** The page frame: skip link, header, main landmark, footer and notifications. */
 import { Moon, Sun } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link, useLocation } from 'wouter';
 import { APP_NAME } from '../../shared/meta';
 import { LOCALES, LOCALE_NAMES, useI18n, useLocaleStore } from '../i18n';
-import { BrandMark } from '../motifs/Diya';
-import { Stars, StringLights } from '../motifs/NightSky';
 import { Feedback } from './feedback';
 import { paths, useRouteFocus } from './routing';
 import { useRuntimeConfig } from './runtime-config';
@@ -43,36 +41,36 @@ function ThemeToggle() {
   const toggle = useTheme((state) => state.toggle);
   const label = theme === 'night' ? t.shell.toDay : t.shell.toNight;
   return (
-    <button type="button" className="roundbtn" aria-label={label} title={label} onClick={toggle}>
+    <button type="button" className="icon-btn" aria-label={label} title={label} onClick={toggle}>
       {theme === 'night' ? <Sun /> : <Moon />}
     </button>
   );
 }
 
-function SiteHeader({ overlay }: { overlay: boolean }) {
+function SiteHeader() {
   const { t } = useI18n();
   const [location] = useLocation();
   const current = (path: string) => (location === path ? ('page' as const) : undefined);
   return (
-    <header className={overlay ? 'top top--overlay' : 'top'}>
-      <Link href={paths.home} className="brand" aria-label={t.shell.home}>
-        <BrandMark />
-        <span className="brand-word foil" aria-hidden="true">
-          {APP_NAME}
-        </span>
-      </Link>
-      <nav className="nav" aria-label={t.shell.navLabel}>
-        <Link href={paths.home} aria-current={current(paths.home)}>
-          {t.shell.nav.celebrations}
+    <header className="top">
+      <div className="wrap top-in">
+        <Link href={paths.home} className="brand" aria-label={t.shell.home}>
+          <span aria-hidden="true">{APP_NAME}</span>
+          <i className="brand-dot" aria-hidden="true" />
         </Link>
-        <Link href={paths.newPlan()} aria-current={current(paths.newPlan())}>
-          {t.shell.nav.newPlan}
-        </Link>
-      </nav>
-      <div className="tools">
-        <LanguageSwitch />
-        <AccountButton />
-        <ThemeToggle />
+        <nav className="nav" aria-label={t.shell.navLabel}>
+          <Link href={paths.home} aria-current={current(paths.home)}>
+            {t.shell.nav.celebrations}
+          </Link>
+          <Link href={paths.newPlan()} aria-current={current(paths.newPlan())}>
+            {t.shell.nav.newPlan}
+          </Link>
+        </nav>
+        <div className="tools">
+          <LanguageSwitch />
+          <AccountButton />
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   );
@@ -104,26 +102,15 @@ function DemoBanner() {
 
 export function Shell({ children }: { children: ReactNode }) {
   const { t } = useI18n();
-  const [location] = useLocation();
   useRouteFocus();
-  const home = location === paths.home;
   return (
     <>
       <a className="skip-link" href="#main">
         {t.shell.skip}
       </a>
       <DemoBanner />
-      {/* On the home page the header floats over the hero's night sky. */}
       <div className="frame">
-        {home ? (
-          <SiteHeader overlay />
-        ) : (
-          <div className="sky-strip">
-            <Stars />
-            <StringLights />
-            <SiteHeader overlay={false} />
-          </div>
-        )}
+        <SiteHeader />
         <main id="main" tabIndex={-1}>
           {children}
         </main>

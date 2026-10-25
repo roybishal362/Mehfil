@@ -28,8 +28,9 @@ export default mergeConfig(
             // These need the Firebase emulators: see vitest.rules.config.ts.
             exclude: [...configDefaults.exclude, 'src/client/**/*.emulator.test.ts'],
             setupFiles: ['./src/client/test/setup.ts'],
-            // CSS is stubbed in tests, except the tokens file the contrast test reads.
-            css: { include: [/tokens\.css/] },
+            // CSS is stubbed in tests, except the files tests read: the tokens (contrast) and
+            // the moments (their timing must match the code).
+            css: { include: [/tokens\.css/, /moments\.css/] },
             // Full-page axe scans of the SVG-rich pages are slow in jsdom, more so with coverage.
             testTimeout: 20_000,
           },

@@ -20,7 +20,14 @@ export function isPlanSection(value: string | undefined): value is PlanSection {
 
 export const paths = {
   home: '/',
-  newPlan: (type?: string) => (type ? `/new?type=${encodeURIComponent(type)}` : '/new'),
+  /** The form, optionally started with an occasion and a festival name (?type=…&subtype=…). */
+  newPlan: (type?: string, subtype?: string) => {
+    const query = new URLSearchParams();
+    if (type) query.set('type', type);
+    if (subtype) query.set('subtype', subtype);
+    const search = query.toString();
+    return search ? `/new?${search}` : '/new';
+  },
   plan: (id: string, section: PlanSection = 'overview') =>
     section === 'overview' ? `/plan/${id}` : `/plan/${id}/${section}`,
   /** A read-only shared plan. */

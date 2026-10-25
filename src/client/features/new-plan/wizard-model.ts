@@ -140,17 +140,18 @@ const STYLE_BY_ENGLISH = new Map(STYLE_KEYS.map((key) => [en.styles[key].toLower
 
 export function valuesFromDraft(
   draft: DraftBrief,
-  defaults: { language: OutputLanguage; type?: EventType },
+  defaults: { language: OutputLanguage; type?: EventType; subtype?: string },
 ): WizardValues {
+  const type = draft.type ?? defaults.type;
   return {
-    type: draft.type ?? defaults.type ?? '',
+    type: type ?? '',
     title: draft.title ?? '',
-    subtype: draft.subtype ?? '',
+    subtype: draft.subtype ?? defaults.subtype ?? '',
     date: draft.date ?? '',
     endDate: draft.endDate ?? '',
     startTime: draft.startTime ?? '',
     city: draft.city ?? '',
-    venueType: draft.venueType ?? (draft.type === 'community' ? 'community_hall' : 'banquet_hall'),
+    venueType: draft.venueType ?? (type === 'community' ? 'community_hall' : 'banquet_hall'),
     guestCount: draft.guestCount ? String(draft.guestCount) : '',
     budget: draft.budget ? String(draft.budget) : '',
     currency: draft.currency ?? 'INR',

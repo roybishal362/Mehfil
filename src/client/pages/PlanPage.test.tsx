@@ -25,10 +25,12 @@ const current = (id: string) => {
 };
 
 describe('PlanPage', () => {
-  it('opens like an invitation with the overview', async () => {
+  it('opens in the colours of its occasion with the overview', async () => {
     const { container } = open();
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Ananya&Rohan');
-    expect(screen.getByRole('img', { name: /Countdown: \d+ days to go/ })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Ananya & Rohan');
+    expect(screen.getByText('Shubh Vivah · Together with their families')).toBeInTheDocument();
+    expect(container.querySelector('.count-num')).toHaveTextContent(/^\d+ days to go$/);
+    expect(document.documentElement.dataset.mood).toBe('wedding');
     expect(screen.getByRole('img', { name: /Plan \d+% ready/ })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Overview' })).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('heading', { name: 'Today’s focus' })).toBeInTheDocument();

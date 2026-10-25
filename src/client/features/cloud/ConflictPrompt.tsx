@@ -49,7 +49,7 @@ function ConflictModal() {
           <div className="dialog-actions dialog-actions--stack">
             <button
               type="button"
-              className="btn btn--gold btn--sm"
+              className="btn btn--primary btn--sm"
               disabled={working}
               onClick={() => void choose('local')}
             >

@@ -1,0 +1,1020 @@
+/*
+ * Celebration moments (Moment.tsx). Loaded with the moment itself, never on the first page.
+ * Each scene's --moment-duration matches MOMENT_DURATION in celebrated.ts (Moment.test.tsx
+ * checks this). Shared keyframes such as sway, turn and twinkle come from motifs.css.
+ * Every animation names its keyframes in the shorthand: the minifier turns a shorthand
+ * without a name into "animation: none".
+ */
+
+.moment {
+  --moment-ink: #fff3d6;
+  --moment-duration: 3.6s;
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  overflow: hidden;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  animation: moment-veil var(--moment-duration) linear both;
+}
+
+@keyframes moment-veil {
+  0% {
+    opacity: 0;
+  }
+
+  9%,
+  88% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+.moment-stage {
+  position: absolute;
+  inset: 0;
+}
+
+.moment-cheer {
+  position: absolute;
+  top: 15%;
+  right: 16px;
+  left: 16px;
+  z-index: 4;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(36px, 6vw, 72px);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--moment-ink);
+  text-align: center;
+  text-wrap: balance;
+  animation: cheer-in 0.9s 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes cheer-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes cheer-out {
+  to {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes pop-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+
+  60% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.moment-skip {
+  position: absolute;
+  right: max(20px, env(safe-area-inset-right, 0px));
+  bottom: max(20px, env(safe-area-inset-bottom, 0px));
+  z-index: 6;
+  min-height: 44px;
+  padding: 8px 22px;
+  border: 1px solid color-mix(in srgb, var(--moment-ink) 60%, transparent);
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.32);
+  color: var(--moment-ink);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.moment-skip:hover {
+  background: rgb(0 0 0 / 0.5);
+}
+
+.moment-skip:focus-visible {
+  outline: 2.5px solid var(--moment-ink);
+  outline-offset: 3px;
+}
+
+/* ---------------------------------------------------------------- falling flowers */
+
+.petals {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.petal {
+  --sway: 40px;
+  position: absolute;
+  top: -44px;
+  width: 22px;
+  height: 22px;
+  overflow: visible;
+  animation: petal-fall 2.6s 0.6s linear both;
+}
+
+@keyframes petal-fall {
+  from {
+    transform: translate3d(0, 0, 0) rotate(0);
+  }
+
+  50% {
+    transform: translate3d(calc(var(--sway) * -0.5), 56vh, 0) rotate(260deg);
+  }
+
+  to {
+    transform: translate3d(var(--sway), 112vh, 0) rotate(540deg);
+  }
+}
+
+/*
+ * Seven columns, six start times and four speeds, so the 21 flowers never fall in step.
+ */
+.petal:nth-child(7n + 1) {
+  left: 4%;
+}
+
+.petal:nth-child(7n + 2) {
+  left: 18%;
+}
+
+.petal:nth-child(7n + 3) {
+  left: 33%;
+}
+
+.petal:nth-child(7n + 4) {
+  left: 47%;
+}
+
+.petal:nth-child(7n + 5) {
+  left: 63%;
+}
+
+.petal:nth-child(7n + 6) {
+  left: 77%;
+}
+
+.petal:nth-child(7n + 7) {
+  left: 92%;
+}
+
+.petal:nth-child(6n + 1) {
+  animation-delay: 0.45s;
+}
+
+.petal:nth-child(6n + 2) {
+  animation-delay: 1.15s;
+}
+
+.petal:nth-child(6n + 3) {
+  animation-delay: 0.8s;
+}
+
+.petal:nth-child(6n + 4) {
+  animation-delay: 1.5s;
+}
+
+.petal:nth-child(6n + 5) {
+  animation-delay: 0.6s;
+}
+
+.petal:nth-child(6n + 6) {
+  animation-delay: 1.3s;
+}
+
+.petal:nth-child(4n + 1) {
+  --sway: 46px;
+  animation-duration: 2.7s;
+}
+
+.petal:nth-child(4n + 2) {
+  --sway: -38px;
+  animation-duration: 2.2s;
+}
+
+.petal:nth-child(4n + 3) {
+  --sway: 64px;
+  animation-duration: 3s;
+}
+
+.petal:nth-child(4n + 4) {
+  --sway: -56px;
+  animation-duration: 2.45s;
+}
+
+.petal:nth-child(3n) {
+  width: 16px;
+  height: 16px;
+}
+
+.petal:nth-child(3n + 1) {
+  width: 28px;
+  height: 28px;
+}
+
+/* ---------------------------------------------------------------- wedding: the pheras */
+
+.moment--wedding {
+  --moment-duration: 4s;
+  background: rgb(34 10 8 / 0.9);
+}
+
+.moment-garland {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 72px;
+}
+
+/* The centre of the circle the couple walks: the fire stands here. */
+.phera {
+  --rx: min(30vw, 300px);
+  --ry: 62px;
+  position: absolute;
+  top: 70%;
+  left: 50%;
+  width: 0;
+  height: 0;
+}
+
+.phera-glow {
+  position: absolute;
+  top: -340px;
+  left: -240px;
+  width: 480px;
+  height: 480px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgb(255 170 60 / 0.5),
+    rgb(255 120 30 / 0.14) 45%,
+    transparent 70%
+  );
+  animation: glow-pulse 0.9s ease-in-out infinite alternate;
+}
+
+@keyframes glow-pulse {
+  from {
+    opacity: 0.65;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/*
+ * Walking round the fire: x and y swing like a cosine and a sine (a quarter turn apart), so
+ * the couple traces an ellipse. They grow as they come to the front, and pass behind the fire
+ * on the far side: z-index switches with the same timing as y.
+ */
+.phera-z,
+.phera-x,
+.phera-y {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.phera-z {
+  z-index: 1;
+  animation: phera-z 1.3s linear -1.95s infinite alternate;
+}
+
+.phera-x {
+  animation: phera-x 1.3s cubic-bezier(0.37, 0, 0.63, 1) infinite alternate;
+}
+
+.phera-y {
+  animation: phera-y 1.3s cubic-bezier(0.37, 0, 0.63, 1) -1.95s infinite alternate;
+}
+
+@keyframes phera-x {
+  from {
+    transform: translateX(calc(var(--rx) * -1));
+  }
+
+  to {
+    transform: translateX(var(--rx));
+  }
+}
+
+@keyframes phera-y {
+  from {
+    transform: translateY(calc(var(--ry) * -1)) scale(0.74);
+  }
+
+  to {
+    transform: translateY(var(--ry)) scale(1.06);
+  }
+}
+
+@keyframes phera-z {
+  0%,
+  50% {
+    z-index: 1;
+  }
+
+  50.1%,
+  100% {
+    z-index: 3;
+  }
+}
+
+.couple {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: clamp(120px, 22vw, 200px);
+  height: auto;
+  transform: translateX(-50%);
+}
+
+.phera-fire {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  width: clamp(112px, 17vw, 176px);
+  transform: translate(-50%, -90%);
+}
+
+.havan {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.havan-flames {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: ignite 0.7s 0.2s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+@keyframes ignite {
+  from {
+    transform: scale(0);
+  }
+
+  to {
+    transform: scale(1);
+  }
+}
+
+.havan .fl {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: flame-dance 0.45s ease-in-out infinite alternate;
+}
+
+.havan .fl--side {
+  animation: flame-dance 0.6s ease-in-out -0.3s infinite alternate;
+}
+
+.havan .fl--mid {
+  animation: flame-dance 0.38s ease-in-out -0.15s infinite alternate;
+}
+
+.havan .fl--core {
+  animation: flame-dance 0.3s ease-in-out infinite alternate;
+}
+
+@keyframes flame-dance {
+  from {
+    transform: scale(1, 1) skewX(0);
+  }
+
+  to {
+    transform: scale(0.93, 1.12) skewX(4deg);
+  }
+}
+
+/* Embers rise from the flames. */
+.ember {
+  --drift: 10px;
+  position: absolute;
+  top: 18%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  margin-left: -2.5px;
+  border-radius: 50%;
+  background: #ffd27a;
+  animation: ember 1.3s ease-out infinite;
+}
+
+.ember:nth-of-type(2) {
+  --drift: -26px;
+  animation-delay: 0.25s;
+}
+
+.ember:nth-of-type(3) {
+  --drift: 30px;
+  animation-delay: 0.5s;
+}
+
+.ember:nth-of-type(4) {
+  --drift: -12px;
+  animation-delay: 0.75s;
+}
+
+.ember:nth-of-type(5) {
+  --drift: 18px;
+  animation-delay: 1s;
+}
+
+.ember:nth-of-type(6) {
+  --drift: -34px;
+  animation-delay: 0.4s;
+}
+
+@keyframes ember {
+  from {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translate(var(--drift), -160px) scale(0.4);
+  }
+}
+
+/* ---------------------------------------------------------------- Durga Puja: the dhaki */
+
+.moment--durga {
+  --moment-duration: 3.6s;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  animation: moment-veil-quick var(--moment-duration) linear both;
+}
+
+@keyframes moment-veil-quick {
+  0% {
+    opacity: 0;
+  }
+
+  5%,
+  94% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Curtains in a red garad sari, white and gold along the edges that meet. */
+.curtain {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+  width: 50.5%;
+  background-color: #b8141f;
+  background-image: radial-gradient(circle, rgb(232 176 74 / 0.55) 1.6px, transparent 2px);
+  background-size: 34px 34px;
+}
+
+.curtain--left {
+  left: 0;
+  box-shadow:
+    inset -16px 0 0 #fffaf0,
+    inset -22px 0 0 #e8b04a,
+    inset -26px 0 0 #fffaf0;
+  animation: curtain-left 3.6s cubic-bezier(0.65, 0, 0.25, 1) both;
+}
+
+.curtain--right {
+  right: 0;
+  box-shadow:
+    inset 16px 0 0 #fffaf0,
+    inset 22px 0 0 #e8b04a,
+    inset 26px 0 0 #fffaf0;
+  animation: curtain-right 3.6s cubic-bezier(0.65, 0, 0.25, 1) both;
+}
+
+@keyframes curtain-left {
+  0%,
+  58% {
+    transform: none;
+  }
+
+  100% {
+    transform: translateX(-104%);
+  }
+}
+
+@keyframes curtain-right {
+  0%,
+  58% {
+    transform: none;
+  }
+
+  100% {
+    transform: translateX(104%);
+  }
+}
+
+/* The cheer on a pandal banner: cream cloth with a gold and white border. */
+.moment--durga .moment-cheer {
+  top: 11%;
+  width: fit-content;
+  max-width: calc(100% - 32px);
+  margin-inline: auto;
+  padding: 10px 30px 12px;
+  border-radius: 10px;
+  background: #fffaf0;
+  box-shadow:
+    0 0 0 3px #e8b04a,
+    0 0 0 7px #fffaf0,
+    0 22px 40px -22px rgb(0 0 0 / 0.6);
+  color: #a3111a;
+  font-size: clamp(30px, 5vw, 60px);
+  animation:
+    cheer-in 0.8s 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) both,
+    cheer-out 0.4s 1.95s ease-in forwards;
+}
+
+.dhaki-wrap {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  z-index: 2;
+  width: min(70vw, 400px, 52vh);
+  transform: translateX(-50%);
+}
+
+/* Rises, drums, and sinks away just before the curtains part. */
+.dhaki-body {
+  position: relative;
+  animation: dhaki-rise 3.6s cubic-bezier(0.3, 0.8, 0.3, 1) both;
+}
+
+@keyframes dhaki-rise {
+  0% {
+    transform: translateY(105%);
+  }
+
+  16%,
+  52% {
+    transform: translateY(3%);
+  }
+
+  64%,
+  100% {
+    transform: translateY(108%);
+  }
+}
+
+.dhaki {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.dhaki-arm {
+  transform-box: view-box;
+  transform-origin: 134px 96px;
+  animation: drum-stroke 0.19s ease-in infinite alternate;
+}
+
+@keyframes drum-stroke {
+  from {
+    transform: rotate(-28deg);
+  }
+
+  to {
+    transform: rotate(4deg);
+  }
+}
+
+.dhaki-drum {
+  transform-box: view-box;
+  transform-origin: 110px 176px;
+  animation: drum-hit 0.38s ease-in-out infinite;
+}
+
+@keyframes drum-hit {
+  0%,
+  100% {
+    transform: none;
+  }
+
+  50% {
+    transform: translateY(2px) rotate(-0.8deg);
+  }
+}
+
+.dhaki-plume {
+  transform-box: view-box;
+  transform-origin: 80px 146px;
+  animation: sway 0.7s ease-in-out infinite alternate;
+}
+
+/* Rings of sound off the drum's right face. */
+.beat {
+  position: absolute;
+  top: 65%;
+  left: 77%;
+  width: 64px;
+  height: 64px;
+  margin: -32px 0 0 -32px;
+  border: 3px solid rgb(255 250 240 / 0.85);
+  border-radius: 50%;
+  opacity: 0;
+  animation: beat 0.6s ease-out infinite;
+}
+
+.beat:nth-of-type(2) {
+  animation-delay: 0.2s;
+}
+
+.beat:nth-of-type(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes beat {
+  from {
+    opacity: 0.9;
+    transform: scale(0.3);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+}
+
+/* The shiuli fall as the curtains part. */
+.moment--durga .petal {
+  width: 30px;
+  height: 32px;
+}
+
+.moment--durga .petal:nth-child(6n + 1) {
+  animation-delay: 1.85s;
+}
+
+.moment--durga .petal:nth-child(6n + 2) {
+  animation-delay: 2.25s;
+}
+
+.moment--durga .petal:nth-child(6n + 3) {
+  animation-delay: 2s;
+}
+
+.moment--durga .petal:nth-child(6n + 4) {
+  animation-delay: 2.4s;
+}
+
+.moment--durga .petal:nth-child(6n + 5) {
+  animation-delay: 1.95s;
+}
+
+.moment--durga .petal:nth-child(6n + 6) {
+  animation-delay: 2.15s;
+}
+
+/* ---------------------------------------------------------------- Diwali: rockets */
+
+.moment--diwali {
+  --moment-duration: 3.6s;
+  background: rgb(10 8 22 / 0.9);
+}
+
+.moment--diwali .moment-cheer {
+  top: 38%;
+  color: #f6d58e;
+  animation: cheer-in 0.9s 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.moment-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+}
+
+.stars {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 8% 14%, #fff8e6 1px, transparent 1.6px),
+    radial-gradient(circle at 22% 32%, #fff8e6 1.2px, transparent 1.8px),
+    radial-gradient(circle at 37% 9%, #fff8e6 1px, transparent 1.6px),
+    radial-gradient(circle at 54% 24%, #fff8e6 1.4px, transparent 2px),
+    radial-gradient(circle at 68% 12%, #fff8e6 1px, transparent 1.6px),
+    radial-gradient(circle at 81% 29%, #fff8e6 1.2px, transparent 1.8px),
+    radial-gradient(circle at 93% 8%, #fff8e6 1px, transparent 1.6px),
+    radial-gradient(circle at 15% 52%, #fff8e6 1px, transparent 1.6px),
+    radial-gradient(circle at 88% 48%, #fff8e6 1px, transparent 1.6px);
+  animation: twinkle 2.2s ease-in-out infinite;
+}
+
+.diya-line {
+  position: absolute;
+  right: 0;
+  bottom: 7%;
+  left: 0;
+  z-index: 3;
+  display: flex;
+  justify-content: center;
+  gap: clamp(10px, 3.4vw, 36px);
+}
+
+.moment-diya {
+  width: clamp(28px, 5vw, 46px);
+  height: auto;
+  overflow: visible;
+  animation: diya-on 0.5s ease-out both;
+}
+
+/* Lit from the middle outwards. */
+.moment-diya:nth-child(5) {
+  animation-delay: 0.2s;
+}
+
+.moment-diya:nth-child(4),
+.moment-diya:nth-child(6) {
+  animation-delay: 0.35s;
+}
+
+.moment-diya:nth-child(3),
+.moment-diya:nth-child(7) {
+  animation-delay: 0.5s;
+}
+
+.moment-diya:nth-child(2),
+.moment-diya:nth-child(8) {
+  animation-delay: 0.65s;
+}
+
+.moment-diya:nth-child(1),
+.moment-diya:nth-child(9) {
+  animation-delay: 0.8s;
+}
+
+@keyframes diya-on {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.6);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------------------------------------------------------------- Ganpati */
+
+.moment--ganpati {
+  --moment-duration: 3.4s;
+  background: rgb(60 24 4 / 0.92);
+}
+
+.moment--ganpati .moment-cheer {
+  top: 18%;
+  animation: pop-in 0.8s 0.3s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+.moment-sun {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(120vw, 900px);
+  aspect-ratio: 1;
+  color: #f3b04a;
+  opacity: 0.5;
+  transform: translate(-50%, -50%);
+  animation: sun-in 1s ease-out both;
+}
+
+.moment-sun .sunburst {
+  display: block;
+  width: 100%;
+  height: 100%;
+  animation: turn 22s linear infinite;
+}
+
+@keyframes sun-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.6);
+  }
+
+  to {
+    opacity: 0.5;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.moment-modaks {
+  position: absolute;
+  bottom: 9%;
+  left: 50%;
+  z-index: 3;
+  width: min(52vw, 300px);
+  transform: translateX(-50%);
+}
+
+.moment-modaks .modaks {
+  display: block;
+  width: 100%;
+  height: auto;
+  animation: pop-in 0.9s 0.5s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+.moment--ganpati .petal,
+.moment--utsav .petal {
+  width: 30px;
+  height: 30px;
+}
+
+.moment--ganpati .petal:nth-child(3n),
+.moment--utsav .petal:nth-child(3n) {
+  width: 22px;
+  height: 22px;
+}
+
+/* ---------------------------------------------------------------- birthday */
+
+.moment--birthday {
+  --moment-ink: #5b1240;
+  --moment-duration: 3.4s;
+  background: rgb(255 247 239 / 0.9);
+}
+
+.moment--birthday .moment-cheer {
+  top: 34%;
+  color: #a8196d;
+  animation: pop-in 0.8s 0.25s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+.moment--birthday .moment-skip {
+  background: rgb(255 255 255 / 0.75);
+}
+
+.moment--birthday .moment-skip:hover {
+  background: #ffffff;
+}
+
+.rise-balloons {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.rise-balloon {
+  position: absolute;
+  bottom: -170px;
+  width: 64px;
+  height: 160px;
+  animation: balloon-rise 3.1s cubic-bezier(0.3, 0.1, 0.4, 1) both;
+}
+
+@keyframes balloon-rise {
+  from {
+    transform: translateY(0) rotate(-4deg);
+  }
+
+  50% {
+    transform: translateY(-62vh) rotate(4deg);
+  }
+
+  to {
+    transform: translateY(calc(-100vh - 200px)) rotate(-3deg);
+  }
+}
+
+.rise-balloon:nth-child(1) {
+  left: 4%;
+  color: #d63a8a;
+}
+
+.rise-balloon:nth-child(2) {
+  left: 16%;
+  color: #1f9a94;
+  animation-delay: 0.3s;
+}
+
+.rise-balloon:nth-child(3) {
+  left: 27%;
+  color: #e6ad12;
+  animation-delay: 0.1s;
+}
+
+.rise-balloon:nth-child(4) {
+  left: 39%;
+  color: #5b3fa8;
+  animation-delay: 0.45s;
+}
+
+.rise-balloon:nth-child(5) {
+  left: 50%;
+  color: #ef8f1c;
+  animation-delay: 0.2s;
+}
+
+.rise-balloon:nth-child(6) {
+  left: 61%;
+  color: #d63a8a;
+  animation-delay: 0.55s;
+}
+
+.rise-balloon:nth-child(7) {
+  left: 72%;
+  color: #1f9a94;
+  animation-delay: 0.15s;
+}
+
+.rise-balloon:nth-child(8) {
+  left: 83%;
+  color: #e6ad12;
+  animation-delay: 0.4s;
+}
+
+.rise-balloon:nth-child(9) {
+  left: 92%;
+  color: #5b3fa8;
+  animation-delay: 0.25s;
+}
+
+.rise-balloon:nth-child(2n) {
+  width: 52px;
+  height: 130px;
+}
+
+/* ---------------------------------------------------------------- other festivals */
+
+.moment--utsav {
+  --moment-duration: 3s;
+  background: rgb(44 22 6 / 0.9);
+}
+
+.moment--utsav .moment-cheer {
+  top: 13%;
+}
+
+.marigold-ring {
+  position: absolute;
+  top: 60%;
+  left: 50%;
+  z-index: 2;
+  width: min(78vw, 500px, 58vh);
+  height: auto;
+  overflow: visible;
+  transform: translate(-50%, -50%);
+  animation: ring-in 3s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes ring-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.7) rotate(-40deg);
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) rotate(30deg);
+  }
+}
+
+/* People who ask for less movement never get a moment, even by mistake. */
+@media (prefers-reduced-motion: reduce) {
+  .moment {
+    display: none;
+  }
+}

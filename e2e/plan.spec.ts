@@ -6,10 +6,12 @@ test.describe('a plan made from one sentence', () => {
     await describeCelebration(page);
   });
 
-  test('opens as an invitation with every section tailored', async ({ page }) => {
+  test('opens in its occasion’s colours with every section tailored', async ({ page }) => {
     const title = page.getByRole('heading', { level: 1 });
     await expect(title).toContainText('Ananya');
     await expect(title).toContainText('Rohan');
+    await expect(page.locator('html')).toHaveAttribute('data-mood', 'wedding');
+    await expect(page.getByText('Shubh Vivah · Together with their families')).toBeVisible();
     await expect(page.getByText('Kolkata').first()).toBeVisible();
     await expect(page.getByText('Standard plan. Ask Gemini to tailor it.')).toHaveCount(0);
     await expectAccessible(page);

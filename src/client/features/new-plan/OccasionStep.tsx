@@ -1,15 +1,13 @@
 /** Step 1 of the form: what is being celebrated, when and where. */
 import { EVENT_TYPES, VENUE_TYPES } from '../../../shared/schemas/primitives';
 import { addDays, localToday } from '../../../shared/utils/dates';
-import { useTheme } from '../../app/theme';
 import { Field } from '../../components/Field';
 import { useI18n } from '../../i18n';
-import { OccasionIcon } from '../../motifs/OccasionIcon';
+import { OccasionArt } from '../../motifs/OccasionArt';
 import type { StepProps } from './step-props';
 
 export function OccasionStep({ values, set, errorText }: StepProps) {
   const { t } = useI18n();
-  const day = useTheme((state) => state.theme === 'day');
   const today = localToday();
   const typeError = errorText('type');
 
@@ -30,7 +28,7 @@ export function OccasionStep({ values, set, errorText }: StepProps) {
               }}
             />
             <span>
-              <OccasionIcon type={type} day={day} />
+              <OccasionArt kind={type} />
               {t.home.occasions[type].title}
             </span>
           </label>

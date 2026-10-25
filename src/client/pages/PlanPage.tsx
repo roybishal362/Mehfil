@@ -1,5 +1,6 @@
 /**
- * A plan: the invitation header, section tabs, the section itself and the Copilot beside it.
+ * A plan: its header in the occasion's colours, section tabs, the section itself and the
+ * Copilot beside it.
  * Each section has its own URL (/plan/<id>/budget …) so it can be bookmarked and shared.
  */
 import { Link } from 'wouter';
@@ -8,7 +9,7 @@ import { ErrorBoundary } from '../components/ErrorBoundary';
 import { ShareButton } from '../features/cloud/ShareDialog';
 import { CopilotPanel } from '../features/copilot/CopilotPanel';
 import { Overview } from '../features/overview/Overview';
-import { InvitationCard } from '../features/plan/InvitationCard';
+import { PlanHeader } from '../features/plan/PlanHeader';
 import { AiStatus, PlanTabs, UndoRedo, sectionLabel } from '../features/plan/PlanChrome';
 import { BudgetSection } from '../features/sections/BudgetSection';
 import { DayOfSection } from '../features/sections/DayOfSection';
@@ -55,7 +56,7 @@ export function PlanPage({ params }: { params: { id?: string; section?: string }
             {t.plan.notFoundTitle}
           </h1>
           <p>{t.plan.notFoundText}</p>
-          <Link className="btn btn--gold mt-4" href={paths.home}>
+          <Link className="btn btn--primary mt-4" href={paths.home}>
             {t.plan.backHome}
           </Link>
         </div>
@@ -65,7 +66,7 @@ export function PlanPage({ params }: { params: { id?: string; section?: string }
 
   return (
     <div className="wrap">
-      <InvitationCard plan={plan} />
+      <PlanHeader plan={plan} />
       <div className="plan-actions">
         <UndoRedo planId={plan.id} />
         <ShareButton plan={plan} />

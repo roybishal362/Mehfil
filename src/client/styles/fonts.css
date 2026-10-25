@@ -1,16 +1,53 @@
 /*
- * Inter's rupee sign on its own (1 KB), so the "₹" on the first screen does not pull in Inter's
- * whole latin-ext file (84 KB). Faces with overlapping unicode-ranges are tried newest first, so
- * main.tsx imports this after the @fontsource faces. Made with fontTools from that file:
- *   python -m fontTools.subset inter-latin-ext-wght-normal.woff2 --unicodes=U+20B9
- *     --flavor=woff2 --layout-features='*' --output-file=inter-rupee-wght-normal.woff2
- * Inter is licensed under the SIL Open Font License 1.1 (fonts/OFL.txt).
+ * The rupee sign on its own (under 1 KB per face), so a "₹" on the first screen does not pull in
+ * a whole latin-ext or Devanagari file (14 to 100 KB). Faces with overlapping unicode-ranges
+ * are tried newest first, so main.tsx imports this after the @fontsource faces. Made with
+ * fontTools from the @fontsource latin-ext files, for example:
+ *   python -m fontTools.subset mukta-latin-ext-400-normal.woff2 --unicodes=U+20B9
+ *     --flavor=woff2 --layout-features='*' --no-hinting --output-file=mukta-rupee-400-normal.woff2
+ * Mukta and Eczar are licensed under the SIL Open Font License 1.1 (fonts/OFL.txt).
  */
 @font-face {
-  font-family: 'Inter Variable';
+  font-family: 'Mukta';
   font-style: normal;
   font-display: swap;
-  font-weight: 100 900;
-  src: url('./fonts/inter-rupee-wght-normal.woff2') format('woff2-variations');
+  font-weight: 400;
+  src: url('./fonts/mukta-rupee-400-normal.woff2') format('woff2');
+  unicode-range: U+20B9;
+}
+
+@font-face {
+  font-family: 'Mukta';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 500;
+  src: url('./fonts/mukta-rupee-500-normal.woff2') format('woff2');
+  unicode-range: U+20B9;
+}
+
+@font-face {
+  font-family: 'Mukta';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url('./fonts/mukta-rupee-600-normal.woff2') format('woff2');
+  unicode-range: U+20B9;
+}
+
+@font-face {
+  font-family: 'Mukta';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('./fonts/mukta-rupee-700-normal.woff2') format('woff2');
+  unicode-range: U+20B9;
+}
+
+@font-face {
+  font-family: 'Eczar Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400 800;
+  src: url('./fonts/eczar-rupee-wght-normal.woff2') format('woff2-variations');
   unicode-range: U+20B9;
 }

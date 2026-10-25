@@ -261,7 +261,7 @@ export function GuestsSection({ plan }: { plan: EventPlan }) {
               />
             )}
           </Field>
-          <button type="submit" className="btn btn--gold btn--sm">
+          <button type="submit" className="btn btn--primary btn--sm">
             <Plus />
             {t.guestsSection.add}
           </button>

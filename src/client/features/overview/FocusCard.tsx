@@ -1,13 +1,11 @@
-/** "Today's focus": the next tasks to tick off, plus quick questions for the Copilot. */
+/** "Today's focus": the next tasks to tick off, each with how soon it is due. */
 import { Sparkles, Target } from 'lucide-react';
 import { nextTasks, taskState } from '../../../shared/domain/timeline';
 import type { EventPlan, Task } from '../../../shared/schemas/plan';
 import { diffDays, localToday } from '../../../shared/utils/dates';
 import { toast } from '../../app/feedback';
 import { useI18n, type Formatters, type Messages } from '../../i18n';
-import { LampIcon } from '../../motifs/Diya';
 import { plansStore } from '../../state/plans';
-import { askCopilot } from '../copilot/copilot';
 
 function duePill(task: Task, today: string, t: Messages, f: Formatters) {
   const state = taskState(task, today);
@@ -43,12 +41,6 @@ export function FocusCard({ plan }: { plan: EventPlan }) {
     });
   };
 
-  const ask = (question: string) => {
-    void askCopilot(plan.id, question);
-    document.getElementById('copilot-input')?.focus({ preventScroll: true });
-    document.getElementById('copilot')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  };
-
   return (
     <article className="card card--wide" aria-labelledby="focus-title">
       <header className="card-head">
@@ -63,52 +55,32 @@ export function FocusCard({ plan }: { plan: EventPlan }) {
           </span>
         )}
       </header>
-      <div className="focus">
-        {tasks.length === 0 ? (
-          <p className="empty">{t.overview.allClear}</p>
-        ) : (
-          <ul className="tasks">
-            {tasks.map((task) => (
-              <li key={task.id}>
-                <input
-                  type="checkbox"
-                  className="check"
-                  checked={false}
-                  aria-label={t.overview.markDone(task.title)}
-                  onChange={() => {
-                    complete(task);
-                  }}
-                />
-                <div>
-                  <p className="t">{task.title}</p>
-                  <p className="m">
-                    {duePill(task, today, t, f)}
-                    {task.notes && <span>{task.notes}</span>}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-        <div className="ask">
-          <h3>
-            <LampIcon />
-            {t.overview.askTitle}
-          </h3>
-          <p>{t.overview.askText}</p>
-          {t.overview.askSuggestions.map((question) => (
-            <button
-              key={question}
-              type="button"
-              onClick={() => {
-                ask(question);
-              }}
-            >
-              {question}
-            </button>
+      {tasks.length === 0 ? (
+        <p className="empty">{t.overview.allClear}</p>
+      ) : (
+        <ul className="tasks">
+          {tasks.map((task) => (
+            <li key={task.id}>
+              <input
+                type="checkbox"
+                className="check"
+                checked={false}
+                aria-label={t.overview.markDone(task.title)}
+                onChange={() => {
+                  complete(task);
+                }}
+              />
+              <div>
+                <p className="t">{task.title}</p>
+                <p className="m">
+                  {duePill(task, today, t, f)}
+                  {task.notes && <span>{task.notes}</span>}
+                </p>
+              </div>
+            </li>
           ))}
-        </div>
-      </div>
+        </ul>
+      )}
     </article>
   );
 }

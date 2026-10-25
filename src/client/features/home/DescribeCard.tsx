@@ -12,7 +12,6 @@ import { localToday } from '../../../shared/utils/dates';
 import { announce } from '../../app/feedback';
 import { paths } from '../../app/routing';
 import { useI18n } from '../../i18n';
-import { Finial } from '../../motifs/Ornaments';
 import { useDraft } from '../new-plan/draft';
 import { briefFromDraft, completeDraft, readDescription } from '../new-plan/intake';
 import { startPlan } from '../new-plan/start-plan';
@@ -74,9 +73,8 @@ export function DescribeCard() {
   };
 
   return (
-    <form className="invite" onSubmit={(event) => void submit(event)} noValidate>
-      <Finial />
-      <div className="invite-label">
+    <form className="describe" onSubmit={(event) => void submit(event)} noValidate>
+      <div className="describe-label">
         <label htmlFor="describe">{t.home.describeLabel}</label>
         <small id="describe-hint">{t.home.describeHint}</small>
       </div>
@@ -101,12 +99,12 @@ export function DescribeCard() {
           {error}
         </p>
       )}
-      <div className="actions">
-        <button className="btn btn--gold" type="submit" disabled={reading}>
+      <div className="describe-actions">
+        <button className="btn btn--primary" type="submit" disabled={reading}>
           {reading ? <span className="spinner" aria-hidden="true" /> : <Sparkles />}
           {t.home.plan}
         </button>
-        <Link className="btn btn--ghost" href={paths.newPlan()}>
+        <Link className="link-quiet" href={paths.newPlan()}>
           {t.home.stepByStep}
         </Link>
       </div>

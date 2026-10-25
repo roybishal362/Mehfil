@@ -39,8 +39,10 @@ describe('dictionaries', () => {
   });
 
   it('uses the script of each language for the interface', () => {
-    expect(hi.home.titleScript).toMatch(/[ऀ-ॿ]/u);
-    expect(bn.home.titleScript).toMatch(/[ঀ-৿]/u);
+    expect(hi.home.heroTitle.em).toMatch(/[ऀ-ॿ]/u);
+    expect(bn.home.heroTitle.em).toMatch(/[ঀ-৿]/u);
+    expect(hi.moods.greeting.diwali).toMatch(/[ऀ-ॿ]/u);
+    expect(bn.moods.greeting.durga).toMatch(/[ঀ-৿]/u);
   });
 });
 
@@ -70,7 +72,7 @@ describe('formatters', () => {
 describe('locale store', () => {
   it('loads Hindi on demand and labels the document', async () => {
     await useLocaleStore.getState().setLocale('hi');
-    expect(useLocaleStore.getState().messages.home.titleLead).toBe(hi.home.titleLead);
+    expect(useLocaleStore.getState().messages.home.heroTitle).toEqual(hi.home.heroTitle);
     expect(document.documentElement.lang).toBe('hi');
     expect(localStorage.getItem('mehfil:lang')).toBe('hi');
     expect(savedLocale()).toBe('hi');

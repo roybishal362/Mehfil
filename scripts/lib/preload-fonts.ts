@@ -7,10 +7,10 @@ import type { Plugin } from 'vite';
 
 /** Built font files to preload, matched by name (hashes change on every build). */
 const CRITICAL_FONTS = [
-  /^assets\/cormorant-garamond-latin-wght-normal-[\w-]+\.woff2$/,
-  /^assets\/great-vibes-latin-400-normal-[\w-]+\.woff2$/,
-  /^assets\/inter-latin-wght-normal-[\w-]+\.woff2$/,
-  /^assets\/inter-rupee-wght-normal-[\w-]+\.woff2$/,
+  /^assets\/eczar-latin-wght-normal-[\w-]+\.woff2$/,
+  /^assets\/mukta-latin-400-normal-[\w-]+\.woff2$/,
+  /^assets\/mukta-latin-600-normal-[\w-]+\.woff2$/,
+  /^assets\/mukta-rupee-400-normal-[\w-]+\.woff2$/,
 ];
 
 export function preloadCriticalFonts(): Plugin {

@@ -11,10 +11,10 @@ function visit(path: string) {
 }
 
 describe('App', () => {
-  it('opens on the festive home page with a skip link, navigation and no axe violations', async () => {
+  it('opens on the home page with a skip link, navigation and no axe violations', async () => {
     const { container } = visit('/');
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
-      'Light up every celebration',
+      'One planner for every celebration.',
     );
     expect(screen.getByRole('link', { name: 'Skip to main content' })).toHaveAttribute(
       'href',
@@ -22,7 +22,7 @@ describe('App', () => {
     );
     expect(screen.getByRole('navigation', { name: 'Main' })).toBeInTheDocument();
     expect(
-      screen.getByRole('img', { name: /Plan rangoli for a sample wedding/ }),
+      screen.getByRole('img', { name: /plans weddings, Durga Puja, Ganpati/ }),
     ).toBeInTheDocument();
     expect(await axe(container)).toHaveNoViolations();
   });
@@ -32,12 +32,12 @@ describe('App', () => {
     visit('/');
     await user.click(screen.getByRole('button', { name: 'हिन्दी' }));
     await waitFor(() => {
-      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('हर उत्सव को');
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('हर उत्सव के लिए');
     });
     expect(document.documentElement.lang).toBe('hi');
     await user.click(screen.getByRole('button', { name: 'বাংলা' }));
     await waitFor(() => {
-      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('প্রতিটি উৎসবকে');
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('প্রতিটি উৎসবের জন্য');
     });
     expect(screen.getByRole('button', { name: 'বাংলা' })).toHaveAttribute('aria-pressed', 'true');
   });

@@ -103,7 +103,7 @@ export function AccountDialog({ onClose }: { onClose: () => void }) {
                 <p>{t.cloud.pitch}</p>
                 <button
                   type="button"
-                  className="btn btn--gold"
+                  className="btn btn--primary"
                   disabled={busy !== null}
                   onClick={() => void run(signInWithGoogle, undefined, true)}
                 >

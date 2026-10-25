@@ -85,4 +85,20 @@ describe('wizard conversion', () => {
     });
     expect(valuesFromDraft({}, { language: 'en', type: 'birthday' }).type).toBe('birthday');
   });
+
+  it('starts an occasion card’s festival in a community hall, already named', () => {
+    const festival = valuesFromDraft(
+      {},
+      { language: 'en', type: 'community', subtype: 'Durga Puja' },
+    );
+    expect(festival).toMatchObject({
+      type: 'community',
+      subtype: 'Durga Puja',
+      venueType: 'community_hall',
+    });
+    // A description's own details win over the card's.
+    expect(
+      valuesFromDraft({ subtype: 'Kali Puja' }, { language: 'en', subtype: 'Durga Puja' }).subtype,
+    ).toBe('Kali Puja');
+  });
 });

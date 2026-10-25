@@ -49,7 +49,7 @@ export function ConfirmDialog({
           </button>
           <button
             type="button"
-            className={danger ? 'btn btn--danger btn--sm' : 'btn btn--gold btn--sm'}
+            className={danger ? 'btn btn--danger btn--sm' : 'btn btn--primary btn--sm'}
             onClick={onConfirm}
           >
             {confirmLabel}

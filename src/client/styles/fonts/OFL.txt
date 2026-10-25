@@ -1,4 +1,7 @@
-Copyright 2016 The Inter Project Authors (https://github.com/rsms/inter) Inter-Italic[opsz,wght].ttf: Copyright 2016 The Inter Project Authors (https://github.com/rsms/inter)
+Mukta: Copyright (c) 2014, Girish Dalvi, Ek Type. All rights reserved.
+Eczar: Copyright 2014 The Eczar Project Authors (https://github.com/rosettatype/eczar)
+
+The files in this folder are subsets (the rupee sign only) of these fonts.
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:

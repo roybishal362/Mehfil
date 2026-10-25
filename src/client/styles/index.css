@@ -6,11 +6,11 @@
 @import 'tailwindcss';
 @import './tokens.css';
 @import './base.css' layer(base);
-@import './stage.css' layer(components);
 @import './components.css' layer(components);
+@import './motifs.css' layer(components);
+@import './shell.css' layer(components);
 @import './home.css' layer(components);
-@import './invitation.css' layer(components);
-@import './workspace.css' layer(components);
+@import './plan.css' layer(components);
 @import './wizard.css' layer(components);
 @import './sections.css' layer(components);
 @import './cloud.css' layer(components);

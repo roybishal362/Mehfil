@@ -8,14 +8,25 @@ import { Occasions } from './Occasions';
 import { YourPlans } from './YourPlans';
 
 describe('Occasions', () => {
-  it('starts a plan for each kind of celebration', async () => {
+  it('starts a plan for each occasion, naming the festival for pujas and Diwali', async () => {
     const { container } = renderAt(<Occasions />);
     const links = screen.getAllByRole('link');
     expect(links.map((link) => link.getAttribute('href'))).toEqual([
       '/new?type=wedding',
+      '/new?type=community&subtype=Durga+Puja',
+      '/new?type=community&subtype=Ganpati',
       '/new?type=birthday',
-      '/new?type=community',
+      '/new?type=other&subtype=Diwali',
       '/new?type=other',
+    ]);
+    // Each card wears its festival's colours.
+    expect(links.map((link) => link.dataset.mood)).toEqual([
+      'wedding',
+      'durga',
+      'ganpati',
+      'birthday',
+      'diwali',
+      'neutral',
     ]);
     expect(await axe(container)).toHaveNoViolations();
   });

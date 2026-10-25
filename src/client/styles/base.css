@@ -2,7 +2,7 @@
 
 html {
   -webkit-text-size-adjust: 100%;
-  /* Tiro (Hindi/Bengali display) has one weight; never fake a bold. */
+  /* Tiro (Bengali display) has one weight; never fake a bold. */
   font-synthesis-weight: none;
   scroll-padding-top: 24px;
 }
@@ -10,9 +10,9 @@ html {
 body {
   margin: 0;
   min-height: 100dvh;
-  background: var(--page);
+  background: var(--page) var(--grain);
   color: var(--ink);
-  font: 16px/1.6 var(--font-body);
+  font: 17px/1.6 var(--font-body);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
@@ -22,8 +22,9 @@ h2,
 h3 {
   margin: 0;
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.1;
+  letter-spacing: -0.01em;
   text-wrap: balance;
 }
 
@@ -55,13 +56,22 @@ a {
 /* Plain links in text stay recognisable; styled links (buttons, tabs) opt out with a class. */
 a:not([class]) {
   text-decoration: underline;
+  text-decoration-color: var(--line-strong);
   text-underline-offset: 3px;
+}
+
+a:not([class]):hover {
+  text-decoration-color: currentColor;
 }
 
 :focus-visible {
   outline: 2.5px solid var(--focus);
   outline-offset: 3px;
-  border-radius: 10px;
+  border-radius: var(--radius-xs);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
 /* Hindi and Bengali sit taller; give them a touch more line height. */
@@ -70,9 +80,23 @@ a:not([class]) {
   line-height: 1.7;
 }
 
+/*
+ * A Hindi or Bengali word inside text in another language (i18n/MixedScript.tsx) uses the
+ * system's fonts: a page should not download a whole script's web font for one word.
+ */
+.native {
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+  line-height: inherit;
+}
+
 :lang(hi) :is(h1, h2, h3),
 :lang(bn) :is(h1, h2, h3) {
   line-height: 1.25;
+  letter-spacing: 0;
 }
 
 .frame {
@@ -110,10 +134,10 @@ a:not([class]) {
   top: -80px;
   z-index: 100;
   padding: 12px 20px;
-  border-radius: 999px;
-  background: var(--foil);
-  color: var(--on-foil);
-  font-weight: 700;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
   text-decoration: none;
   transition: top 0.15s ease;
 }
@@ -128,81 +152,107 @@ a:not([class]) {
   flex: none;
 }
 
+/* Flat gold foil, as on printed stationery: large display text and ornaments only. */
 .foil {
-  background: var(--foil);
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: shine 9s linear infinite;
+  color: var(--foil);
 }
 
-@keyframes shine {
-  from {
-    background-position: 0% 0;
-  }
-  to {
-    background-position: 200% 0;
-  }
-}
-
-.smallcaps {
-  font-size: 12.5px;
-  font-weight: 650;
-  letter-spacing: 0.24em;
+/* A small label above a heading. */
+.kicker {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--label);
 }
 
 /* Tracked capitals are a Latin device; letter-spacing breaks Devanagari and Bengali apart. */
-:lang(hi)
-  :is(
-    .smallcaps,
-    .understood .lbl,
-    .arch .go,
-    .card-head .more,
-    .stone span,
-    .side-caption,
-    .seal small,
-    .journey .here,
-    .celebration,
-    .place,
-    .dateblock span
-  ),
-:lang(bn)
-  :is(
-    .smallcaps,
-    .understood .lbl,
-    .arch .go,
-    .card-head .more,
-    .stone span,
-    .side-caption,
-    .seal small,
-    .journey .here,
-    .celebration,
-    .place,
-    .dateblock span
-  ) {
+:lang(hi) :is(.kicker, .count-label, .slip-title, .tag),
+:lang(bn) :is(.kicker, .count-label, .slip-title, .tag) {
   letter-spacing: 0.02em;
+  text-transform: none;
 }
 
 .tabular {
   font-variant-numeric: lining-nums tabular-nums;
 }
 
-/* The hidden SVG that holds the shared gradients (SharedDefs). */
+/* The hidden SVG that holds shared symbols and definitions. */
 .svg-defs {
   position: absolute;
+  width: 0;
+  height: 0;
   overflow: hidden;
 }
 
 /*
- * Looping decorations (flames, twinkling bulbs, sparks, lanterns, foil shine) wait until the
- * page has loaded, so the first paint is not competing with dozens of animated SVG shapes.
+ * Cards and section titles rise into place as they scroll into view. It is driven by the
+ * scroll position alone (no script, so nothing can flash): anything already on screen is
+ * simply there, and browsers without scroll timelines show everything as it is.
  */
-:root:not([data-motion='on']) :is(.flame, .glow, .bulb, .sparkles i, .lantern, .foil),
-:root:not([data-motion='on']) .btn--gold::after {
-  animation-play-state: paused;
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    :is(.band-head, .occasions > li, .how > li, .plans-list > li, .grid-2 > .card, .ideas > li) {
+      animation: reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 90%;
+    }
+
+    /* Cards side by side arrive one after another. */
+    :is(.occasions, .how) > li:nth-child(2n) {
+      animation-range: entry 8% entry 98%;
+    }
+
+    :is(.occasions, .how) > li:nth-child(3n) {
+      animation-range: entry 14% cover 30%;
+    }
+  }
+}
+
+/* Page changes cross-fade (app/view-transition.ts); the header stays where it is. */
+.top {
+  view-transition-name: site-header;
+}
+
+::view-transition-old(root) {
+  animation: vt-out 0.18s ease-in both;
+}
+
+::view-transition-new(root) {
+  animation: vt-in 0.34s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes vt-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes vt-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+/*
+ * Looping decorations (garlands, lanterns, flames, falling flowers) wait until the page has
+ * loaded, so the first paint is not competing with animated SVG shapes.
+ */
+:root:not([data-motion='on']) .motion {
+  animation-play-state: paused !important;
 }
 
 /* Motion: everything decorative stops for people who ask for less movement. */
@@ -219,11 +269,6 @@ a:not([class]) {
 
 /* Windows high-contrast and other forced-colour modes. */
 @media (forced-colors: active) {
-  .foil {
-    background: none;
-    color: CanvasText;
-  }
-
   .btn,
   .chip,
   .pill,

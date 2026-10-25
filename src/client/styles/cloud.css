@@ -33,7 +33,7 @@
 }
 
 /* The header's account button, with a dot when sync needs attention. */
-.roundbtn {
+.icon-btn {
   position: relative;
 }
 
@@ -44,8 +44,8 @@
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: #ff8a6b;
-  box-shadow: 0 0 0 2px #140b2e;
+  background: var(--danger-ink);
+  box-shadow: 0 0 0 2px var(--page);
 }
 
 .account-who {

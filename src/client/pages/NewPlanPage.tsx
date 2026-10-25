@@ -37,14 +37,18 @@ export function NewPlanPage() {
   const today = localToday();
   useDocumentTitle(t.wizard.title);
 
-  // A description from the home page arrives as a draft; an occasion card arrives as ?type=.
-  const requestedType = new URLSearchParams(search).get('type');
+  // A description from the home page arrives as a draft; an occasion card arrives as ?type=,
+  // with the festival's name as ?subtype= for Durga Puja, Ganpati and Diwali.
+  const query = new URLSearchParams(search);
+  const requestedType = query.get('type');
+  const requestedSubtype = query.get('subtype')?.trim().slice(0, 60);
   const [{ values: initialValues, notice }] = useState(() => {
     const handoff = useDraft.getState();
     return {
       values: valuesFromDraft(handoff.draft ?? {}, {
         language: locale,
         ...(isEventType(requestedType) ? { type: requestedType } : {}),
+        ...(requestedSubtype ? { subtype: requestedSubtype } : {}),
       }),
       notice: handoff.notice,
     };
@@ -187,7 +191,7 @@ export function NewPlanPage() {
               </button>
             )}
             <div className="end">
-              <button type="submit" className="btn btn--gold">
+              <button type="submit" className="btn btn--primary">
                 {step < STEP_COUNT - 1 ? (
                   <>
                     {t.common.next}

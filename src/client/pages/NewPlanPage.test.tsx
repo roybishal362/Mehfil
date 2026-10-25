@@ -88,6 +88,12 @@ describe('NewPlanPage', () => {
     );
   });
 
+  it('starts from a festival card with the festival already named', () => {
+    renderAt(<NewPlanPage />, '/new', 'type=community&subtype=Durga+Puja');
+    expect(screen.getByRole('radio', { name: 'Community' })).toBeChecked();
+    expect(screen.getByRole('textbox', { name: /Kind of celebration/ })).toHaveValue('Durga Puja');
+  });
+
   it('continues from a description that was partly understood', () => {
     useDraft.getState().set({ type: 'wedding', city: 'Kolkata', guestCount: 300 }, 'fallback');
     renderAt(<NewPlanPage />, '/new');

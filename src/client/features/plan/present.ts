@@ -1,67 +1,59 @@
-/** Turns plan data into what the invitation card, rangoli and tiles display. */
+/** Turns plan data into what the plan header, the diyas and the plan tiles display. */
+import { moodFor, type Mood } from '../../../shared/domain/mood';
 import { PROGRESS_PARTS, planProgress, type ProgressPart } from '../../../shared/domain/progress';
 import { readiness } from '../../../shared/domain/readiness';
 import { countdown, type Countdown } from '../../../shared/domain/timeline';
 import type { EventPlan } from '../../../shared/schemas/plan';
 import type { Formatters, Messages } from '../../i18n';
-import type { RangoliPetal } from '../../motifs/Rangoli';
 
-const PART_COLORS: Readonly<Record<ProgressPart, string>> = {
-  budget: '#F28C28',
-  timeline: '#E0457B',
-  vendors: '#2CB6B0',
-  ideas: '#9B7BF0',
-  guests: '#33A46F',
-  dayOf: '#F7B500',
-};
+/** One part of the plan (budget, timeline, …) and how far along it is. */
+export interface PlanPart {
+  key: ProgressPart;
+  label: string;
+  /** 0–1. */
+  value: number;
+  /** "60%" or "not started". */
+  caption: string;
+}
 
 function partLabel(part: ProgressPart, t: Messages): string {
   return part === 'dayOf' ? t.sections.dayOf : t.sections[part];
 }
 
-export function petalsFor(
+export function partsFor(
   values: Readonly<Record<ProgressPart, number>>,
   t: Messages,
   f: Formatters,
-): RangoliPetal[] {
+): PlanPart[] {
   return PROGRESS_PARTS.map((part) => ({
     key: part,
     label: partLabel(part, t),
     value: values[part],
-    color: PART_COLORS[part],
     caption: values[part] > 0 ? f.percent(values[part]) : t.plan.notStarted,
   }));
 }
 
-/** "Budget 60%, Timeline not started, …" for the rangoli's accessible description. */
-export function petalsSummary(petals: readonly RangoliPetal[], t: Messages): string {
-  return petals.map((petal) => t.plan.partValue(petal.label, petal.caption)).join(', ');
+/** "Budget 60%, Timeline not started, …" for the diyas' accessible description. */
+export function partsSummary(parts: readonly PlanPart[], t: Messages): string {
+  return parts.map((part) => t.plan.partValue(part.label, part.caption)).join(', ');
 }
 
 export interface PlanView {
-  petals: RangoliPetal[];
+  parts: PlanPart[];
   /** Readiness, 0–100. */
   score: number;
   countdown: Countdown;
+  mood: Mood;
 }
 
 export function planView(plan: EventPlan, today: string, t: Messages, f: Formatters): PlanView {
   return {
-    petals: petalsFor(planProgress(plan, today), t, f),
+    parts: partsFor(planProgress(plan, today), t, f),
     score: readiness(plan, today).score,
     countdown: countdown(plan.brief, today),
+    mood: moodFor(plan.brief),
   };
 }
-
-/** The sample shown on the home page before any plan exists. */
-export const SAMPLE_PROGRESS: Readonly<Record<ProgressPart, number>> = {
-  budget: 1,
-  timeline: 0.35,
-  vendors: 0.2,
-  ideas: 0.8,
-  guests: 0.1,
-  dayOf: 0,
-};
 
 /**
  * Splits a wedding title such as "Ananya & Rohan's Wedding" or "अनन्या और रोहन की शादी" into
