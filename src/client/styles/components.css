@@ -239,6 +239,12 @@
   height: 20px;
 }
 
+.badge .art {
+  width: 30px;
+  height: 30px;
+  filter: drop-shadow(0 4px 4px rgb(60 30 10 / 0.16));
+}
+
 .note {
   display: flex;
   gap: 6px;

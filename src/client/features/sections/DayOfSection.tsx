@@ -73,7 +73,7 @@ export function DayOfSection({ plan }: { plan: EventPlan }) {
 
   return (
     <section className="ws-main" aria-labelledby="section-title">
-      <SectionHead title={t.dayOfSection.title} intro={t.dayOfSection.intro}>
+      <SectionHead title={t.dayOfSection.title} intro={t.dayOfSection.intro} art="party-popper">
         <button
           type="button"
           className="btn btn--ghost btn--sm"

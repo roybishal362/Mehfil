@@ -21,7 +21,9 @@ export default defineConfig({
     target: 'es2022',
     sourcemap: false,
     // Fonts stay separate files: the Content-Security-Policy's font-src allows 'self', not data:.
-    assetsInlineLimit: (file) => (file.endsWith('.woff2') ? false : undefined),
+    // Fonts and artwork stay files: inlined, they would bloat the JavaScript and CSS that every
+    // page waits for, and they cache better on their own.
+    assetsInlineLimit: (file) => (/\.(?:woff2|webp)$/.test(file) ? false : undefined),
     reportCompressedSize: true,
   },
   server: {

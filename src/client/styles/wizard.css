@@ -117,7 +117,7 @@
   cursor: pointer;
 }
 
-.type-option span {
+.type-option > span {
   display: grid;
   justify-items: center;
   gap: 6px;
@@ -131,11 +131,8 @@
 }
 
 .type-option .occasion-art {
-  width: auto;
-  max-width: 72px;
-  height: 44px;
-  color: var(--label);
-  overflow: visible;
+  width: 46px;
+  margin-bottom: 4px;
 }
 
 .type-option input:checked + span {

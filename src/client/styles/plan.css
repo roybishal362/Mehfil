@@ -122,6 +122,11 @@
   margin-top: 6px;
 }
 
+.count .diya {
+  width: 30px;
+  height: 30px;
+}
+
 .count-note {
   font-size: 13.5px;
   color: var(--muted);
@@ -200,12 +205,6 @@
     var(--shadow-card);
 }
 
-.art-dhak {
-  right: 250px;
-  bottom: 22px;
-  width: 150px;
-}
-
 /* Ganpati: a slow saffron sunburst behind a stack of modaks, under a marigold toran. */
 .art-sun {
   top: -130px;
@@ -219,17 +218,7 @@
   opacity: 0.18;
 }
 
-.art-modaks {
-  right: 250px;
-  bottom: 20px;
-  width: 150px;
-}
-
-/* Birthday: bunting and balloons. */
-.art-balloons {
-  right: 250px;
-  bottom: -24px;
-}
+/* Birthday: bunting over the header. */
 
 /* Diwali: a night sky in both themes, with lights and swaying kandils. */
 .planhead[data-mood='diwali'] {
@@ -244,9 +233,157 @@
   color: #e4c98e;
 }
 
-.art-kandils {
+/* Lanterns on cords of different lengths, glowing and swaying. */
+.art-lanterns {
   top: 0;
-  right: 250px;
+  right: 268px;
+  display: flex;
+  align-items: flex-start;
+  gap: 22px;
+}
+
+.hang {
+  --cord: 40px;
+  position: relative;
+  display: block;
+  width: 58px;
+  padding-top: var(--cord);
+  transform-origin: 50% 0;
+  animation: sway 3.8s ease-in-out infinite alternate;
+}
+
+.hang::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: calc(50% - 0.75px);
+  width: 1.5px;
+  height: calc(var(--cord) + 6px);
+  background: #8f7b62;
+}
+
+.hang .art {
+  display: block;
+  width: 58px;
+  filter: drop-shadow(0 0 16px rgb(255 158 64 / 0.55));
+}
+
+.hang:nth-child(2) {
+  --cord: 84px;
+  animation-duration: 3.2s;
+  animation-delay: -1.4s;
+}
+
+.hang:nth-child(3) {
+  --cord: 56px;
+  animation-delay: -2.4s;
+}
+
+/*
+ * Each mood's 3D objects, drifting beside the title: a main object, a second one above it and a
+ * small one in front.
+ */
+.art-cluster {
+  right: 262px;
+  bottom: 18px;
+  width: 210px;
+  height: 172px;
+}
+
+@media (min-width: 821px) {
+  .planhead-copy {
+    padding-right: 220px;
+  }
+}
+
+.art-cluster-item {
+  position: absolute;
+  animation: drift 4.2s ease-in-out infinite alternate;
+}
+
+.art-cluster-item .art {
+  display: block;
+  width: 100%;
+  filter: drop-shadow(0 14px 14px rgb(40 20 5 / 0.24));
+}
+
+.art-cluster-item:nth-child(1) {
+  bottom: 4px;
+  left: 44px;
+  width: 124px;
+}
+
+.art-cluster-item:nth-child(2) {
+  top: 0;
+  left: 0;
+  width: 74px;
+  animation-duration: 3.6s;
+  animation-delay: -1.6s;
+}
+
+.art-cluster-item:nth-child(3) {
+  right: 0;
+  bottom: 0;
+  width: 62px;
+  animation-duration: 4.8s;
+  animation-delay: -2.4s;
+}
+
+/* Birthday: three balloons in different colours beside the cake. */
+.art-cluster--birthday .art-cluster-item:nth-child(1) {
+  bottom: 54px;
+  left: 6px;
+  width: 92px;
+}
+
+.art-cluster--birthday .art-cluster-item:nth-child(2) {
+  top: -14px;
+  left: 70px;
+  width: 92px;
+}
+
+.art-cluster--birthday .art-cluster-item:nth-child(3) {
+  right: -6px;
+  bottom: 64px;
+  width: 84px;
+}
+
+.art-cluster--birthday .art-cluster-item:nth-child(2) .art {
+  filter: hue-rotate(170deg) drop-shadow(0 14px 14px rgb(40 20 5 / 0.24));
+}
+
+.art-cluster--birthday .art-cluster-item:nth-child(3) .art {
+  filter: hue-rotate(48deg) saturate(1.2) drop-shadow(0 14px 14px rgb(40 20 5 / 0.24));
+}
+
+.art-cluster--birthday .art-cluster-item:nth-child(4) {
+  bottom: 0;
+  left: 60px;
+  width: 104px;
+  animation-duration: 5s;
+}
+
+/* Diwali's lamp sits low, with sparkles above it. */
+.art-cluster--diwali {
+  height: 118px;
+}
+
+.art-cluster--diwali .art-cluster-item:nth-child(1) {
+  left: 70px;
+  width: 104px;
+}
+
+.art-cluster--diwali .art-cluster-item:nth-child(2) {
+  left: 20px;
+  width: 52px;
+}
+
+.art-cluster--diwali .art-cluster-item:nth-child(1) .art {
+  filter: drop-shadow(0 0 18px rgb(255 170 70 / 0.5));
+}
+
+.art-cluster--neutral .art-cluster-item:nth-child(1) {
+  width: 96px;
 }
 
 /* ---------------------------------------------------------------- actions and tabs */
@@ -363,8 +500,15 @@
 .section-head {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 12px 20px;
+  align-items: center;
+  gap: 12px 18px;
+}
+
+.section-art .art {
+  display: block;
+  width: 62px;
+  height: 62px;
+  filter: drop-shadow(0 10px 10px rgb(60 30 10 / 0.18));
 }
 
 .section-head h2 {
@@ -379,8 +523,14 @@
 .section-head .actions {
   display: flex;
   flex-wrap: wrap;
+  align-self: flex-end;
   gap: 8px;
   margin-left: auto;
+}
+
+.section-head > div:not(.actions) {
+  flex: 1 1 260px;
+  min-width: 0;
 }
 
 /* ---------------------------------------------------------------- overview cards */
@@ -887,11 +1037,12 @@
     position: static;
   }
 
-  .art-dhak,
-  .art-modaks,
-  .art-balloons,
-  .art-kandils {
-    right: 230px;
+  .art-cluster {
+    right: 236px;
+  }
+
+  .art-lanterns {
+    right: 244px;
   }
 }
 
@@ -930,25 +1081,22 @@
     margin: 0;
   }
 
-  .art-dhak,
-  .art-modaks {
-    top: 70px;
-    right: 18px;
-    bottom: auto;
-    width: 96px;
-  }
-
-  .art-balloons {
-    top: 40px;
+  /* The objects move to the top corner, smaller. */
+  .art-cluster {
+    top: 58px;
     right: 6px;
     bottom: auto;
-    transform: scale(0.62);
+    transform: scale(0.6);
     transform-origin: 100% 0;
   }
 
-  .art-kandils {
+  .art-cluster--diwali {
+    right: 6px;
+  }
+
+  .art-lanterns {
     right: 14px;
-    transform: scale(0.62);
+    transform: scale(0.66);
     transform-origin: 100% 0;
   }
 
@@ -981,10 +1129,8 @@
 @media (max-width: 520px) {
   /* Phones keep the strip along the top and the falling flowers; the side pieces would
      crowd the title. */
-  .art-dhak,
-  .art-modaks,
-  .art-balloons,
-  .art-kandils {
+  .art-cluster,
+  .art-lanterns {
     display: none;
   }
 

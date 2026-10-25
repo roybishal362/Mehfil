@@ -1,5 +1,6 @@
 /** "Today's focus": the next tasks to tick off, each with how soon it is due. */
-import { Sparkles, Target } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
+import { Art } from '../../art/Art';
 import { nextTasks, taskState } from '../../../shared/domain/timeline';
 import type { EventPlan, Task } from '../../../shared/schemas/plan';
 import { diffDays, localToday } from '../../../shared/utils/dates';
@@ -44,8 +45,8 @@ export function FocusCard({ plan }: { plan: EventPlan }) {
   return (
     <article className="card card--wide" aria-labelledby="focus-title">
       <header className="card-head">
-        <span className="badge">
-          <Target />
+        <span className="badge" aria-hidden="true">
+          <Art name="target" size={30} />
         </span>
         <h2 id="focus-title">{t.overview.focusTitle}</h2>
         {tailored && (

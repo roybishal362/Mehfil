@@ -2,7 +2,8 @@
  * The journey: planning phases strung as a marigold garland. A phase's flower opens once its
  * tasks are done (a bud while some are still open), and a pin marks the phase you are in today.
  */
-import { Route } from 'lucide-react';
+import { artUrl } from '../../art';
+import { Art } from '../../art/Art';
 import { Link } from 'wouter';
 import {
   PHASES,
@@ -40,10 +41,14 @@ const PHASE_KEYS: Readonly<Record<Phase, keyof Messages['overview']['phases']>> 
   after: 'after',
 };
 
-/** A full marigold for a finished phase, a smaller bud for one under way, a ring otherwise. */
+const MARIGOLD = artUrl('marigold', 40);
+
+/** A full marigold for a finished phase, a smaller, paler one under way, a ring otherwise. */
 function Flower({ fill }: { fill: number }) {
-  if (fill >= 1) return <use href="#m-marigold" x="-17" y="-17" width="34" height="34" />;
-  if (fill > 0) return <use href="#m-marigold-gold" x="-12" y="-12" width="24" height="24" />;
+  if (fill >= 1) return <image href={MARIGOLD} x="-19" y="-19" width="38" height="38" />;
+  if (fill > 0) {
+    return <image href={MARIGOLD} x="-13" y="-13" width="26" height="26" className="bud" />;
+  }
   return <circle r="9" className="bud-off" />;
 }
 
@@ -72,8 +77,8 @@ export function JourneyCard({ plan }: { plan: EventPlan }) {
   return (
     <article className="card journey" aria-labelledby="journey-title">
       <header className="card-head">
-        <span className="badge">
-          <Route />
+        <span className="badge" aria-hidden="true">
+          <Art name="calendar" size={30} />
         </span>
         <h2 id="journey-title">{t.overview.journeyTitle}</h2>
         <Link className="more" href={paths.plan(plan.id, 'timeline')}>

@@ -19,6 +19,7 @@ import { toast } from './app/feedback';
 import { loadRuntimeConfig } from './app/runtime-config';
 import { connectCloud } from './cloud/account';
 import { initLocale, useLocaleStore } from './i18n';
+import { markLoaded } from './lib/after-load';
 import { browserStorage, connectPersistence, loadPlans } from './state/persistence';
 import { plansStore } from './state/plans';
 
@@ -57,10 +58,14 @@ async function start(): Promise<void> {
   startMotionWhenIdle();
 }
 
-/** Lets the looping decorations start once loading has finished (see base.css). */
+/**
+ * Once loading has finished and the browser is idle, the looping decorations start (see
+ * base.css) and the first screen's 3D pictures load (see Art.tsx).
+ */
 function startMotionWhenIdle(): void {
   const start = () => {
     document.documentElement.dataset.motion = 'on';
+    markLoaded();
   };
   const whenIdle = () => {
     if ('requestIdleCallback' in window) window.requestIdleCallback(start, { timeout: 2500 });

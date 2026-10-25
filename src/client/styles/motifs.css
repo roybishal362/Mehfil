@@ -1,5 +1,5 @@
 /*
- * Festive motifs and their motion. Every loop is gentle and slow, carries the .motion class (so it
+ * Festive motifs, the 3D artwork and their motion. Every loop is gentle and slow, carries the .motion class (so it
  * waits until the page has loaded, see base.css) and stops for reduced motion. Pivot points use
  * transform-box: fill-box, so no element needs an inline style.
  */
@@ -73,34 +73,6 @@
   }
 }
 
-/*
- * The plate's scenes take turns: each is shown for four of the cycle's twenty seconds. At the
- * cycle's start only the first scene is visible, so the paused first frame (before the page
- * has loaded) shows one scene, not none.
- */
-@keyframes cycle {
-  0%,
-  16% {
-    opacity: 1;
-    transform: none;
-  }
-
-  20% {
-    opacity: 0;
-    transform: scale(1.04) rotate(2deg);
-  }
-
-  96% {
-    opacity: 0;
-    transform: scale(0.94) rotate(-3deg);
-  }
-
-  100% {
-    opacity: 1;
-    transform: none;
-  }
-}
-
 /* ---------------------------------------------------------------- loops */
 
 .sway {
@@ -164,76 +136,6 @@
 .sunburst {
   color: #f3b04a;
   animation: turn 90s linear infinite;
-}
-
-/* ---------------------------------------------------------------- hanging and floating things */
-
-.kandils {
-  display: flex;
-  gap: 22px;
-  align-items: flex-start;
-}
-
-.kandil {
-  width: 62px;
-  height: auto;
-  transform-origin: 50% 0;
-  animation: sway 4s ease-in-out infinite alternate;
-}
-
-.kandil:nth-child(2) {
-  animation-delay: -1.6s;
-  animation-duration: 3.4s;
-}
-
-.kandil:nth-child(3) {
-  animation-delay: -2.6s;
-}
-
-.kandil--red {
-  color: #b3241c;
-}
-
-.kandil--saffron {
-  color: #e27b2b;
-}
-
-.kandil--teal {
-  color: #1f7a74;
-}
-
-.balloons {
-  display: flex;
-  gap: 6px;
-  align-items: flex-start;
-}
-
-.balloon {
-  width: 56px;
-  height: 140px;
-  animation: bob 3.2s ease-in-out infinite alternate;
-}
-
-.balloon:nth-child(2) {
-  margin-top: -26px;
-  animation-delay: -1.1s;
-}
-
-.balloon:nth-child(3) {
-  margin-top: 10px;
-  animation-delay: -2s;
-}
-
-.balloon--pink {
-  color: #d63a8a;
-}
-
-.balloon--teal {
-  color: #1f9a94;
-}
-
-.balloon--gold {
-  color: #e6ad12;
 }
 
 /* Shiuli flowers fall across their container, each on its own path and pace. */
@@ -303,68 +205,6 @@
 .bunting,
 .lights {
   display: block;
-  overflow: visible;
-}
-
-/* ---------------------------------------------------------------- diyas */
-
-.diya {
-  width: 26px;
-  height: 26px;
-  flex: none;
-}
-
-.diya--unlit {
-  color: var(--line-strong);
-}
-
-.diya-row {
-  display: flex;
-  gap: 3px;
-}
-
-/* A lamp lights with a little flare when its part of the plan begins (or the page opens). */
-.diya-row .diya--lit {
-  animation: diya-light 0.7s cubic-bezier(0.2, 1.4, 0.4, 1) both;
-}
-
-.diya-row .diya--lit:nth-child(2) {
-  animation-delay: 0.08s;
-}
-
-.diya-row .diya--lit:nth-child(3) {
-  animation-delay: 0.16s;
-}
-
-.diya-row .diya--lit:nth-child(4) {
-  animation-delay: 0.24s;
-}
-
-.diya-row .diya--lit:nth-child(5) {
-  animation-delay: 0.32s;
-}
-
-.diya-row .diya--lit:nth-child(6) {
-  animation-delay: 0.4s;
-}
-
-@keyframes diya-light {
-  from {
-    opacity: 0.3;
-    transform: translateY(4px) scale(0.7);
-  }
-
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-.lamp-icon {
-  flex: none;
-}
-
-.occasion-art {
   overflow: visible;
 }
 
@@ -448,171 +288,364 @@
   stroke-width: 2.5;
 }
 
-/* ---------------------------------------------------------------- the home page's plate */
+/* ---------------------------------------------------------------- 3D artwork */
 
-.plate {
-  position: relative;
-  width: 100%;
-  max-width: 470px;
+.art {
+  display: inline-block;
+  height: auto;
+  max-width: 100%;
   aspect-ratio: 1;
-  margin: 0 0 48px auto;
+  vertical-align: middle;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
-.plate-rim {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: var(--surface);
-  box-shadow:
-    inset 0 0 0 10px var(--surface-3),
-    inset 0 0 0 11px var(--frame),
-    var(--shadow-lift);
-}
-
-.plate-dots {
-  position: absolute;
-  inset: 22px;
-  animation: turn 120s linear infinite;
-}
-
-.plate-dots .dot-a {
-  fill: var(--frame);
-}
-
-.plate-dots .dot-b {
-  fill: #b3241c;
-}
-
-.vignettes {
-  position: absolute;
-  inset: 17%;
-}
-
-.vignette {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  animation: cycle 20s infinite;
-}
-
-.vignette > svg,
-.vignette > div {
-  width: 100%;
-  max-height: 100%;
-}
-
-.vignette svg {
-  overflow: visible;
-}
-
-/* Each scene starts four seconds after the one before. */
-.vignette:nth-child(2),
-.plate-scene:nth-child(2) {
-  animation-delay: -16s;
-}
-
-.vignette:nth-child(3),
-.plate-scene:nth-child(3) {
-  animation-delay: -12s;
-}
-
-.vignette:nth-child(4),
-.plate-scene:nth-child(4) {
-  animation-delay: -8s;
-}
-
-.vignette:nth-child(5),
-.plate-scene:nth-child(5) {
-  animation-delay: -4s;
-}
-
-/* Without the animation (reduced motion), the first scene stays. */
-.vignette:not(:first-child),
-.plate-scene:not(:first-child) {
+/* Pictures that wait for the page to load hold their square, then fade and grow in. */
+.art--arriving {
   opacity: 0;
+  scale: 0.7;
 }
 
-.vignette--durga {
-  grid-template: 1fr / 1fr;
+/* Also keeps the hover lift (transform) that cards give their pictures. */
+.art.art--arrived {
+  opacity: 1;
+  scale: 1;
+  transition:
+    opacity 0.5s ease,
+    scale 0.6s cubic-bezier(0.2, 1.3, 0.4, 1),
+    transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
-/* The flowers fall across the whole plate, clipped to its circle. */
-.vignette--durga .shiuli-rain {
-  inset: -14%;
+/* Objects drift gently, each on its own pace (set where they are used). */
+@keyframes drift {
+  from {
+    transform: translate3d(0, 0, 0) rotate(-2.5deg);
+  }
+
+  to {
+    transform: translate3d(0, -9px, 0) rotate(2.5deg);
+  }
+}
+
+@keyframes flame-glow {
+  from {
+    opacity: 0.55;
+    transform: scale(0.94);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+
+/* ---------------------------------------------------------------- diyas */
+
+.diya {
+  flex: none;
+  width: 28px;
+  height: 28px;
+}
+
+/* An unlit lamp: the same diya, greyed and faded. */
+.diya--unlit {
+  filter: grayscale(1) opacity(0.32);
+}
+
+.diya-row {
+  display: flex;
+  gap: 2px;
+}
+
+/* A lamp lights with a little flare when its part of the plan begins (or the page opens). */
+.diya-row .diya--lit {
+  animation: diya-light 0.7s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+.diya-row .diya--lit:nth-child(2) {
+  animation-delay: 0.08s;
+}
+
+.diya-row .diya--lit:nth-child(3) {
+  animation-delay: 0.16s;
+}
+
+.diya-row .diya--lit:nth-child(4) {
+  animation-delay: 0.24s;
+}
+
+.diya-row .diya--lit:nth-child(5) {
+  animation-delay: 0.32s;
+}
+
+.diya-row .diya--lit:nth-child(6) {
+  animation-delay: 0.4s;
+}
+
+@keyframes diya-light {
+  from {
+    opacity: 0.3;
+    transform: translateY(4px) scale(0.7);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.lamp-icon {
+  flex: none;
+  width: 34px;
+  height: 34px;
+}
+
+/* ---------------------------------------------------------------- occasion pictures */
+
+/* A main object with a smaller one in front, standing on a soft shadow. */
+.occasion-art {
+  position: relative;
+  isolation: isolate;
+  display: inline-block;
+  flex: none;
+  width: 64px;
+  aspect-ratio: 1;
+}
+
+.occasion-art::after {
+  content: '';
+  position: absolute;
+  right: 8%;
+  bottom: -8%;
+  left: 8%;
+  z-index: -1;
+  height: 16%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(60 30 10 / 0.24), transparent);
+}
+
+.occasion-art-main {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 8px 10px rgb(60 30 10 / 0.16));
+  transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.occasion-art-accent {
+  position: absolute;
+  right: -20%;
+  bottom: -10%;
+  width: 52%;
+  height: 52%;
+  filter: drop-shadow(0 6px 8px rgb(60 30 10 / 0.2));
+  transition: transform 0.45s cubic-bezier(0.2, 1.3, 0.4, 1);
+}
+
+/* ---------------------------------------------------------------- the home page's scene */
+
+/*
+ * A puja thali with a lit diya, and celebration objects floating around it. Each object sits
+ * at its slot's centre (left and top), sized as a share of the scene, and shifts with the
+ * pointer by its depth (--px and --py come from CelebrationPlate.tsx).
+ */
+.scene {
+  --px: 0;
+  --py: 0;
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  aspect-ratio: 1;
+  margin-left: auto;
+}
+
+.scene-halo {
+  position: absolute;
+  inset: 6%;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--halo) 0%, transparent 66%);
+}
+
+.scene-thali {
+  position: absolute;
+  top: 66%;
+  right: 25%;
+  left: 25%;
+  height: 14%;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at 50% 35%,
+    #f8dd94 0%,
+    #dcaa48 42%,
+    #ad7a26 74%,
+    #7d561a 100%
+  );
+  box-shadow:
+    0 22px 30px -18px rgb(60 30 10 / 0.55),
+    inset 0 -5px 10px rgb(80 50 10 / 0.35);
+}
+
+/* The thali's raised inner rim. */
+.scene-thali::before {
+  content: '';
+  position: absolute;
+  inset: 16% 12%;
+  border: 2px solid rgb(255 238 186 / 0.75);
   border-radius: 50%;
 }
 
-.vignette--durga .dhak {
-  width: 92%;
-  align-self: end;
-}
-
-.vignette--ganpati .sunburst {
+.scene-item {
+  --depth: 1;
+  --size: 20%;
   position: absolute;
-  inset: -8%;
-  width: 116%;
-  opacity: 0.35;
+  width: var(--size);
+  translate: -50% -50%;
+  transform: translate3d(
+    calc(var(--px) * var(--depth) * 18px),
+    calc(var(--py) * var(--depth) * 14px),
+    0
+  );
+  transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
-.vignette--ganpati .modaks {
-  position: relative;
-  width: 76%;
+.scene-float {
+  display: block;
+  animation: drift 4.4s ease-in-out infinite alternate;
 }
 
-.vignette--birthday .balloons {
+.scene-item .art {
+  display: block;
+  width: 100%;
+  filter: drop-shadow(0 16px 18px rgb(60 30 10 / 0.2));
+}
+
+.scene-item--diya {
+  --depth: 0.5;
+  --size: 38%;
+  top: 56%;
+  left: 50%;
+  z-index: 2;
+}
+
+/* The flame's glow, at the lamp's spout. */
+.scene-item--diya::before {
+  content: '';
   position: absolute;
-  top: -6%;
-  right: -4%;
-  width: auto;
-  transform: scale(0.8);
-  transform-origin: 100% 0;
+  top: -22%;
+  left: 52%;
+  width: 52%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(255 196 92 / 0.6), transparent 68%);
+  animation: flame-glow 1.3s ease-in-out infinite alternate;
 }
 
-.vignette--birthday > svg {
-  width: 80%;
-  margin-top: 16%;
+.scene-item--diya .scene-float {
+  animation-duration: 5.2s;
 }
 
-.vignette--diwali .kandils {
-  position: absolute;
-  top: -6%;
-  left: 6%;
-  width: auto;
-  gap: 18%;
+.scene-item--lotus {
+  --depth: 1.2;
+  --size: 23%;
+  top: 30%;
+  left: 18%;
 }
 
-.vignette--diwali .kandil {
-  width: 54px;
+.scene-item--lotus .scene-float {
+  animation-duration: 3.8s;
+  animation-delay: -1.2s;
 }
 
-.vignette--diwali .plate-diya {
-  width: 46%;
-  margin-top: 34%;
+.scene-item--ring {
+  --depth: 0.8;
+  --size: 15%;
+  top: 13%;
+  left: 47%;
 }
 
-.plate-caption {
-  position: absolute;
-  inset: auto 0 -48px;
-  height: 36px;
-  text-align: center;
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 600;
-  color: var(--ink);
+.scene-item--ring .scene-float {
+  animation-duration: 4.8s;
+  animation-delay: -2.6s;
 }
 
-.plate-scene {
-  position: absolute;
-  inset: 0;
-  animation: cycle 20s infinite;
+.scene-item--cake {
+  --depth: 1;
+  --size: 24%;
+  top: 28%;
+  left: 82%;
 }
 
-/* ---------------------------------------------------------------- reduced motion */
+.scene-item--cake .scene-float {
+  animation-duration: 4.1s;
+  animation-delay: -0.6s;
+}
 
-@media (prefers-reduced-motion: reduce) {
-  .vignette,
-  .plate-scene {
-    animation: none;
-  }
+.scene-item--marigold-a {
+  --depth: 1.6;
+  --size: 12%;
+  top: 58%;
+  left: 10%;
+}
+
+.scene-item--marigold-a .scene-float {
+  animation-duration: 3.4s;
+  animation-delay: -1.8s;
+}
+
+.scene-item--balloon {
+  --depth: 1.4;
+  --size: 16%;
+  top: 57%;
+  left: 89%;
+}
+
+.scene-item--balloon .scene-float {
+  animation-duration: 3.2s;
+  animation-delay: -2.2s;
+}
+
+.scene-item--elephant {
+  --depth: 1.1;
+  --size: 23%;
+  top: 83%;
+  left: 21%;
+}
+
+.scene-item--elephant .scene-float {
+  animation-duration: 4.6s;
+  animation-delay: -3s;
+}
+
+.scene-item--gift {
+  --depth: 1.3;
+  --size: 19%;
+  top: 85%;
+  left: 78%;
+}
+
+.scene-item--gift .scene-float {
+  animation-duration: 3.9s;
+  animation-delay: -0.9s;
+}
+
+.scene-item--marigold-b {
+  --depth: 1.8;
+  --size: 9%;
+  top: 8%;
+  left: 66%;
+}
+
+.scene-item--marigold-b .scene-float {
+  animation-duration: 3.1s;
+  animation-delay: -1.5s;
+}
+
+.scene-item--sparkles {
+  --depth: 2;
+  --size: 11%;
+  top: 44%;
+  left: 71%;
+}
+
+.scene-item--sparkles .scene-float {
+  animation: twinkle 2.4s ease-in-out infinite;
 }

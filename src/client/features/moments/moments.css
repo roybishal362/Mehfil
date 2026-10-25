@@ -751,9 +751,9 @@
 }
 
 .moment-diya {
-  width: clamp(28px, 5vw, 46px);
+  width: clamp(36px, 5.6vw, 60px);
   height: auto;
-  overflow: visible;
+  filter: drop-shadow(0 0 14px rgb(255 170 60 / 0.7));
   animation: diya-on 0.5s ease-out both;
 }
 
@@ -837,19 +837,19 @@
   }
 }
 
-.moment-modaks {
+.moment-elephant {
   position: absolute;
-  bottom: 9%;
+  bottom: 8%;
   left: 50%;
   z-index: 3;
-  width: min(52vw, 300px);
+  width: min(54vw, 280px);
   transform: translateX(-50%);
 }
 
-.moment-modaks .modaks {
+.moment-elephant .art {
   display: block;
   width: 100%;
-  height: auto;
+  filter: drop-shadow(0 24px 24px rgb(0 0 0 / 0.35));
   animation: pop-in 0.9s 0.5s cubic-bezier(0.2, 1.4, 0.4, 1) both;
 }
 
@@ -896,8 +896,8 @@
 .rise-balloon {
   position: absolute;
   bottom: -170px;
-  width: 64px;
-  height: 160px;
+  width: 104px;
+  height: auto;
   animation: balloon-rise 3.1s cubic-bezier(0.3, 0.1, 0.4, 1) both;
 }
 
@@ -915,62 +915,61 @@
   }
 }
 
+/* One red balloon, recoloured for the others. */
 .rise-balloon:nth-child(1) {
   left: 4%;
-  color: #d63a8a;
 }
 
 .rise-balloon:nth-child(2) {
   left: 16%;
-  color: #1f9a94;
+  filter: hue-rotate(170deg);
   animation-delay: 0.3s;
 }
 
 .rise-balloon:nth-child(3) {
   left: 27%;
-  color: #e6ad12;
+  filter: hue-rotate(48deg) saturate(1.2);
   animation-delay: 0.1s;
 }
 
 .rise-balloon:nth-child(4) {
   left: 39%;
-  color: #5b3fa8;
+  filter: hue-rotate(260deg);
   animation-delay: 0.45s;
 }
 
 .rise-balloon:nth-child(5) {
   left: 50%;
-  color: #ef8f1c;
+  filter: hue-rotate(30deg) saturate(1.2);
   animation-delay: 0.2s;
 }
 
 .rise-balloon:nth-child(6) {
   left: 61%;
-  color: #d63a8a;
+  filter: hue-rotate(320deg);
   animation-delay: 0.55s;
 }
 
 .rise-balloon:nth-child(7) {
   left: 72%;
-  color: #1f9a94;
+  filter: hue-rotate(170deg);
   animation-delay: 0.15s;
 }
 
 .rise-balloon:nth-child(8) {
   left: 83%;
-  color: #e6ad12;
+  filter: hue-rotate(48deg) saturate(1.2);
   animation-delay: 0.4s;
 }
 
 .rise-balloon:nth-child(9) {
   left: 92%;
-  color: #5b3fa8;
+  filter: hue-rotate(260deg);
   animation-delay: 0.25s;
 }
 
 .rise-balloon:nth-child(2n) {
-  width: 52px;
-  height: 130px;
+  width: 84px;
 }
 
 /* ---------------------------------------------------------------- other festivals */

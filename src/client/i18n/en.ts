@@ -56,7 +56,6 @@ export const en = {
     ledeAfter:
       ' drafts the budget, the timeline, the vendors and ideas from your traditions, and the whole plan takes on the colours of the occasion, in English, हिन्दी or বাংলা.',
     plateLabel: 'Mehfil plans weddings, Durga Puja, Ganpati, birthdays and Diwali.',
-    plateScenes: ['Weddings', 'Durga Puja', 'Ganpati', 'Birthdays', 'Diwali'],
     describeLabel: 'Describe your celebration',
     describeHint: 'In your own words. Mehfil picks out the details as you type.',
     describePlaceholder:

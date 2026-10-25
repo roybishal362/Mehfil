@@ -99,7 +99,7 @@ export function IdeasSection({ plan }: { plan: EventPlan }) {
 
   return (
     <section className="ws-main" aria-labelledby="section-title">
-      <SectionHead title={t.ideasSection.title} intro={t.ideasSection.intro} />
+      <SectionHead title={t.ideasSection.title} intro={t.ideasSection.intro} art="bulb" />
 
       <form className="card refine" onSubmit={submit}>
         <h3 className="flex items-center gap-2 text-2xl">

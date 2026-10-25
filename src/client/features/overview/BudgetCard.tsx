@@ -1,5 +1,6 @@
 /** The budget at a glance: total, health and a split of the biggest lines in chart colours. */
-import { Info, Wallet } from 'lucide-react';
+import { Info } from 'lucide-react';
+import { Art } from '../../art/Art';
 import { Link } from 'wouter';
 import { budgetHealth, summariseBudget } from '../../../shared/domain/budget';
 import { committedByCategory } from '../../../shared/domain/vendors';
@@ -61,8 +62,8 @@ export function BudgetCard({ plan }: { plan: EventPlan }) {
   return (
     <article className="card" aria-labelledby="budget-card-title">
       <header className="card-head">
-        <span className="badge">
-          <Wallet />
+        <span className="badge" aria-hidden="true">
+          <Art name="money-bag" size={30} />
         </span>
         <h2 id="budget-card-title">{t.overview.budgetTitle}</h2>
         <Link className="more" href={paths.plan(plan.id, 'budget')}>

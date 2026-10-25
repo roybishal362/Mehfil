@@ -33,6 +33,8 @@
   --foil: #9c7428;
   /* the marigold highlighter stroke under a headline word */
   --highlight: #f2d9a0;
+  /* the warm glow behind the home page's 3D scene */
+  --halo: rgb(244 196 108 / 0.42);
 
   /* status: text on its own tint */
   --ai-ink: #8a2252;
@@ -95,6 +97,7 @@
   --head: #1b1612;
   --foil: #e4c98e;
   --highlight: rgb(201 163 90 / 0.34);
+  --halo: rgb(231 150 61 / 0.2);
 
   --ai-ink: #f2abc8;
   --ai-bg: rgb(224 69 123 / 0.15);
