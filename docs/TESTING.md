@@ -5,12 +5,12 @@ test is fast, free and repeatable.
 
 | Layer                           | Command                                            | Count                   | What it covers                                                                                         |
 | ------------------------------- | -------------------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------ |
-| Unit, integration and component | `npm test` (`npm run test:coverage` for the gates) | 800 tests in 65 files   | Planning engine, AI gateway and API, client state, sync, every page and section with axe               |
+| Unit, integration and component | `npm test` (`npm run test:coverage` for the gates) | 815 tests in 70 files   | Planning engine, AI gateway and API, client state, sync, every page and section with axe               |
 | Firebase emulators              | `npm run test:rules` (needs Java 21)               | 13 tests                | Firestore Security Rules and the Firebase adapter against the Auth and Firestore emulators             |
 | Browser journeys                | `npm run e2e` (after `npm run build`)              | 22 journeys × 2 devices | Real Chromium on desktop and a Pixel 7, with axe on every page and reflow checks at 390 and 320 px too |
 | Lighthouse                      | `npx @lhci/cli@0.15.1 autorun` (CI)                | 2 pages × 3 runs        | Accessibility 100 and best practices ≥ 95 enforced; performance and SEO tracked                        |
 
-Coverage on the last run: **96.7 % of lines, 87.3 % of branches, 95.2 % of functions**. CI fails
+Coverage on the last run: **97.4 % of lines, 88.8 % of branches, 95.5 % of functions**. CI fails
 if the shared engine or the server drop below 90 % of lines, or the client below 80 %.
 
 ## What each layer proves

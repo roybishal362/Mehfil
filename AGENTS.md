@@ -44,11 +44,14 @@ what every automated test uses.
    a shorthand without a name into `animation: none`.
 10. **Occasions come from data.** A plan's look comes from `moodFor()` in
     `src/shared/domain/mood.ts`; give a new mood its tokens in `tokens.css` (the contrast test
-    covers them), its header art in `MoodArt.tsx` and, if it has one, a moment in
+    covers them), its photographs in `src/client/photos` and, if it has one, a moment in
     `features/moments`.
-11. **Pictures are decoration.** 3D artwork lives in `src/client/art` as a 256-pixel WebP and a
-    `-sm` copy; add its name to `ART_NAMES` and draw it with `<Art>`, which gives it empty alt
-    text. Pictures on the first screen take `afterLoad`, so text and fonts arrive first.
+11. **Photographs, not pictures.** The look comes from real, openly licensed photographs in
+    `src/client/photos` (4:5 arch photos in 240, 480 and up to 720 pixels; 16:10 moment photos),
+    never emoji or clip-art. Draw them with `<Photo>` inside `<Arch>`, which gives them empty alt
+    text and a reserved size; only the first screen's photo takes `priority`. Credit every new
+    photo in `credits.ts` and `CREDITS.md`; `scripts/photo-budget.test.ts` keeps each file under
+    150 KB.
 
 ## Writing style
 

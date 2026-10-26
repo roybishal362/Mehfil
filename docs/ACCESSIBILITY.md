@@ -29,10 +29,10 @@ Bengali. Automated checks run at three levels, and the patterns below are used t
 - Dialogs use the native `<dialog>` element: focus is trapped inside, Escape closes them and focus
   returns to the button that opened them.
 - Status is never shown by colour alone: pills, checkboxes and badges always carry text or icons.
-- Charts and decorative drawings are either hidden from assistive technology or given a text
-  equivalent (the row of diyas reads out each part's progress; the home page's 3D scene is one
-  labelled picture). Every 3D picture has empty alt text, because the words beside it carry its
-  meaning.
+- Charts are given a text equivalent, and photographs are decoration: every photo has empty alt
+  text, because the words beside it carry its meaning. The home page's arch of photographs is one
+  labelled picture, and a plan's progress is written out in words beside its progress line (with
+  each part's own progress for screen readers).
 - Celebration moments are decorative and hidden from assistive technology. They never take
   focus; Skip, a click or any key ends one at once, so keyboard focus never lands behind it, and
   if focus was on its Skip button it returns to the plan's heading.
@@ -48,8 +48,10 @@ Bengali. Automated checks run at three levels, and the patterns below are used t
 - Main and icon buttons are at least 44 by 44 pixels. Compact controls (filters, the language
   switch, disclosure toggles and inline fields) are at least 32 pixels tall, above the 24-pixel
   minimum in WCAG 2.2.
-- Looping decorations wait until the page has loaded and stop entirely with
-  `prefers-reduced-motion`. With reduced motion there are also no page cross-fades, no counting
+- The home page's photographs turn every five seconds only after the page has loaded, and a
+  Pause button (a toggle with `aria-pressed`) stops them, as WCAG 2.2.2 asks of anything that
+  moves for more than five seconds. Looping decorations stop entirely with
+  `prefers-reduced-motion`, which also leaves the arch on one still photograph. With reduced motion there are also no page cross-fades, no counting
   numbers, no scroll reveals and no celebration moments (they never play by themselves, and the
   replay button is hidden). A forced-colours mode style keeps controls visible in Windows high
   contrast.
