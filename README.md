@@ -16,7 +16,7 @@ ideas that honour your traditions and a run sheet for the day. Every detail stay
 
 [![CI](https://github.com/roybishal362/Mehfil/actions/workflows/ci.yml/badge.svg)](https://github.com/roybishal362/Mehfil/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/roybishal362/Mehfil/actions/workflows/codeql.yml/badge.svg)](https://github.com/roybishal362/Mehfil/actions/workflows/codeql.yml)
-[![Tests](https://img.shields.io/badge/tests-849%20passing-2ea44f)](docs/TESTING.md)
+[![Tests](https://img.shields.io/badge/tests-874%20passing-2ea44f)](docs/TESTING.md)
 [![Coverage](https://img.shields.io/badge/coverage-97%25%20of%20lines-2ea44f)](docs/TESTING.md)
 [![WCAG 2.2 AA](https://img.shields.io/badge/WCAG%202.2-AA-6f42c1)](docs/ACCESSIBILITY.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
@@ -286,6 +286,8 @@ Key decisions, each recorded as an [architecture decision record](docs/adr/):
    sign-in and conflicts the user settles.
 5. [A prerendered, hydrated home page](docs/adr/0005-prerender-and-hydrate.md) for a fast first
    paint under a strict Content Security Policy.
+6. [Small functions, held by lint](docs/adr/0006-small-functions.md): at most 80 lines and
+   complexity 10, split into helpers, hooks and named components.
 
 The full picture, including the data model and the request pipeline, is in
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
@@ -325,14 +327,14 @@ The full picture, including the data model and the request pipeline, is in
 
 ## Quality
 
-| Check                                                                                             | Result                                                                                        |
-| ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| Unit, integration and component tests (Vitest, Testing Library, jest-axe, fast-check)             | **815 passing**; 97.4 % of lines and 88.8 % of branches covered, with per-layer gates in CI   |
-| Firestore Security Rules and the Firebase adapter (emulator)                                      | **13 passing**                                                                                |
-| Browser journeys (Playwright on desktop and a phone, axe on every page, reflow at 390 and 320 px) | **44 passing**                                                                                |
-| Gemini evaluation (six sample celebrations, real API)                                             | **6 of 6** pass every check                                                                   |
-| Lighthouse on the live site (simulated phone, five runs)                                          | Performance 93–96 · Accessibility 100 · Best practices 100 · SEO 100                          |
-| Static analysis                                                                                   | Strict TypeScript, typescript-eslint strict type-checked rules, jsx-a11y, CodeQL, secret scan |
+| Check                                                                                             | Result                                                                                                                             |
+| ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Unit, integration and component tests (Vitest, Testing Library, jest-axe, fast-check)             | **817 passing**; 97.9 % of lines and 84.2 % of branches covered, with per-layer gates in CI                                        |
+| Firestore Security Rules and the Firebase adapter (emulator)                                      | **13 passing**                                                                                                                     |
+| Browser journeys (Playwright on desktop and a phone, axe on every page, reflow at 390 and 320 px) | **44 passing**                                                                                                                     |
+| Gemini evaluation (six sample celebrations, real API)                                             | **6 of 6** pass every check                                                                                                        |
+| Lighthouse on the live site (simulated phone, five runs)                                          | Performance 93–96 · Accessibility 100 · Best practices 100 · SEO 100                                                               |
+| Static analysis                                                                                   | Strict TypeScript, typescript-eslint strict type-checked rules, function size and complexity limits, jsx-a11y, CodeQL, secret scan |
 
 Every push runs the full pipeline in [GitHub Actions](.github/workflows/ci.yml): secret scan, size
 budget, lint, formatting, type checks and tests with coverage gates on Node 22 and 24, then the
@@ -341,15 +343,15 @@ dependency audit. Details in [docs/TESTING.md](docs/TESTING.md).
 
 ## How it meets the judging criteria
 
-| Criterion             | What Mehfil does                                                                                                                                                                                                                                                                                                                                                             | Evidence                                                                                 |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| **Problem alignment** | Every part of the brief is a working, editable, saved feature (see [Features](#features)), with Gemini doing real planning work rather than chat, and decisions that follow the user's context (see [Approach and logic](#approach-and-logic)).                                                                                                                              | `src/client/features/`, `e2e/plan.spec.ts`                                               |
-| **Code quality**      | Strict TypeScript and strict type-checked lint rules; one shared schema contract for browser, server and Gemini; one pure function for every edit, so undo is free; a dependency-injected server; typed translations, where a missing string fails the build; documented decisions.                                                                                          | `src/shared/`, `eslint.config.js`, [ADRs](docs/adr/)                                     |
-| **Security**          | The key stays on the server; a strict CSP with no inline code or `eval`; rate limits and Firebase token checks on AI calls; prompt-injection containment and output cleaning; tested Firestore rules; a CSV-injection guard; a secret scan in CI.                                                                                                                            | [SECURITY.md](SECURITY.md), `firestore.rules`, `src/server/security/`                    |
-| **Efficiency**        | AI suggests and code computes; sections stream in parallel; a response cache and per-model request budget for the free tier; a prerendered home page; the React Compiler memoises components; routes, languages, Firebase and dialogs load on demand; photographs are small WebPs in several widths, and only the first screen's is fetched early; Brotli; fonts per script. | [ARCHITECTURE.md](docs/ARCHITECTURE.md), [ADR 5](docs/adr/0005-prerender-and-hydrate.md) |
-| **Testing**           | 815 unit, integration and component tests (97.4 % of lines), 13 emulator tests for the Firestore rules and Firebase adapter, 44 browser journeys on desktop and phone, and an evaluation against real Gemini.                                                                                                                                                                | [TESTING.md](docs/TESTING.md)                                                            |
-| **Accessibility**     | WCAG 2.2 AA: landmarks, focus management, labelled forms with an error summary, native dialogs, live announcements, tested contrast in both themes, reflow down to 320 px, reduced motion; axe in component and browser tests, and a keyboard-only journey.                                                                                                                  | [ACCESSIBILITY.md](docs/ACCESSIBILITY.md)                                                |
-| **Google services**   | Gemini, Firebase Authentication, Cloud Firestore, Google Calendar, Google Maps and Google Fonts.                                                                                                                                                                                                                                                                             | [Google services](#google-services)                                                      |
+| Criterion             | What Mehfil does                                                                                                                                                                                                                                                                                                                                                                                     | Evidence                                                                                 |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| **Problem alignment** | Every part of the brief is a working, editable, saved feature (see [Features](#features)), with Gemini doing real planning work rather than chat, and decisions that follow the user's context (see [Approach and logic](#approach-and-logic)).                                                                                                                                                      | `src/client/features/`, `e2e/plan.spec.ts`                                               |
+| **Code quality**      | Strict TypeScript and strict type-checked lint rules; small functions, kept small by lint (at most 80 lines, complexity 10, four parameters, three levels of nesting); one shared schema contract for browser, server and Gemini; one pure function for every edit, so undo is free; a dependency-injected server; typed translations, where a missing string fails the build; documented decisions. | `src/shared/`, `eslint.config.js`, [ADRs](docs/adr/)                                     |
+| **Security**          | The key stays on the server; a strict CSP with no inline code or `eval`; rate limits and Firebase token checks on AI calls; prompt-injection containment and output cleaning; tested Firestore rules; a CSV-injection guard; a secret scan in CI.                                                                                                                                                    | [SECURITY.md](SECURITY.md), `firestore.rules`, `src/server/security/`                    |
+| **Efficiency**        | AI suggests and code computes; sections stream in parallel; a response cache and per-model request budget for the free tier; a prerendered home page; the React Compiler memoises components; routes, languages, Firebase and dialogs load on demand; photographs are small WebPs in several widths, and only the first screen's is fetched early; Brotli; fonts per script.                         | [ARCHITECTURE.md](docs/ARCHITECTURE.md), [ADR 5](docs/adr/0005-prerender-and-hydrate.md) |
+| **Testing**           | 817 unit, integration and component tests (97.9 % of lines), 13 emulator tests for the Firestore rules and Firebase adapter, 44 browser journeys on desktop and phone, and an evaluation against real Gemini.                                                                                                                                                                                        | [TESTING.md](docs/TESTING.md)                                                            |
+| **Accessibility**     | WCAG 2.2 AA: landmarks, focus management, labelled forms with an error summary, native dialogs, live announcements, tested contrast in both themes, reflow down to 320 px, reduced motion; axe in component and browser tests, and a keyboard-only journey.                                                                                                                                          | [ACCESSIBILITY.md](docs/ACCESSIBILITY.md)                                                |
+| **Google services**   | Gemini, Firebase Authentication, Cloud Firestore, Google Calendar, Google Maps and Google Fonts.                                                                                                                                                                                                                                                                                                     | [Google services](#google-services)                                                      |
 
 ## Run it locally
 
@@ -407,6 +409,7 @@ src/
 ├── shared/          One contract for browser, server and Gemini
 │   ├── schemas/     Zod schemas, also turned into Gemini's JSON schemas
 │   ├── domain/      Planning engine: budgets, timelines, vendors, readiness, edits, merging
+│   │   └── ops/     How each kind of edit applies: brief, tasks, budget, vendors, lists
 │   ├── templates/   Weddings, birthdays, community events and more: categories, rituals, lead times
 │   └── export/      Calendar files, Google Calendar and Maps links, CSV, share snapshots
 ├── server/          Hono AI gateway
@@ -419,6 +422,7 @@ src/
 └── client/          React app
     ├── app/         Shell, routes, themes and notifications
     ├── pages/       Home, new plan, plan workspace, shared plan
+    ├── components/  Labelled fields, inputs that commit once, dialogs, the error boundary
     ├── features/    Plan sections, overview, Copilot, account, sync and sharing
     ├── cloud/       Firebase adapter, sync with conflict handling, share links
     ├── state/       Plans with undo and redo, saved on the device

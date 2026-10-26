@@ -5,13 +5,16 @@ test is fast, free and repeatable.
 
 | Layer                           | Command                                            | Count                   | What it covers                                                                                         |
 | ------------------------------- | -------------------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------ |
-| Unit, integration and component | `npm test` (`npm run test:coverage` for the gates) | 815 tests in 70 files   | Planning engine, AI gateway and API, client state, sync, every page and section with axe               |
+| Unit, integration and component | `npm test` (`npm run test:coverage` for the gates) | 817 tests in 70 files   | Planning engine, AI gateway and API, client state, sync, every page and section with axe               |
 | Firebase emulators              | `npm run test:rules` (needs Java 21)               | 13 tests                | Firestore Security Rules and the Firebase adapter against the Auth and Firestore emulators             |
 | Browser journeys                | `npm run e2e` (after `npm run build`)              | 22 journeys × 2 devices | Real Chromium on desktop and a Pixel 7, with axe on every page and reflow checks at 390 and 320 px too |
 | Lighthouse                      | `npx @lhci/cli@0.15.1 autorun` (CI)                | 2 pages × 3 runs        | Accessibility 100 and best practices ≥ 95 enforced; performance and SEO tracked                        |
 
-Coverage on the last run: **97.4 % of lines, 88.8 % of branches, 95.5 % of functions**. CI fails
-if the shared engine or the server drop below 90 % of lines, or the client below 80 %.
+Coverage on the last run: **97.9 % of lines, 84.2 % of branches, 97.5 % of functions**. By layer,
+lines are 99.9 % covered in the shared engine, 99.5 % on the server and 97.0 % in the client. Client
+branches read lower (81.9 %) because the React Compiler's memo checks count as branches, and a
+component rendered once in a test never takes the cached path. CI fails if the shared engine or
+the server drop below 90 % of lines, or the client below 80 %.
 
 ## What each layer proves
 

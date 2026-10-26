@@ -30,9 +30,10 @@ from the event and pulled forward when time is short). The same engine builds th
 baseline plan before any AI call, so the app is useful even when Gemini is unavailable.
 
 Every change to a plan, from a form field, an AI merge or a Copilot proposal, is a typed
-`PlanOperation` validated with Zod and applied by one pure function, `applyOperations`. That gives
-one tested path for every mutation, undo and redo for free, and a safe way to let the Copilot act:
-it can only propose operations on IDs that exist, and nothing changes until the user applies them.
+`PlanOperation` validated with Zod and applied by one pure function, `applyOperations`, which
+hands each kind of edit to its module in `src/shared/domain/ops/`. That gives one tested path for
+every mutation, undo and redo for free, and a safe way to let the Copilot act: it can only propose
+operations on IDs that exist, and nothing changes until the user applies them.
 
 ## Layout
 
@@ -40,6 +41,7 @@ it can only propose operations on IDs that exist, and nothing changes until the 
 src/shared/     Used by the server and the browser
   schemas/      Zod schemas: brief, plan, operations, AI requests and responses (one source of truth)
   domain/       Budget, timeline, vendors, guests, readiness, operations, AI merges, quick parsing
+    ops/        How each kind of edit applies: brief, tasks, budget, vendors, lists
   templates/    India-aware categories and lead times for weddings, birthdays and community events
   export/       .ics calendars, Google Calendar and Maps links, CSV, share snapshots
   zod.ts        The only way to import Zod (turns off its eval-based parsers for the CSP)
@@ -53,6 +55,7 @@ src/server/     Hono app (createApp with injected dependencies)
 src/client/     React app
   app/          Shell, routing and focus, theme, runtime config, feedback (toasts, live region)
   pages/        Home, step-by-step form, plan, shared plan
+  components/   Labelled fields, inputs that commit once, dialogs, the error boundary
   features/     Home, plan sections, overview, Copilot, cloud (account, share, conflicts)
   state/        Plans store, local persistence, AI runs
   cloud/        Lazy Firebase adapter, sync engine, share links, account actions
