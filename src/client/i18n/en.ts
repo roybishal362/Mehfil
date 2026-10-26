@@ -45,6 +45,9 @@ export const en = {
     footerMade: 'Made with Google Gemini for PromptWars 2026',
     saveFailed: 'Could not save on this device. Storage may be full or blocked.',
     source: 'Source code',
+    photoCredits: 'Photo credits',
+    photoCreditsIntro:
+      'The photographs are openly licensed. Each is cropped from the original and its colours gently warmed.',
   },
 
   home: {
@@ -56,6 +59,7 @@ export const en = {
     ledeAfter:
       ' drafts the budget, the timeline, the vendors and ideas from your traditions, and the whole plan takes on the colours of the occasion, in English, हिन्दी or বাংলা.',
     plateLabel: 'Mehfil plans weddings, Durga Puja, Ganpati, birthdays and Diwali.',
+    pausePhotos: 'Pause the photographs',
     describeLabel: 'Describe your celebration',
     describeHint: 'In your own words. Mehfil picks out the details as you type.',
     describePlaceholder:
@@ -387,6 +391,7 @@ export const en = {
     templateNote: 'Standard plan. Ask Gemini to tailor it.',
     tailor: 'Tailor with Gemini',
     progressSummary: (parts: string) => `Plan progress: ${parts}`,
+    partsBegun: (begun: string, total: string) => `${begun} of ${total} parts begun`,
     partValue: (label: string, percent: string) => `${label} ${percent}`,
     notStarted: 'not started',
   },

@@ -40,6 +40,9 @@ export const hi: Messages = {
     footerMade: 'PromptWars 2026 के लिए Google Gemini के साथ बनाया गया',
     saveFailed: 'इस डिवाइस पर सहेजा नहीं जा सका। स्टोरेज भरा हुआ या बंद हो सकता है।',
     source: 'सोर्स कोड',
+    photoCredits: 'तस्वीरों का श्रेय',
+    photoCreditsIntro:
+      'ये तस्वीरें खुले लाइसेंस पर हैं। हर एक को मूल तस्वीर से काटा गया है और उसके रंग हल्के से गर्म किए गए हैं।',
   },
 
   home: {
@@ -51,6 +54,7 @@ export const hi: Messages = {
     ledeAfter:
       ' बजट, समय-सारणी, विक्रेता और आपकी परंपराओं के मुताबिक़ सुझाव तैयार करता है, और पूरी योजना उस मौक़े के रंग में रंग जाती है, English, हिन्दी या বাংলা में।',
     plateLabel: 'महफ़िल शादी, दुर्गा पूजा, गणपति, जन्मदिन और दिवाली की योजना बनाता है।',
+    pausePhotos: 'तस्वीरें रोकें',
     describeLabel: 'अपने उत्सव के बारे में बताइए',
     describeHint: 'अपने शब्दों में लिखिए। लिखते-लिखते महफ़िल ज़रूरी बातें पहचान लेता है।',
     describePlaceholder:
@@ -369,6 +373,7 @@ export const hi: Messages = {
     templateNote: 'सामान्य योजना। Gemini से इसे अपने हिसाब से बनवाएँ।',
     tailor: 'Gemini से अपने हिसाब से बनवाएँ',
     progressSummary: (parts: string) => `योजना की प्रगति: ${parts}`,
+    partsBegun: (begun: string, total: string) => `${total} में से ${begun} हिस्से शुरू`,
     partValue: (label: string, percent: string) => `${label} ${percent}`,
     notStarted: 'शुरू नहीं हुआ',
   },

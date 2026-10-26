@@ -38,7 +38,7 @@ export function VendorsSection({ plan }: { plan: EventPlan }) {
 
   return (
     <section className="ws-main" aria-labelledby="section-title">
-      <SectionHead title={t.vendorsSection.title} intro={t.vendorsSection.intro} art="clipboard" />
+      <SectionHead title={t.vendorsSection.title} intro={t.vendorsSection.intro} />
       {vendors.map((vendor) => (
         <VendorCard key={vendor.id} plan={plan} vendor={vendor} />
       ))}

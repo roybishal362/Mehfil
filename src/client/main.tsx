@@ -1,8 +1,11 @@
 /**
  * Entry point. Fonts are self-hosted (no third-party requests) and split by script, so Hindi
- * and Bengali glyphs download only when they appear on the page. Eczar (display) and Mukta
- * (text) cover Latin and Devanagari; Tiro Bangla and Noto Sans Bengali cover Bengali.
+ * and Bengali glyphs download only when they appear on the page. Cormorant Garamond sets Latin
+ * headlines and Eczar Devanagari ones; Mukta is the text face for both; Tiro Bangla and Noto
+ * Sans Bengali cover Bengali.
  */
+import '@fontsource/cormorant-garamond/600.css';
+import '@fontsource/cormorant-garamond/600-italic.css';
 import '@fontsource-variable/eczar/wght.css';
 import '@fontsource/mukta/400.css';
 import '@fontsource/mukta/500.css';
@@ -60,7 +63,7 @@ async function start(): Promise<void> {
 
 /**
  * Once loading has finished and the browser is idle, the looping decorations start (see
- * base.css) and the first screen's 3D pictures load (see Art.tsx).
+ * base.css) and the home page's arch begins turning through its photographs (HeroArch.tsx).
  */
 function startMotionWhenIdle(): void {
   const start = () => {

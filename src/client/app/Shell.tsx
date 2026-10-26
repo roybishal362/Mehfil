@@ -10,6 +10,7 @@ import { useRuntimeConfig } from './runtime-config';
 import { useTheme } from './theme';
 import { AccountButton } from '../features/cloud/AccountButton';
 import { ConflictPrompt } from '../features/cloud/ConflictPrompt';
+import { PhotoCredits } from '../photos/PhotoCredits';
 
 function LanguageSwitch() {
   const { t, locale } = useI18n();
@@ -84,6 +85,7 @@ function SiteFooter() {
         <p>{t.shell.footerNote}</p>
         <p>{t.shell.aiPrivacy}</p>
         <p>{t.shell.footerMade}</p>
+        <PhotoCredits />
       </div>
     </footer>
   );

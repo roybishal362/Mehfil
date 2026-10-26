@@ -3,8 +3,20 @@ import { EVENT_TYPES, VENUE_TYPES } from '../../../shared/schemas/primitives';
 import { addDays, localToday } from '../../../shared/utils/dates';
 import { Field } from '../../components/Field';
 import { useI18n } from '../../i18n';
-import { OccasionArt } from '../../motifs/OccasionArt';
+import type { Mood } from '../../../shared/domain/mood';
+import type { EventType } from '../../../shared/schemas/primitives';
+import { archPhoto } from '../../photos';
+import { Arch } from '../../photos/Arch';
+import { Photo } from '../../photos/Photo';
 import type { StepProps } from './step-props';
+
+/** Each type of celebration shows the photograph of the look it starts with. */
+const TYPE_PHOTO: Readonly<Record<EventType, Mood>> = {
+  wedding: 'wedding',
+  birthday: 'birthday',
+  community: 'utsav',
+  other: 'neutral',
+};
 
 export function OccasionStep({ values, set, errorText }: StepProps) {
   const { t } = useI18n();
@@ -28,7 +40,9 @@ export function OccasionStep({ values, set, errorText }: StepProps) {
               }}
             />
             <span>
-              <OccasionArt kind={type} />
+              <Arch>
+                <Photo photo={archPhoto(TYPE_PHOTO[type])} sizes="56px" />
+              </Arch>
               {t.home.occasions[type].title}
             </span>
           </label>

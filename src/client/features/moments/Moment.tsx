@@ -1,12 +1,17 @@
 /**
- * A celebration moment: a few seconds of the occasion played over the plan when it first opens
- * (the couple circling the fire, the dhaki before the curtains part, rockets over Diwali…).
- * The art is decorative and hidden from assistive technology. Skip, a click or any key ends it
- * early (so keyboard focus never moves behind it), and focus goes back to the plan's heading
- * if it was on the moment.
+ * A celebration moment: a few seconds of the occasion played over the plan when it first opens.
+ * The occasion's photograph opens out of the arch to fill the screen while the cheer rises, with
+ * its own touches: rockets over Diwali, the dhak's beat and the sari curtains for Durga Puja,
+ * firelight and petals for a wedding, confetti for a birthday.
+ *
+ * It is decorative and hidden from assistive technology. It waits briefly for its photograph
+ * and quietly skips on a slow connection. Skip, a click or any key ends it early (so keyboard
+ * focus never moves behind it), and focus goes back to the plan's heading if it was on the
+ * moment.
  */
-import { useEffect, useRef, type ComponentType } from 'react';
+import { useEffect, useRef, useState, type ComponentType } from 'react';
 import { useI18n } from '../../i18n';
+import { momentPhoto } from '../../photos';
 import { MOMENT_DURATION, type MomentMood } from './celebrated';
 import {
   BirthdayScene,
@@ -27,6 +32,17 @@ const SCENES: Readonly<Record<MomentMood, ComponentType>> = {
   utsav: UtsavScene,
 };
 
+/** How long to wait for the photograph before quietly skipping the moment. */
+export const PHOTO_WAIT_MS = 1500;
+
+/** Browsers that cannot say when a photo is ready (and test environments) play at once. */
+function canWaitForPhoto(): boolean {
+  return (
+    typeof HTMLImageElement !== 'undefined' &&
+    typeof HTMLImageElement.prototype.decode === 'function'
+  );
+}
+
 export interface MomentProps {
   mood: MomentMood;
   /** The occasion's cheer, shown large over the scene. */
@@ -40,8 +56,39 @@ const MODIFIERS = new Set(['Shift', 'Control', 'Alt', 'Meta']);
 export function Moment({ mood, cheer, onDone }: MomentProps) {
   const { t } = useI18n();
   const root = useRef<HTMLDivElement>(null);
+  const [ready, setReady] = useState(() => !canWaitForPhoto());
+
+  // Wait for the photograph, so the arch never opens onto an empty frame.
+  useEffect(() => {
+    if (ready) return;
+    let settled = false;
+    const settle = (play: boolean) => {
+      if (settled) return;
+      settled = true;
+      if (play) setReady(true);
+      else onDone();
+    };
+    const image = new Image();
+    image.src = momentPhoto(mood);
+    image.decode().then(
+      () => {
+        settle(true);
+      },
+      () => {
+        settle(false);
+      },
+    );
+    const giveUp = window.setTimeout(() => {
+      settle(false);
+    }, PHOTO_WAIT_MS);
+    return () => {
+      settled = true;
+      window.clearTimeout(giveUp);
+    };
+  }, [mood, onDone, ready]);
 
   useEffect(() => {
+    if (!ready) return;
     const element = root.current;
     const finish = () => {
       if (element?.contains(document.activeElement)) {
@@ -61,8 +108,9 @@ export function Moment({ mood, cheer, onDone }: MomentProps) {
       element?.removeEventListener('click', finish);
       document.removeEventListener('keydown', onKey);
     };
-  }, [mood, onDone]);
+  }, [mood, onDone, ready]);
 
+  if (!ready) return null;
   const Scene = SCENES[mood];
   return (
     <div ref={root} className={`moment moment--${mood}`}>

@@ -3,9 +3,16 @@ import { describeCelebration, expect, expectAccessible, test } from './support';
 test.describe('home page', () => {
   test('arrives already drawn, then reads a description as you type', async ({ page }) => {
     const response = await page.goto('/');
-    // The first screen is in the HTML itself, before any script runs.
-    expect(await response?.text()).toContain('One planner for every');
+    // The first screen is in the HTML itself, before any script runs: the headline and the
+    // first photograph, which the browser fetches first.
+    const html = (await response?.text()) ?? '';
+    expect(html).toContain('One planner for every');
+    expect(html).toMatch(/<img[^>]+wedding-720-[\w-]+\.webp[^>]+fetchpriority="high"/i);
     await expect(page.getByRole('heading', { level: 1 })).toContainText('One planner for every');
+    const photo = page.locator('.hero-slide img').first();
+    await expect
+      .poll(() => photo.evaluate((image: HTMLImageElement) => image.naturalWidth))
+      .toBeGreaterThan(0);
     await expect(page.locator('html')).toHaveAttribute('data-mood', 'neutral');
     await expectAccessible(page);
 

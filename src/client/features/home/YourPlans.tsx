@@ -1,32 +1,23 @@
 /**
- * The celebrations saved on this device. Each tile carries its occasion's colour and picture,
- * the countdown, and a diya for every part of the plan that has begun.
+ * The celebrations saved on this device. Each tile carries its occasion's colour and photograph,
+ * the countdown, and how many parts of the plan have begun.
  */
 import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'wouter';
-import type { Mood } from '../../../shared/domain/mood';
 import type { EventPlan } from '../../../shared/schemas/plan';
 import { localToday } from '../../../shared/utils/dates';
 import { toast } from '../../app/feedback';
 import { paths } from '../../app/routing';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { useI18n } from '../../i18n';
-import { DiyaRow } from '../../motifs/Diya';
-import { OccasionArt, type OccasionKind } from '../../motifs/OccasionArt';
+import { archPhoto } from '../../photos';
+import { Arch } from '../../photos/Arch';
+import { Photo } from '../../photos/Photo';
 import { cancelPersonalization } from '../../state/ai';
 import { plansStore, usePlans } from '../../state/plans';
-import { countdownParts, partsSummary, planView } from '../plan/present';
-
-const MOOD_ART: Readonly<Record<Mood, OccasionKind>> = {
-  neutral: 'other',
-  wedding: 'wedding',
-  birthday: 'birthday',
-  durga: 'durga',
-  ganpati: 'ganpati',
-  diwali: 'diwali',
-  utsav: 'community',
-};
+import { countdownParts, planView } from '../plan/present';
+import { ProgressLine } from '../plan/ProgressLine';
 
 function PlanTile({ plan, onDelete }: { plan: EventPlan; onDelete: (plan: EventPlan) => void }) {
   const { t, f } = useI18n();
@@ -35,9 +26,9 @@ function PlanTile({ plan, onDelete }: { plan: EventPlan; onDelete: (plan: EventP
   const ready = t.home.ready(f.percent(view.score / 100));
   return (
     <li className="plan-tile" data-mood={view.mood}>
-      <span className="tile-pic">
-        <OccasionArt kind={MOOD_ART[view.mood]} />
-      </span>
+      <Arch className="tile-pic">
+        <Photo photo={archPhoto(view.mood)} sizes="56px" />
+      </Arch>
       <div className="tile-body">
         <h3>
           <Link className="tile-link" href={paths.plan(plan.id)}>
@@ -48,10 +39,7 @@ function PlanTile({ plan, onDelete }: { plan: EventPlan; onDelete: (plan: EventP
           <span>{f.date(plan.brief.date)}</span>
           <span>{plan.brief.city}</span>
         </p>
-        <DiyaRow
-          parts={view.parts}
-          label={`${ready}. ${t.plan.progressSummary(partsSummary(view.parts, t))}`}
-        />
+        <ProgressLine parts={view.parts} status={ready} />
       </div>
       <p className={seal.word ? 'tile-count tile-count--word' : 'tile-count'}>
         <b>{seal.big}</b> <span>{seal.small}</span>

@@ -1,6 +1,5 @@
 /** Smaller overview cards: vendor pipeline, theme, risks and the AI summary. */
 import { ExternalLink, MapPin, Sparkles } from 'lucide-react';
-import { Art } from '../../art/Art';
 import { Link } from 'wouter';
 import { isSecured } from '../../../shared/domain/vendors';
 import { googleMapsSearchLink, vendorSearchQuery } from '../../../shared/export/links';
@@ -29,9 +28,6 @@ export function VendorsCard({ plan }: { plan: EventPlan }) {
   return (
     <article className="card" aria-labelledby="vendors-card-title">
       <header className="card-head">
-        <span className="badge" aria-hidden="true">
-          <Art name="clipboard" size={30} />
-        </span>
         <h2 id="vendors-card-title">{t.overview.vendorsTitle}</h2>
         <Link className="more" href={paths.plan(plan.id, 'vendors')}>
           {t.overview.vendorsLink}
@@ -78,9 +74,6 @@ export function ThemeCard({ plan }: { plan: EventPlan }) {
   return (
     <article className="card" aria-labelledby="theme-card-title">
       <header className="card-head">
-        <span className="badge" aria-hidden="true">
-          <Art name="palette" size={30} />
-        </span>
         <h2 id="theme-card-title">{t.overview.themeTitle}</h2>
         {theme?.source === 'ai' && (
           <span className="pill pill--ai">
@@ -119,9 +112,6 @@ export function RisksCard({ plan }: { plan: EventPlan }) {
   return (
     <article className="card card--wide" aria-labelledby="risks-title">
       <header className="card-head">
-        <span className="badge" aria-hidden="true">
-          <Art name="warning" size={30} />
-        </span>
         <h2 id="risks-title">{t.overview.risksTitle}</h2>
       </header>
       <ul className="tasks">
@@ -151,9 +141,6 @@ export function SummaryCard({ plan }: { plan: EventPlan }) {
   return (
     <article className="card card--wide summary-card" aria-labelledby="summary-title">
       <header className="card-head">
-        <span className="badge" aria-hidden="true">
-          <Art name="sparkles" size={30} />
-        </span>
         <h2 id="summary-title">{t.overview.summaryTitle}</h2>
         <span className="pill pill--ai">Gemini</span>
       </header>

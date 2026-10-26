@@ -1,8 +1,9 @@
 /*
- * Design tokens. Day ("Shubho") is Bengali wedding stationery: ivory paper, sindoor red, ink
- * and a little flat gold. Night ("Deepavali") is the evening mehfil: warm ink black, brass and
- * lamplight. Components use these variables only, so both themes stay in step. There are no
- * gradients or glows; colour is flat, like print. Contrast is checked in tokens.test.ts.
+ * Design tokens. Day ("Shubho") is wedding stationery: ivory paper, ink, maroon and a little
+ * antique gold. Night ("Deepavali") is the evening mehfil: warm ink black, brass and lamplight.
+ * The colour in the design comes from the photographs; the interface around them stays quiet
+ * and printed. Components use these variables only, so both themes stay in step. Contrast is
+ * checked in tokens.test.ts.
  */
 :root {
   --page: #f6efe4;
@@ -31,10 +32,13 @@
   --head: #fffcf6;
   /* flat gold foil: ornaments and large display text only */
   --foil: #9c7428;
-  /* the marigold highlighter stroke under a headline word */
-  --highlight: #f2d9a0;
-  /* the warm glow behind the home page's 3D scene */
-  --halo: rgb(244 196 108 / 0.42);
+  /* the jharokha: a pointed arch for every photograph's window, and its fine gold outline */
+  --arch-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 125' preserveAspectRatio='none'%3E%3Cpath d='M0 125V50C0 26 28 12 50 0C72 12 100 26 100 50V125Z'/%3E%3C/svg%3E");
+  --arch-line: #b08d57;
+  /* behind a photograph while it loads: the warm dark of an evening */
+  --photo-bg: #2a1d14;
+  /* a plan part that has not begun, on the progress line */
+  --progress-off: #e3d6c1;
 
   /* status: text on its own tint */
   --ai-ink: #8a2252;
@@ -54,18 +58,15 @@
   --c5: #c46b7d;
   --c6: #8a6d4e;
 
-  /* lamp colours: the same in both themes */
-  --flame: #e7a33d;
-  --flame-core: #fbe3a6;
-  --clay: #a8532a;
-
   /* paper grain: a faint, fixed noise texture */
   --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .27 0 0 0 0 .18 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 
-  --radius: 14px;
-  --radius-sm: 10px;
-  --radius-xs: 6px;
-  --font-display: 'Eczar Variable', 'Tiro Bangla', Georgia, 'Times New Roman', serif;
+  --radius: 10px;
+  --radius-sm: 8px;
+  --radius-xs: 5px;
+  /* Cormorant for Latin; Devanagari falls through to Eczar, Bengali to Tiro Bangla. */
+  --font-display:
+    'Cormorant Garamond', 'Eczar Variable', 'Tiro Bangla', Georgia, 'Times New Roman', serif;
   --font-body:
     'Mukta', 'Noto Sans Bengali Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --shadow-card: 0 1px 0 rgb(60 30 10 / 0.04), 0 18px 32px -28px rgb(60 30 10 / 0.35);
@@ -96,8 +97,9 @@
   --frame: #c9a35a;
   --head: #1b1612;
   --foil: #e4c98e;
-  --highlight: rgb(201 163 90 / 0.34);
-  --halo: rgb(231 150 61 / 0.2);
+  --arch-line: #8f7552;
+  --photo-bg: #241a13;
+  --progress-off: #3b2f25;
 
   --ai-ink: #f2abc8;
   --ai-bg: rgb(224 69 123 / 0.15);
@@ -127,11 +129,11 @@
  * Moods. A plan takes on its occasion's colours: <html data-mood> while it is open, and any
  * element with data-mood (the occasion cards, the plan tiles) for itself. The accent drives
  * buttons, tabs and links; --head is the plan header's paper and --frame its border colour.
- * The home page is neutral: ink-black actions with a little gold.
+ * The home page is neutral: maroon actions with a little gold.
  */
 [data-mood='neutral'] {
-  --accent: #1c1612;
-  --accent-strong: #000000;
+  --accent: #7b1e2b;
+  --accent-strong: #5e1420;
   --on-accent: #fffcf6;
   --label: #7a5a1e;
   --focus: #7a5a1e;
@@ -282,6 +284,7 @@
   --label: #e4c98e;
   --accent: #e4c98e;
   --line: #3a2f26;
+  --progress-off: #3b2f25;
 }
 
 /* Expose the colour tokens to Tailwind utilities (bg-surface, text-muted, ...). */

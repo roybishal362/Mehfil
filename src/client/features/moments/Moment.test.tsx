@@ -1,10 +1,10 @@
 import { act, fireEvent, screen } from '@testing-library/react';
 import { axe } from 'jest-axe';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderAt } from '../../test/helpers';
 import { Celebration } from './Celebration';
 import { MOMENT_DURATION, type MomentMood } from './celebrated';
-import { Moment } from './Moment';
+import { Moment, PHOTO_WAIT_MS } from './Moment';
 import css from './moments.css?raw';
 
 const MOODS = Object.keys(MOMENT_DURATION) as MomentMood[];
@@ -63,6 +63,54 @@ describe('Moment', () => {
     fireEvent.keyDown(document, { key: 'Escape' });
     fireEvent.keyDown(document, { key: 'Tab' });
     expect(onDone).toHaveBeenCalledTimes(3);
+  });
+
+  it.each(MOODS)('opens onto the %s photograph', (mood) => {
+    const { container } = renderAt(<Moment mood={mood} cheer="!" onDone={vi.fn()} />);
+    const photo = container.querySelector('.moment-photo img');
+    expect(photo).toHaveAttribute('alt', '');
+    expect(photo?.getAttribute('src')).toMatch(new RegExp(`${mood}-moment\\.webp$`));
+  });
+
+  describe('in a browser that can tell when a photo is ready', () => {
+    afterEach(() => {
+      Reflect.deleteProperty(HTMLImageElement.prototype, 'decode');
+      vi.useRealTimers();
+    });
+
+    function decodeWith(result: () => Promise<void>) {
+      Object.defineProperty(HTMLImageElement.prototype, 'decode', {
+        configurable: true,
+        value: vi.fn(result),
+      });
+    }
+
+    it('plays once its photograph is ready', async () => {
+      decodeWith(() => Promise.resolve());
+      const { container } = renderAt(<Moment mood="birthday" cheer="!" onDone={vi.fn()} />);
+      expect(container.querySelector('.moment')).toBeNull();
+      expect(await screen.findByRole('button', { name: 'Skip' })).toBeInTheDocument();
+    });
+
+    it('quietly skips when the photograph is slow or fails', async () => {
+      vi.useFakeTimers();
+      decodeWith(() => new Promise<void>(() => undefined));
+      const slow = vi.fn();
+      const { container } = renderAt(<Moment mood="diwali" cheer="!" onDone={slow} />);
+      act(() => {
+        vi.advanceTimersByTime(PHOTO_WAIT_MS);
+      });
+      expect(slow).toHaveBeenCalledTimes(1);
+      expect(container.querySelector('.moment')).toBeNull();
+
+      vi.useRealTimers();
+      decodeWith(() => Promise.reject(new Error('broken')));
+      const failed = vi.fn();
+      renderAt(<Moment mood="ganpati" cheer="!" onDone={failed} />);
+      await vi.waitFor(() => {
+        expect(failed).toHaveBeenCalledTimes(1);
+      });
+    });
   });
 
   it('times each scene in CSS to match its duration in code', () => {

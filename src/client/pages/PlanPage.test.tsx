@@ -31,7 +31,13 @@ describe('PlanPage', () => {
     expect(screen.getByText('Shubh Vivah · Together with their families')).toBeInTheDocument();
     expect(container.querySelector('.count-num')).toHaveTextContent(/^\d+ days to go$/);
     expect(document.documentElement.dataset.mood).toBe('wedding');
-    expect(screen.getByRole('img', { name: /Plan \d+% ready/ })).toBeInTheDocument();
+    expect(container.querySelector('.planhead .progress-text')).toHaveTextContent(
+      /^\d of 6 parts begun · \d+% ready$/,
+    );
+    // The occasion's photograph sits in the arch, as decoration.
+    const photo = container.querySelector('.planhead-arch img');
+    expect(photo).toHaveAttribute('alt', '');
+    expect(photo?.getAttribute('src')).toMatch(/wedding-\d+\.webp$/);
     expect(screen.getByRole('link', { name: 'Overview' })).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('heading', { name: 'Today’s focus' })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: /Budget split:/ })).toBeInTheDocument();

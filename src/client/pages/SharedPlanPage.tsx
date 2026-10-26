@@ -12,6 +12,9 @@ import { loadSharedPlan, type SharedPlanResult } from '../cloud/shares';
 import { useI18n } from '../i18n';
 import { writtenIn } from '../i18n/written-in';
 import { MoodArt } from '../motifs/MoodArt';
+import { archPhoto, HEADER_PHOTO_SIZES } from '../photos';
+import { Arch } from '../photos/Arch';
+import { Photo } from '../photos/Photo';
 
 type LoadState = { kind: 'loading' } | { kind: 'error' } | SharedPlanResult;
 
@@ -113,9 +116,7 @@ function SharedPlanView({ plan }: { plan: SharedPlan }) {
   return (
     <div className="wrap shared">
       <header className="planhead planhead--shared" data-mood={mood}>
-        <div className="planhead-art" aria-hidden="true">
-          <MoodArt mood={mood} />
-        </div>
+        <MoodArt mood={mood} />
         <div className="planhead-copy">
           <p className="greet">
             {t.moods.greeting[mood]}
@@ -140,6 +141,9 @@ function SharedPlanView({ plan }: { plan: SharedPlan }) {
           </p>
           <p className="shared-note">{t.shared.readOnly(f.date(plan.sharedAt.slice(0, 10)))}</p>
         </div>
+        <Arch className="planhead-arch">
+          <Photo photo={archPhoto(mood)} sizes={HEADER_PHOTO_SIZES} priority />
+        </Arch>
       </header>
 
       {plan.summary && (

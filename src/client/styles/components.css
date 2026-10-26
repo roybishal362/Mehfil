@@ -239,12 +239,6 @@
   height: 20px;
 }
 
-.badge .art {
-  width: 30px;
-  height: 30px;
-  filter: drop-shadow(0 4px 4px rgb(60 30 10 / 0.16));
-}
-
 .note {
   display: flex;
   gap: 6px;
@@ -686,6 +680,86 @@
 .empty h3 {
   font-size: 26px;
   color: var(--ink);
+}
+
+/* ---------------------------------------------------------------- chart colours (SVG) */
+
+.fill-c1 {
+  fill: var(--c1);
+}
+
+.fill-c2 {
+  fill: var(--c2);
+}
+
+.fill-c3 {
+  fill: var(--c3);
+}
+
+.fill-c4 {
+  fill: var(--c4);
+}
+
+.fill-c5 {
+  fill: var(--c5);
+}
+
+.fill-c6 {
+  fill: var(--c6);
+}
+
+.fill-bg-c1 {
+  background: var(--c1);
+}
+
+.fill-bg-c2 {
+  background: var(--c2);
+}
+
+.fill-bg-c3 {
+  background: var(--c3);
+}
+
+.fill-bg-c4 {
+  background: var(--c4);
+}
+
+.fill-bg-c5 {
+  background: var(--c5);
+}
+
+.fill-bg-c6 {
+  background: var(--c6);
+}
+
+.fill-ink {
+  fill: var(--ink);
+}
+
+.fill-line {
+  fill: var(--line-strong);
+}
+
+.stroke-line,
+.stroke-ink,
+.stroke-accent {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.stroke-line {
+  stroke: var(--line-strong);
+}
+
+.stroke-ink {
+  stroke: var(--ink);
+}
+
+.stroke-accent {
+  stroke: var(--accent);
+  stroke-width: 2.5;
 }
 
 /* ---------------------------------------------------------------- footer */

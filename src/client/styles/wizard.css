@@ -49,7 +49,7 @@
   box-shadow: inset 0 0 0 1.5px var(--control-line);
   font-family: var(--font-display);
   font-size: 18px;
-  font-weight: 700;
+  font-weight: 600;
   font-variant-numeric: lining-nums;
   color: var(--ink-2);
 }
@@ -130,9 +130,10 @@
   text-align: center;
 }
 
-.type-option .occasion-art {
-  width: 46px;
-  margin-bottom: 4px;
+.type-option .arch {
+  --arch-gap: 4px;
+  width: 52px;
+  margin: 4px 0 6px;
 }
 
 .type-option input:checked + span {

@@ -6,7 +6,6 @@ import { paths, useDocumentTitle } from './app/routing';
 import { Shell } from './app/Shell';
 import { aroundNav } from './app/view-transition';
 import { useI18n } from './i18n';
-import { SharedDefs } from './motifs/svg';
 import { HomePage } from './pages/HomePage';
 
 const NewPlanPage = lazy(() =>
@@ -61,7 +60,6 @@ export function App({ ssrPath }: AppProps) {
   }, []);
   return (
     <LucideProvider strokeWidth={1.75} className="i">
-      <SharedDefs />
       <Router aroundNav={aroundNav} {...(ssrPath ? { ssrPath } : {})}>
         <Shell>
           <Suspense fallback={<PageLoading />}>

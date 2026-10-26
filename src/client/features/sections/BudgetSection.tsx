@@ -43,7 +43,7 @@ export function BudgetSection({ plan }: { plan: EventPlan }) {
 
   return (
     <section className="ws-main" aria-labelledby="section-title">
-      <SectionHead title={t.budgetSection.title} intro={t.budgetSection.intro} art="money-bag">
+      <SectionHead title={t.budgetSection.title} intro={t.budgetSection.intro}>
         <span className={`pill ${HEALTH_PILL[health]}`}>{t.overview.health[health]}</span>
       </SectionHead>
 

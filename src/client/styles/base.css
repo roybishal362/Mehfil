@@ -13,6 +13,8 @@ body {
   background: var(--page) var(--grain);
   color: var(--ink);
   font: 17px/1.6 var(--font-body);
+  /* Cormorant's figures are old-style by default; a planner full of numbers reads better level. */
+  font-variant-numeric: lining-nums;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
@@ -22,7 +24,7 @@ h2,
 h3 {
   margin: 0;
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.1;
   letter-spacing: -0.01em;
   text-wrap: balance;
@@ -180,14 +182,6 @@ a:not([class]):hover {
   font-variant-numeric: lining-nums tabular-nums;
 }
 
-/* The hidden SVG that holds shared symbols and definitions. */
-.svg-defs {
-  position: absolute;
-  width: 0;
-  height: 0;
-  overflow: hidden;
-}
-
 /*
  * Cards and section titles rise into place as they scroll into view. It is driven by the
  * scroll position alone (no script, so nothing can flash): anything already on screen is
@@ -251,8 +245,8 @@ a:not([class]):hover {
 }
 
 /*
- * Looping decorations (garlands, lanterns, flames, falling flowers) wait until the page has
- * loaded, so the first paint is not competing with animated SVG shapes.
+ * Looping decorations wait until the page has loaded, so the first paint is not competing with
+ * them.
  */
 :root:not([data-motion='on']) .motion {
   animation-play-state: paused !important;

@@ -3,6 +3,7 @@ import tailwindcss from '@tailwindcss/vite';
 import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { preloadCriticalFonts } from './scripts/lib/preload-fonts.ts';
+import { deprioritiseScripts } from './scripts/lib/script-priority.ts';
 
 /**
  * Vite builds the React SPA into `dist/client`.
@@ -14,6 +15,7 @@ export default defineConfig({
     babel({ presets: [reactCompilerPreset()] }),
     tailwindcss(),
     preloadCriticalFonts(),
+    deprioritiseScripts(),
   ],
   build: {
     outDir: 'dist/client',
@@ -21,8 +23,8 @@ export default defineConfig({
     target: 'es2022',
     sourcemap: false,
     // Fonts stay separate files: the Content-Security-Policy's font-src allows 'self', not data:.
-    // Fonts and artwork stay files: inlined, they would bloat the JavaScript and CSS that every
-    // page waits for, and they cache better on their own.
+    // Fonts and photographs stay files: inlined, they would bloat the JavaScript and CSS that
+    // every page waits for, and they cache better on their own.
     assetsInlineLimit: (file) => (/\.(?:woff2|webp)$/.test(file) ? false : undefined),
     reportCompressedSize: true,
   },

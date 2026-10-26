@@ -1,0 +1,271 @@
+/*
+ * Photographs and the jharokha arch they sit in (src/client/photos). The arch's window is a
+ * CSS mask, so any photo can sit in it; its fine outline is an SVG drawn just outside. Motion
+ * here is slow, and none of it runs for people who ask for reduced motion.
+ */
+
+.photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ---------------------------------------------------------------- the arch */
+
+.arch {
+  /* the gap between the window and its outline */
+  --arch-gap: 8px;
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 5;
+}
+
+.arch-window {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--photo-bg);
+  -webkit-mask: var(--arch-mask) center / 100% 100% no-repeat;
+  mask: var(--arch-mask) center / 100% 100% no-repeat;
+}
+
+.arch-line {
+  position: absolute;
+  top: calc(var(--arch-gap) * -1);
+  left: calc(var(--arch-gap) * -1);
+  width: calc(100% + var(--arch-gap) * 2);
+  height: calc(100% + var(--arch-gap));
+  overflow: visible;
+  fill: none;
+  stroke: var(--arch-line);
+  stroke-width: 1;
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------- the home page's window */
+
+.hero-arch {
+  position: relative;
+  width: min(100%, 430px);
+  margin: 12px auto 84px;
+}
+
+.hero-window {
+  position: relative;
+}
+
+.hero-frame {
+  --arch-gap: 13px;
+}
+
+.hero-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+
+/* The new photo fades in on top while the one before stays solid underneath. */
+.hero-slide.is-current {
+  z-index: 2;
+  opacity: 1;
+}
+
+.hero-slide.is-previous {
+  z-index: 1;
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Each photo drifts a little closer while it is shown, and keeps going as the next arrives. */
+  :is(.hero-slide.is-current, .hero-slide.is-previous) .photo {
+    animation: arch-drift 6.2s cubic-bezier(0.25, 0.6, 0.3, 1) both;
+  }
+}
+
+@keyframes arch-drift {
+  from {
+    transform: scale(1);
+  }
+
+  to {
+    transform: scale(1.07);
+  }
+}
+
+/* A diya's flame in a round medallion, overlapping the window's lower corner. */
+.hero-medallion {
+  position: absolute;
+  bottom: 9%;
+  left: -7%;
+  z-index: 3;
+  width: 31%;
+  height: auto;
+  aspect-ratio: 1;
+  border: 4px solid var(--page);
+  border-radius: 50%;
+  outline: 1px solid var(--arch-line);
+  outline-offset: 3px;
+  object-fit: cover;
+  box-shadow: 0 18px 32px -16px rgb(40 18 4 / 0.55);
+}
+
+.hero-caption {
+  position: absolute;
+  top: calc(100% + 18px);
+  right: 0;
+  left: 0;
+  height: 52px;
+  text-align: center;
+}
+
+.hero-caption span {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+/* The old caption fades out before the new one fades in, so they never overlap. */
+.hero-caption span.is-current {
+  opacity: 1;
+  transition-delay: 0.45s;
+}
+
+.hero-caption b {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--label);
+}
+
+.hero-caption i {
+  font-family: var(--font-display);
+  font-size: 19px;
+  color: var(--ink-2);
+}
+
+:lang(hi) .hero-caption i,
+:lang(bn) .hero-caption i {
+  font-style: normal;
+}
+
+:lang(hi) .hero-caption b,
+:lang(bn) .hero-caption b {
+  font-size: 14px;
+  letter-spacing: 0;
+}
+
+.hero-pause {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgb(255 255 255 / 0.45);
+  border-radius: 50%;
+  background: rgb(22 14 8 / 0.6);
+  color: #fff;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  cursor: pointer;
+}
+
+.hero-pause:hover {
+  background: rgb(22 14 8 / 0.78);
+}
+
+.hero-pause svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ---------------------------------------------------------------- progress line */
+
+.progress-line {
+  display: grid;
+  gap: 7px;
+}
+
+.progress-segments {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 4px;
+  width: min(100%, 184px);
+}
+
+.progress-segments i {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--progress-off);
+}
+
+.progress-segments i.is-begun {
+  background: var(--accent);
+}
+
+.progress-text {
+  font-size: 13.5px;
+  line-height: 1.35;
+  color: var(--muted);
+}
+
+/* ---------------------------------------------------------------- photo credits */
+
+.photo-credits {
+  flex-basis: 100%;
+  font-size: 13.5px;
+}
+
+.photo-credits summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  color: var(--ink-2);
+  cursor: pointer;
+  list-style: none;
+}
+
+.photo-credits summary::-webkit-details-marker {
+  display: none;
+}
+
+/* A small chevron that turns as the list opens; the open state itself is announced natively. */
+.photo-credits summary::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 0.2s ease;
+}
+
+.photo-credits[open] summary::before {
+  transform: rotate(45deg);
+}
+
+.photo-credits p {
+  margin-bottom: 6px;
+}
+
+.photo-credits ul {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.photo-credits li {
+  overflow-wrap: anywhere;
+}

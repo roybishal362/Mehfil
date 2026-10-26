@@ -89,7 +89,7 @@ export function TimelineSection({ plan }: { plan: EventPlan }) {
 
   return (
     <section className="ws-main" aria-labelledby="section-title">
-      <SectionHead title={t.timelineSection.title} intro={t.timelineSection.intro} art="calendar">
+      <SectionHead title={t.timelineSection.title} intro={t.timelineSection.intro}>
         <button type="button" className="btn btn--ghost btn--sm" onClick={exportIcs}>
           <Download />
           {t.timelineSection.downloadIcs}

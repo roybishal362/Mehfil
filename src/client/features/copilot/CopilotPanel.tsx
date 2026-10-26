@@ -8,7 +8,7 @@ import { diffPlans } from '../../../shared/domain/diff';
 import type { EventPlan } from '../../../shared/schemas/plan';
 import { toast } from '../../app/feedback';
 import { useI18n } from '../../i18n';
-import { LampIcon } from '../../motifs/Diya';
+import { FLAME } from '../../photos';
 import { plansStore } from '../../state/plans';
 import {
   applyProposal,
@@ -64,7 +64,7 @@ export function CopilotPanel({ plan }: { plan: EventPlan }) {
     <aside className="copilot" id="copilot" aria-labelledby="copilot-title">
       <div className="co-head">
         <h2 id="copilot-title">
-          <LampIcon size={32} />
+          <img className="co-mark" src={FLAME} width={36} height={36} alt="" />
           {t.copilot.title}
         </h2>
         <p>{t.copilot.subtitle}</p>

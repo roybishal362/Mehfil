@@ -70,7 +70,7 @@ export function GuestsSection({ plan }: { plan: EventPlan }) {
 
   return (
     <section className="ws-main" aria-labelledby="section-title">
-      <SectionHead title={t.guestsSection.title} intro={t.guestsSection.intro} art="letter">
+      <SectionHead title={t.guestsSection.title} intro={t.guestsSection.intro}>
         <label className="btn btn--ghost btn--sm file-button">
           <Upload />
           {t.guestsSection.importCsv}

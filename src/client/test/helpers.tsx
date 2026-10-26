@@ -18,7 +18,6 @@ import { useCopilot } from '../features/copilot/copilot';
 import { useDraft } from '../features/new-plan/draft';
 import { en } from '../i18n/en';
 import { useLocaleStore } from '../i18n';
-import { SharedDefs } from '../motifs/svg';
 import { useAiRuns } from '../state/ai';
 import { plansStore } from '../state/plans';
 
@@ -40,7 +39,6 @@ export function renderAt(ui: ReactElement, path = '/', search = '') {
   const location = memoryLocation({ path, searchPath: search, record: true });
   const result = render(
     <LucideProvider strokeWidth={1.75} className="i">
-      <SharedDefs />
       <Router hook={location.hook} searchHook={location.searchHook}>
         {ui}
       </Router>

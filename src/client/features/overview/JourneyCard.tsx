@@ -1,9 +1,8 @@
 /**
- * The journey: planning phases strung as a marigold garland. A phase's flower opens once its
- * tasks are done (a bud while some are still open), and a pin marks the phase you are in today.
+ * The journey: planning phases strung along a fine gold cord, like beads on a thread. A phase's
+ * bead fills once its tasks are done (a ring with a centre while some are still open), and a pin
+ * marks the phase you are in today.
  */
-import { artUrl } from '../../art';
-import { Art } from '../../art/Art';
 import { Link } from 'wouter';
 import {
   PHASES,
@@ -41,15 +40,18 @@ const PHASE_KEYS: Readonly<Record<Phase, keyof Messages['overview']['phases']>> 
   after: 'after',
 };
 
-const MARIGOLD = artUrl('marigold', 40);
-
-/** A full marigold for a finished phase, a smaller, paler one under way, a ring otherwise. */
-function Flower({ fill }: { fill: number }) {
-  if (fill >= 1) return <image href={MARIGOLD} x="-19" y="-19" width="38" height="38" />;
+/** A filled bead for a finished phase, a ring with a centre under way, an empty ring otherwise. */
+function Bead({ fill }: { fill: number }) {
+  if (fill >= 1) return <circle r="9" className="bead bead--done" />;
   if (fill > 0) {
-    return <image href={MARIGOLD} x="-13" y="-13" width="26" height="26" className="bud" />;
+    return (
+      <>
+        <circle r="9" className="bead bead--part" />
+        <circle r="4" className="bead-core" />
+      </>
+    );
   }
-  return <circle r="9" className="bud-off" />;
+  return <circle r="7" className="bead bead--off" />;
 }
 
 export function JourneyCard({ plan }: { plan: EventPlan }) {
@@ -77,9 +79,6 @@ export function JourneyCard({ plan }: { plan: EventPlan }) {
   return (
     <article className="card journey" aria-labelledby="journey-title">
       <header className="card-head">
-        <span className="badge" aria-hidden="true">
-          <Art name="calendar" size={30} />
-        </span>
         <h2 id="journey-title">{t.overview.journeyTitle}</h2>
         <Link className="more" href={paths.plan(plan.id, 'timeline')}>
           {t.overview.journeyLink}
@@ -95,7 +94,7 @@ export function JourneyCard({ plan }: { plan: EventPlan }) {
           const [x, y] = POINTS[index] ?? [0, 0];
           return (
             <g key={phase} transform={`translate(${String(x)} ${String(y)})`}>
-              <Flower fill={fills[index] ?? 0} />
+              <Bead fill={fills[index] ?? 0} />
               <text y={40} textAnchor="middle" className="phase-label">
                 {t.overview.phases[PHASE_KEYS[phase]]}
               </text>

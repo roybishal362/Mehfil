@@ -11,7 +11,7 @@ export type MomentMood = Exclude<Mood, 'neutral'>;
 /** Milliseconds; moments.css times each scene's animation to the same length. */
 export const MOMENT_DURATION: Readonly<Record<MomentMood, number>> = {
   wedding: 4000,
-  durga: 3600,
+  durga: 4200,
   diwali: 3600,
   ganpati: 3400,
   birthday: 3400,

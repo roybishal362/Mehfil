@@ -12,6 +12,12 @@ test.describe('a plan made from one sentence', () => {
     await expect(title).toContainText('Rohan');
     await expect(page.locator('html')).toHaveAttribute('data-mood', 'wedding');
     await expect(page.getByText('Shubh Vivah · Together with their families')).toBeVisible();
+    // The wedding's photograph sits in the header's arch.
+    const photo = page.locator('.planhead-arch img');
+    await expect(photo).toHaveAttribute('src', /wedding-\d+-[\w-]+\.webp$/);
+    await expect
+      .poll(() => photo.evaluate((image: HTMLImageElement) => image.naturalWidth))
+      .toBeGreaterThan(0);
     await expect(page.getByText('Kolkata').first()).toBeVisible();
     await expect(page.getByText('Standard plan. Ask Gemini to tailor it.')).toHaveCount(0);
     await expectAccessible(page);

@@ -7,7 +7,8 @@ import type { Plugin } from 'vite';
 
 /** Built font files to preload, matched by name (hashes change on every build). */
 const CRITICAL_FONTS = [
-  /^assets\/eczar-latin-wght-normal-[\w-]+\.woff2$/,
+  /^assets\/cormorant-garamond-latin-600-normal-[\w-]+\.woff2$/,
+  /^assets\/cormorant-garamond-latin-600-italic-[\w-]+\.woff2$/,
   /^assets\/mukta-latin-400-normal-[\w-]+\.woff2$/,
   /^assets\/mukta-latin-600-normal-[\w-]+\.woff2$/,
   /^assets\/mukta-rupee-400-normal-[\w-]+\.woff2$/,
