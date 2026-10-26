@@ -10,7 +10,9 @@ Describe your celebration in one sentence, in English, Hindi or Bengali. Gemini 
 complete plan: a budget that adds up, a timeline counted back from your date, a vendor checklist,
 ideas that honour your traditions and a run sheet for the day. Every detail stays yours to change.
 
-### [Try Mehfil live →](https://mehfil-ivory.vercel.app)
+### [Try Mehfil live →](https://mehfil-ivory.vercel.app) · [Watch the demo →](https://youtu.be/tzn9zWkSBDQ)
+
+<a href="https://youtu.be/tzn9zWkSBDQ"><img src="https://img.youtube.com/vi/tzn9zWkSBDQ/maxresdefault.jpg" width="640" alt="Watch the 2½-minute demo on YouTube: Plan any Indian celebration with AI. The thumbnail shows Mehfil's home page and a wedding plan with the Copilot's proposed changes."></a>
 
 [![CI](https://github.com/roybishal362/Mehfil/actions/workflows/ci.yml/badge.svg)](https://github.com/roybishal362/Mehfil/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/roybishal362/Mehfil/actions/workflows/codeql.yml/badge.svg)](https://github.com/roybishal362/Mehfil/actions/workflows/codeql.yml)
@@ -25,7 +27,7 @@ ideas that honour your traditions and a run sheet for the day. Every detail stay
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](tsconfig.base.json)
 [![Vercel](https://img.shields.io/badge/Vercel-Node%2024-000000?logo=vercel&logoColor=white)](docs/DEPLOYMENT.md)
 
-[Live app](https://mehfil-ivory.vercel.app) · [Chosen vertical](#chosen-vertical) ·
+[Live app](https://mehfil-ivory.vercel.app) · [Demo video](https://youtu.be/tzn9zWkSBDQ) · [Chosen vertical](#chosen-vertical) ·
 [How it works](#how-the-solution-works) · [Approach and logic](#approach-and-logic) ·
 [Assumptions](#assumptions) · [Screenshots](#screenshots) · [Gemini](#how-gemini-is-used) ·
 [Architecture](#architecture) · [Quality](#quality) · [Run it locally](#run-it-locally)
