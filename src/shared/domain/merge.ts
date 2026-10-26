@@ -21,7 +21,7 @@ import {
 } from '../schemas/plan';
 import type { AiSection } from '../schemas/primitives';
 import { getTemplate } from '../templates';
-import { addDays, clampDate, diffDays } from '../utils/dates';
+import { addDays, clampDate, diffDays, isClockTime } from '../utils/dates';
 import { zipWith } from '../utils/collections';
 import { cleanModelText, titleSimilarity } from '../utils/text';
 import type { PlanContext } from './baseline';
@@ -33,7 +33,6 @@ export interface MergeContext extends PlanContext {
 }
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
-const CLOCK = /^([01]\d|2[0-3]):[0-5]\d$/;
 const DUPLICATE_THRESHOLD = 0.6;
 
 /** Recursively cleans every string in model output (contact details removed, length-capped). */
@@ -127,95 +126,116 @@ function mergeBudget(plan: EventPlan, data: BudgetSectionData, ctx: MergeContext
   };
 }
 
-function mergeTimeline(plan: EventPlan, data: TimelineSectionData, ctx: MergeContext): EventPlan {
-  const { brief } = plan;
-  // Regeneration replaces earlier AI tasks that are still open; user and finished tasks stay.
-  const kept = plan.tasks.filter((t) => t.source !== 'ai' || t.status === 'done');
-  const existingTitles = kept.map((t) => t.title);
+type SuggestedTask = Pick<Task, 'title' | 'daysBefore' | 'priority' | 'category'> & {
+  notes: string;
+};
 
-  const fresh: {
-    title: string;
-    notes: string;
-    daysBefore: number;
-    priority: Task['priority'];
-    category: Task['category'];
-  }[] = [];
+/** Gemini's tasks, cleaned, without any that repeat a kept task or each other. */
+function freshTasks(data: TimelineSectionData, kept: readonly Task[]): SuggestedTask[] {
+  const fresh: SuggestedTask[] = [];
+  const titles = kept.map((task) => task.title);
   for (const item of data.tasks) {
     const title = cleanModelText(item.title, 120);
-    if (!title || isDuplicateTitle(title, [...existingTitles, ...fresh.map((f) => f.title)]))
-      continue;
+    if (!title || isDuplicateTitle(title, titles)) continue;
+    titles.push(title);
+    const { daysBefore, priority, category } = item;
     fresh.push({
       title,
       notes: cleanModelText(item.notes ?? '', 500),
-      daysBefore: item.daysBefore,
-      priority: item.priority,
-      category: item.category,
+      daysBefore,
+      priority,
+      category,
     });
   }
+  return fresh;
+}
 
-  // Compress AI lead times together with the open template tasks so their order stays coherent.
-  const openLeads = kept.filter((t) => t.status !== 'done').map((t) => t.daysBefore);
-  const daysLeft = diffDays(brief.date, ctx.today);
-  const mapped = compressLeadTimes(
-    [...openLeads, ...fresh.map((f) => f.daysBefore)],
+/**
+ * Dates the new tasks. Their lead times are compressed together with the open tasks already in
+ * the plan, so the order stays coherent when the event is close.
+ */
+function scheduleTasks(
+  plan: EventPlan,
+  kept: readonly Task[],
+  fresh: readonly SuggestedTask[],
+  ctx: MergeContext,
+): Task[] {
+  const openLeads = kept.filter((task) => task.status !== 'done').map((task) => task.daysBefore);
+  const daysLeft = diffDays(plan.brief.date, ctx.today);
+  const leads = compressLeadTimes(
+    [...openLeads, ...fresh.map((task) => task.daysBefore)],
     daysLeft,
   ).slice(openLeads.length);
   const room = Math.max(0, LIMITS.tasks - kept.length);
-  const aiTasks: Task[] = zipWith(fresh.slice(0, room), mapped.slice(0, room), (f, lead) => {
-    return {
-      id: ctx.makeId('task'),
-      title: f.title,
-      ...(f.notes ? { notes: f.notes } : {}),
-      dueDate: addDays(brief.date, -lead),
-      daysBefore: f.daysBefore,
-      priority: f.priority,
-      status: 'todo',
-      category: f.category,
-      compressed: lead !== f.daysBefore,
-      source: 'ai',
-    };
-  });
+  return zipWith(fresh.slice(0, room), leads.slice(0, room), (task, lead) => ({
+    id: ctx.makeId('task'),
+    title: task.title,
+    ...(task.notes ? { notes: task.notes } : {}),
+    dueDate: addDays(plan.brief.date, -lead),
+    daysBefore: task.daysBefore,
+    priority: task.priority,
+    status: 'todo' as const,
+    category: task.category,
+    compressed: lead !== task.daysBefore,
+    source: 'ai' as const,
+  }));
+}
 
+/** The new run sheet, or the current one if Gemini returned too little to be useful. */
+function mergeSchedule(
+  plan: EventPlan,
+  data: TimelineSectionData,
+  ctx: MergeContext,
+): ScheduleItem[] {
+  const { brief } = plan;
   const lastDay = brief.endDate ?? brief.date;
   const aiSchedule: ScheduleItem[] = data.schedule
-    .filter((s) => CLOCK.test(s.time))
-    .map((s) => ({
-      id: ctx.makeId('slot'),
-      day: clampDate(addDays(brief.date, s.dayOffset), addDays(brief.date, -1), lastDay),
-      time: s.time,
-      durationMinutes: s.durationMinutes,
-      title: cleanModelText(s.title, 100),
-      ...(s.owner && cleanModelText(s.owner, 60) ? { owner: cleanModelText(s.owner, 60) } : {}),
+    .filter((slot) => isClockTime(slot.time))
+    .map((slot) => {
+      const owner = cleanModelText(slot.owner ?? '', 60);
+      return {
+        id: ctx.makeId('slot'),
+        day: clampDate(addDays(brief.date, slot.dayOffset), addDays(brief.date, -1), lastDay),
+        time: slot.time,
+        durationMinutes: slot.durationMinutes,
+        title: cleanModelText(slot.title, 100),
+        ...(owner ? { owner } : {}),
+        source: 'ai' as const,
+      };
+    })
+    .filter((slot) => slot.title.length > 0);
+  if (aiSchedule.length < 3) return plan.schedule;
+  const userSlots = plan.schedule.filter((slot) => slot.source === 'user');
+  return [...userSlots, ...aiSchedule]
+    .slice(0, LIMITS.schedule)
+    .sort((a, b) => a.day.localeCompare(b.day) || a.time.localeCompare(b.time));
+}
+
+/** The user's own risks, then Gemini's (each needs a title and a way to reduce it). */
+function mergeRisks(plan: EventPlan, data: TimelineSectionData, ctx: MergeContext): Risk[] {
+  const suggested = data.risks
+    .map((risk) => ({
+      id: ctx.makeId('risk'),
+      title: cleanModelText(risk.title, 100),
+      likelihood: risk.likelihood,
+      mitigation: cleanModelText(risk.mitigation, 300),
       source: 'ai' as const,
     }))
-    .filter((s) => s.title.length > 0);
-  const userSlots = plan.schedule.filter((s) => s.source === 'user');
-  // Keep the existing run sheet if the model returned too little to be useful.
-  const schedule =
-    aiSchedule.length >= 3
-      ? [...userSlots, ...aiSchedule]
-          .slice(0, LIMITS.schedule)
-          .sort((a, b) => a.day.localeCompare(b.day) || a.time.localeCompare(b.time))
-      : plan.schedule;
+    .filter((risk) => risk.title && risk.mitigation);
+  return [...plan.risks.filter((risk) => risk.source === 'user'), ...suggested].slice(
+    0,
+    LIMITS.risks,
+  );
+}
 
-  const risks: Risk[] = [
-    ...plan.risks.filter((r) => r.source === 'user'),
-    ...data.risks
-      .map((r) => ({
-        id: ctx.makeId('risk'),
-        title: cleanModelText(r.title, 100),
-        likelihood: r.likelihood,
-        mitigation: cleanModelText(r.mitigation, 300),
-        source: 'ai' as const,
-      }))
-      .filter((r) => r.title && r.mitigation),
-  ].slice(0, LIMITS.risks);
-
+function mergeTimeline(plan: EventPlan, data: TimelineSectionData, ctx: MergeContext): EventPlan {
+  // Regeneration replaces earlier AI tasks that are still open; user and finished tasks stay.
+  const kept = plan.tasks.filter((task) => task.source !== 'ai' || task.status === 'done');
   return {
     ...plan,
-    tasks: [...kept, ...aiTasks],
-    schedule,
-    risks,
+    tasks: [...kept, ...scheduleTasks(plan, kept, freshTasks(data, kept), ctx)],
+    schedule: mergeSchedule(plan, data, ctx),
+    risks: mergeRisks(plan, data, ctx),
     ai: withSectionMeta(plan, 'timeline', ctx),
   };
 }

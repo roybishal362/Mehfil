@@ -20,44 +20,71 @@ export function toCsv(rows: readonly (readonly (string | number | undefined)[])[
   return rows.map((row) => row.map(csvCell).join(',')).join('\r\n') + '\r\n';
 }
 
+/** Reads CSV one character at a time, inside or outside a quoted cell. */
+class CsvReader {
+  private readonly rows: string[][] = [];
+  private row: string[] = [];
+  private cell = '';
+  private quoted = false;
+
+  /** Reads the character at `i` and returns how many it used (2 for `""` and CRLF). */
+  read(text: string, i: number): number {
+    const char = text.charAt(i);
+    const next = text.charAt(i + 1);
+    return this.quoted ? this.readQuoted(char, next) : this.readPlain(char, next);
+  }
+
+  /** Every non-empty row, once the text has been read. */
+  finish(): string[][] {
+    if (this.cell !== '' || this.row.length > 0) this.endRow();
+    return this.rows.filter((row) => row.some((cell) => cell.trim() !== ''));
+  }
+
+  private readQuoted(char: string, next: string): number {
+    if (char !== '"') {
+      this.cell += char;
+      return 1;
+    }
+    if (next === '"') {
+      this.cell += '"';
+      return 2;
+    }
+    this.quoted = false;
+    return 1;
+  }
+
+  private readPlain(char: string, next: string): number {
+    if (char === '"' && this.cell === '') {
+      this.quoted = true;
+    } else if (char === ',') {
+      this.endCell();
+    } else if (char === '\n' || char === '\r') {
+      this.endRow();
+      return char === '\r' && next === '\n' ? 2 : 1;
+    } else {
+      this.cell += char;
+    }
+    return 1;
+  }
+
+  private endCell(): void {
+    this.row.push(this.cell);
+    this.cell = '';
+  }
+
+  private endRow(): void {
+    this.endCell();
+    this.rows.push(this.row);
+    this.row = [];
+  }
+}
+
 /** Parses CSV text into rows. Handles quotes, escaped quotes, CRLF/LF and a UTF-8 BOM. */
 export function parseCsv(input: string): string[][] {
   const text = input.replace(/^\u{FEFF}/u, '');
-  const rows: string[][] = [];
-  let row: string[] = [];
-  let cell = '';
-  let quoted = false;
-  for (let i = 0; i < text.length; i += 1) {
-    const char = text.charAt(i);
-    if (quoted) {
-      if (char === '"' && text[i + 1] === '"') {
-        cell += '"';
-        i += 1;
-      } else if (char === '"') {
-        quoted = false;
-      } else {
-        cell += char;
-      }
-    } else if (char === '"' && cell === '') {
-      quoted = true;
-    } else if (char === ',') {
-      row.push(cell);
-      cell = '';
-    } else if (char === '\n' || char === '\r') {
-      if (char === '\r' && text[i + 1] === '\n') i += 1;
-      row.push(cell);
-      rows.push(row);
-      row = [];
-      cell = '';
-    } else {
-      cell += char;
-    }
-  }
-  if (cell !== '' || row.length > 0) {
-    row.push(cell);
-    rows.push(row);
-  }
-  return rows.filter((r) => r.some((c) => c.trim() !== ''));
+  const reader = new CsvReader();
+  for (let i = 0; i < text.length;) i += reader.read(text, i);
+  return reader.finish();
 }
 
 const GUEST_CSV_HEADERS = [
@@ -78,7 +105,7 @@ export function guestsToCsv(guests: readonly Guest[]): string {
 }
 
 const GuestRow = Guest.omit({ id: true });
-export type GuestImport = z.infer<typeof GuestRow>;
+type GuestImport = z.infer<typeof GuestRow>;
 
 export interface GuestImportResult {
   guests: GuestImport[];

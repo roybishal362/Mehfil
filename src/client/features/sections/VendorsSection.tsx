@@ -7,22 +7,21 @@ import { Plus } from 'lucide-react';
 import { useState, type SubmitEvent } from 'react';
 import type { EventPlan } from '../../../shared/schemas/plan';
 import { PRIORITIES, type Priority } from '../../../shared/schemas/primitives';
-import { addDays, localToday } from '../../../shared/utils/dates';
+import { localToday } from '../../../shared/utils/dates';
 import { toast } from '../../app/feedback';
-import { Field } from '../../components/Field';
+import { SelectField } from '../../components/SelectField';
+import { TextField } from '../../components/TextField';
 import { useI18n } from '../../i18n';
-import { useEdit } from '../plan/use-edit';
+import { useEdit, type Edit } from '../plan/use-edit';
 import { SectionHead } from './SectionHead';
 import { VendorCard } from './VendorCard';
 
-export function VendorsSection({ plan }: { plan: EventPlan }) {
+/** Adds a vendor of the user's own kind (a mehendi artist, a dhol player…), to book by a date. */
+function AddVendorForm({ plan, edit }: { plan: EventPlan; edit: Edit }) {
   const { t } = useI18n();
-  const edit = useEdit(plan.id);
-  const today = localToday();
   const [label, setLabel] = useState('');
   const [bookBy, setBookBy] = useState('');
   const [priority, setPriority] = useState<Priority>('medium');
-  const vendors = [...plan.vendors].sort((a, b) => a.bookBy.localeCompare(b.bookBy));
 
   const addVendor = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -37,65 +36,51 @@ export function VendorsSection({ plan }: { plan: EventPlan }) {
   };
 
   return (
+    <form className="card add-row" onSubmit={addVendor}>
+      <h3 className="add-title">{t.vendorsSection.addVendor}</h3>
+      <TextField
+        id="vendor-label"
+        label={t.vendorsSection.vendorLabel}
+        maxLength={60}
+        value={label}
+        onChange={setLabel}
+      />
+      <TextField
+        id="vendor-book-by"
+        label={t.vendorsSection.bookByLabel}
+        type="date"
+        min={localToday()}
+        max={plan.brief.date}
+        value={bookBy}
+        onChange={setBookBy}
+      />
+      <SelectField
+        id="vendor-priority"
+        label={t.timelineSection.priority}
+        value={priority}
+        options={PRIORITIES}
+        labelOf={(value) => t.priorities[value]}
+        onChange={setPriority}
+      />
+      <button type="submit" className="btn btn--primary btn--sm">
+        <Plus />
+        {t.vendorsSection.addVendorButton}
+      </button>
+    </form>
+  );
+}
+
+export function VendorsSection({ plan }: { plan: EventPlan }) {
+  const { t } = useI18n();
+  const edit = useEdit(plan.id);
+  const vendors = [...plan.vendors].sort((a, b) => a.bookBy.localeCompare(b.bookBy));
+  return (
     <section className="ws-main" aria-labelledby="section-title">
       <SectionHead title={t.vendorsSection.title} intro={t.vendorsSection.intro} />
       {vendors.map((vendor) => (
         <VendorCard key={vendor.id} plan={plan} vendor={vendor} />
       ))}
-      <form className="card add-row" onSubmit={addVendor}>
-        <h3 className="add-title">{t.vendorsSection.addVendor}</h3>
-        <Field id="vendor-label" label={t.vendorsSection.vendorLabel}>
-          {(control) => (
-            <input
-              {...control}
-              className="input"
-              maxLength={60}
-              value={label}
-              onChange={(event) => {
-                setLabel(event.target.value);
-              }}
-            />
-          )}
-        </Field>
-        <Field id="vendor-book-by" label={t.vendorsSection.bookByLabel}>
-          {(control) => (
-            <input
-              {...control}
-              type="date"
-              className="input"
-              min={today}
-              max={addDays(plan.brief.date, 0)}
-              value={bookBy}
-              onChange={(event) => {
-                setBookBy(event.target.value);
-              }}
-            />
-          )}
-        </Field>
-        <Field id="vendor-priority" label={t.timelineSection.priority}>
-          {(control) => (
-            <select
-              {...control}
-              className="select"
-              value={priority}
-              onChange={(event) => {
-                const next = PRIORITIES.find((value) => value === event.target.value);
-                if (next) setPriority(next);
-              }}
-            >
-              {PRIORITIES.map((value) => (
-                <option key={value} value={value}>
-                  {t.priorities[value]}
-                </option>
-              ))}
-            </select>
-          )}
-        </Field>
-        <button type="submit" className="btn btn--primary btn--sm">
-          <Plus />
-          {t.vendorsSection.addVendorButton}
-        </button>
-      </form>
+      <AddVendorForm plan={plan} edit={edit} />
     </section>
   );
 }

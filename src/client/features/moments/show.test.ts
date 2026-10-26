@@ -14,6 +14,7 @@ import {
 
 const WIDTH = 1200;
 const HEIGHT = 800;
+const STAGE = { width: WIDTH, height: HEIGHT };
 
 /** Runs the physics for `seconds` in 60 fps steps. */
 function run(particles: Particle[], seconds: number, random = seeded(7)): Particle[] {
@@ -69,8 +70,8 @@ describe('rockets', () => {
 
 describe('confetti', () => {
   it('fires from the bottom corners, upwards and inwards', () => {
-    const left = fire('confetti', 0, seeded(4), WIDTH, HEIGHT);
-    const right = fire('confetti', 1, seeded(4), WIDTH, HEIGHT);
+    const left = fire('confetti', 0, seeded(4), STAGE);
+    const right = fire('confetti', 1, seeded(4), STAGE);
     expect(left).toHaveLength(90);
     expect(left.every((item) => item.x === 0 && item.y === HEIGHT)).toBe(true);
     expect(right.every((item) => item.x === WIDTH)).toBe(true);
@@ -83,7 +84,7 @@ describe('confetti', () => {
   });
 
   it('turns as it falls back down', () => {
-    const pieces = fire('confetti', 0, seeded(5), WIDTH, HEIGHT);
+    const pieces = fire('confetti', 0, seeded(5), STAGE);
     const later = run(pieces, 2.2);
     expect(later.length).toBeGreaterThan(0);
     expect(later.every((item) => item.vy > 0)).toBe(true);

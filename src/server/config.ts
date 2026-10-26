@@ -27,7 +27,7 @@ const Env = z.object({
   VERCEL: z.string().optional(),
 });
 
-export interface FirebaseWebConfig {
+interface FirebaseWebConfig {
   projectId: string;
   apiKey: string;
   authDomain: string;
@@ -61,6 +61,37 @@ export class ConfigError extends Error {
   }
 }
 
+type Env = z.infer<typeof Env>;
+
+/** Gemini when a key is set, the demo provider otherwise; asking for Gemini without a key fails. */
+function aiConfig(env: Env): AppConfig['ai'] {
+  const apiKey = env.GEMINI_API_KEY === '' ? undefined : env.GEMINI_API_KEY;
+  const provider = env.AI_PROVIDER ?? (apiKey ? 'gemini' : 'mock');
+  if (provider === 'gemini' && !apiKey) {
+    throw new ConfigError('AI_PROVIDER=gemini needs GEMINI_API_KEY');
+  }
+  return {
+    provider,
+    ...(apiKey ? { apiKey } : {}),
+    models: { smart: env.GEMINI_MODEL_SMART, fast: env.GEMINI_MODEL_FAST },
+    maxRequestsPerMinute: env.AI_MAX_RPM,
+    mockDelayMs: env.MOCK_AI_DELAY_MS,
+    rateLimit: env.AI_RATE_LIMIT,
+  };
+}
+
+/** Firebase is on only when its project, key and auth domain are all set. */
+function firebaseConfig(env: Env): AppConfig['firebase'] {
+  const { FIREBASE_PROJECT_ID, FIREBASE_API_KEY, FIREBASE_AUTH_DOMAIN, FIREBASE_APP_ID } = env;
+  if (!FIREBASE_PROJECT_ID || !FIREBASE_API_KEY || !FIREBASE_AUTH_DOMAIN) return null;
+  return {
+    projectId: FIREBASE_PROJECT_ID,
+    apiKey: FIREBASE_API_KEY,
+    authDomain: FIREBASE_AUTH_DOMAIN,
+    ...(FIREBASE_APP_ID ? { appId: FIREBASE_APP_ID } : {}),
+  };
+}
+
 export function loadConfig(source: Record<string, string | undefined> = process.env): AppConfig {
   const parsed = Env.safeParse(source);
   if (!parsed.success) {
@@ -68,32 +99,12 @@ export function loadConfig(source: Record<string, string | undefined> = process.
     throw new ConfigError(`Invalid server configuration: ${fields}`);
   }
   const env = parsed.data;
-  const apiKey = env.GEMINI_API_KEY === '' ? undefined : env.GEMINI_API_KEY;
-  const provider = env.AI_PROVIDER ?? (apiKey ? 'gemini' : 'mock');
-  if (provider === 'gemini' && !apiKey) {
-    throw new ConfigError('AI_PROVIDER=gemini needs GEMINI_API_KEY');
-  }
-  const firebase =
-    env.FIREBASE_PROJECT_ID && env.FIREBASE_API_KEY && env.FIREBASE_AUTH_DOMAIN
-      ? {
-          projectId: env.FIREBASE_PROJECT_ID,
-          apiKey: env.FIREBASE_API_KEY,
-          authDomain: env.FIREBASE_AUTH_DOMAIN,
-          ...(env.FIREBASE_APP_ID ? { appId: env.FIREBASE_APP_ID } : {}),
-        }
-      : null;
+  const firebase = firebaseConfig(env);
   return {
     env: env.NODE_ENV,
     port: env.PORT,
     logLevel: env.LOG_LEVEL,
-    ai: {
-      provider,
-      ...(apiKey ? { apiKey } : {}),
-      models: { smart: env.GEMINI_MODEL_SMART, fast: env.GEMINI_MODEL_FAST },
-      maxRequestsPerMinute: env.AI_MAX_RPM,
-      mockDelayMs: env.MOCK_AI_DELAY_MS,
-      rateLimit: env.AI_RATE_LIMIT,
-    },
+    ai: aiConfig(env),
     firebase,
     requireAuthForAi: firebase !== null && env.REQUIRE_AUTH_FOR_AI !== 'false',
     clientIp: env.VERCEL ? 'vercel' : 'socket',

@@ -13,7 +13,7 @@ import type { AppEnv } from '../types';
 const GOOGLE_JWKS_URL =
   'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com';
 
-export interface VerifiedUser {
+interface VerifiedUser {
   uid: string;
   anonymous: boolean;
 }

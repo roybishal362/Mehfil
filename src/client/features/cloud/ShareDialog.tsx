@@ -13,6 +13,7 @@ import {
   shareUrl,
   stopSharing,
   useShareLinks,
+  type ShareLink,
 } from '../../cloud/shares';
 import { Modal } from '../../components/Modal';
 import { useI18n } from '../../i18n';
@@ -49,20 +50,105 @@ export function ShareButton({ plan }: { plan: EventPlan }) {
 }
 
 type Busy = 'create' | 'update' | 'stop' | null;
+type Run = (
+  kind: Exclude<Busy, null>,
+  action: () => Promise<unknown>,
+  done?: string,
+) => Promise<void>;
+
+/** The link itself, selected on focus, with a Copy button. */
+function LinkField({ url }: { url: string }) {
+  const { t } = useI18n();
+  const input = useRef<HTMLInputElement>(null);
+  const inputId = useId();
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      toast(t.share.copied);
+    } catch {
+      // Clipboard access can be refused: select the link so it can be copied by hand.
+      input.current?.select();
+    }
+  };
+  return (
+    <>
+      <label className="share-label" htmlFor={inputId}>
+        {t.share.linkLabel}
+      </label>
+      <div className="share-row">
+        <input
+          ref={input}
+          id={inputId}
+          className="input"
+          readOnly
+          value={url}
+          onFocus={(event) => {
+            event.currentTarget.select();
+          }}
+        />
+        <button type="button" className="btn btn--primary btn--sm" onClick={() => void copy()}>
+          <Copy />
+          {t.share.copy}
+        </button>
+      </div>
+    </>
+  );
+}
+
+interface ActiveLinkProps {
+  plan: EventPlan;
+  link: ShareLink;
+  includeBudget: boolean;
+  busy: Busy;
+  run: Run;
+}
+
+/** A link that exists: when it expires, whether its copy is out of date, and turning it off. */
+function ActiveLink({ plan, link, includeBudget, busy, run }: ActiveLinkProps) {
+  const { t, f } = useI18n();
+  // The shared copy is a snapshot: edits since, or a different budget choice, need a refresh.
+  const outdated = link.revision !== plan.revision || link.includeBudget !== includeBudget;
+  return (
+    <>
+      <LinkField url={shareUrl(link.id)} />
+      <p className="note mt-0">{t.share.expires(f.date(link.expiresAt.slice(0, 10)))}</p>
+      {outdated && (
+        <div className="notice notice--warn">
+          <p>{t.share.outdated}</p>
+          <button
+            type="button"
+            className="btn btn--ghost btn--sm"
+            disabled={busy !== null}
+            onClick={() =>
+              void run('update', () => refreshShareLink(plan, includeBudget), t.share.updated)
+            }
+          >
+            {t.share.update}
+          </button>
+        </div>
+      )}
+      <div className="dialog-actions">
+        <button
+          type="button"
+          className="btn btn--danger btn--sm"
+          disabled={busy !== null}
+          onClick={() => void run('stop', () => stopSharing(plan.id), t.share.stopped)}
+        >
+          {t.share.stop}
+        </button>
+      </div>
+    </>
+  );
+}
 
 function ShareDialog({ plan, onClose }: { plan: EventPlan; onClose: () => void }) {
-  const { t, f } = useI18n();
+  const { t } = useI18n();
   const link = useShareLinks((state) => state.links[plan.id]);
   const [includeBudget, setIncludeBudget] = useState(link?.includeBudget ?? true);
   const [busy, setBusy] = useState<Busy>(null);
   const [error, setError] = useState<string | null>(null);
-  const input = useRef<HTMLInputElement>(null);
-  const inputId = useId();
-  const url = link ? shareUrl(link.id) : '';
-  const outdated =
-    link && (link.revision !== plan.revision || link.includeBudget !== includeBudget);
 
-  const run = async (kind: Exclude<Busy, null>, action: () => Promise<unknown>, done?: string) => {
+  const run: Run = async (kind, action, done) => {
     setBusy(kind);
     setError(null);
     try {
@@ -72,16 +158,6 @@ function ShareDialog({ plan, onClose }: { plan: EventPlan; onClose: () => void }
       setError(t.share.failed);
     } finally {
       setBusy(null);
-    }
-  };
-
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(url);
-      toast(t.share.copied);
-    } catch {
-      // Clipboard access can be refused: select the link so it can be copied by hand.
-      input.current?.select();
     }
   };
 
@@ -103,55 +179,8 @@ function ShareDialog({ plan, onClose }: { plan: EventPlan; onClose: () => void }
         />
         {t.share.includeBudget}
       </label>
-
       {link ? (
-        <>
-          <label className="share-label" htmlFor={inputId}>
-            {t.share.linkLabel}
-          </label>
-          <div className="share-row">
-            <input
-              ref={input}
-              id={inputId}
-              className="input"
-              readOnly
-              value={url}
-              onFocus={(event) => {
-                event.currentTarget.select();
-              }}
-            />
-            <button type="button" className="btn btn--primary btn--sm" onClick={() => void copy()}>
-              <Copy />
-              {t.share.copy}
-            </button>
-          </div>
-          <p className="note mt-0">{t.share.expires(f.date(link.expiresAt.slice(0, 10)))}</p>
-          {outdated && (
-            <div className="notice notice--warn">
-              <p>{t.share.outdated}</p>
-              <button
-                type="button"
-                className="btn btn--ghost btn--sm"
-                disabled={busy !== null}
-                onClick={() =>
-                  void run('update', () => refreshShareLink(plan, includeBudget), t.share.updated)
-                }
-              >
-                {t.share.update}
-              </button>
-            </div>
-          )}
-          <div className="dialog-actions">
-            <button
-              type="button"
-              className="btn btn--danger btn--sm"
-              disabled={busy !== null}
-              onClick={() => void run('stop', () => stopSharing(plan.id), t.share.stopped)}
-            >
-              {t.share.stop}
-            </button>
-          </div>
-        </>
+        <ActiveLink plan={plan} link={link} includeBudget={includeBudget} busy={busy} run={run} />
       ) : (
         <button
           type="button"
@@ -163,7 +192,6 @@ function ShareDialog({ plan, onClose }: { plan: EventPlan; onClose: () => void }
           {busy === 'create' ? t.share.creating : t.share.create}
         </button>
       )}
-
       {error && (
         <p className="notice notice--danger" role="alert">
           {error}

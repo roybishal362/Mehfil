@@ -19,24 +19,27 @@ const CLIENT_FORBIDDEN = [/process\.env/, /GEMINI_API_KEY/];
 const BINARY = /\.(png|jpe?g|webp|gif|ico|woff2?|ttf|otf|pdf|zip)$/i;
 const SELF = new Set(['scripts/check-secrets.mjs']);
 
-const problems = [];
+/** Text files small enough to scan; images, fonts and archives cannot hold readable keys. */
+const scannable = (file) =>
+  !BINARY.test(file) && !SELF.has(file) && existsSync(file) && statSync(file).size <= 2_000_000;
 
-for (const file of listRepoFiles()) {
-  if (BINARY.test(file) || SELF.has(file) || !existsSync(file) || statSync(file).size > 2_000_000)
-    continue;
+/** Browser code (not its tests) is shipped to everyone, so it must not touch server config. */
+const isClientCode = (file) => file.startsWith('src/client/') && !file.includes('.test.');
+
+function problemsIn(file) {
   const text = readFileSync(file, 'utf8');
-
-  for (const { name, regex } of SECRET_PATTERNS) {
-    if (regex.test(text)) problems.push(`${file}: possible ${name}`);
-  }
-
-  if (file.startsWith('src/client/') && !file.includes('.test.')) {
-    for (const regex of CLIENT_FORBIDDEN) {
-      if (regex.test(text))
-        problems.push(`${file}: client code must not reference ${regex.source}`);
-    }
-  }
+  const secrets = SECRET_PATTERNS.filter(({ regex }) => regex.test(text)).map(
+    ({ name }) => `${file}: possible ${name}`,
+  );
+  const serverOnly = isClientCode(file)
+    ? CLIENT_FORBIDDEN.filter((regex) => regex.test(text)).map(
+        (regex) => `${file}: client code must not reference ${regex.source}`,
+      )
+    : [];
+  return [...secrets, ...serverOnly];
 }
+
+const problems = listRepoFiles().filter(scannable).flatMap(problemsIn);
 
 if (problems.length > 0) {
   console.error('Secret scan failed:\n' + problems.map((p) => `  - ${p}`).join('\n'));

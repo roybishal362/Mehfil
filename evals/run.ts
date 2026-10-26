@@ -123,74 +123,91 @@ function strings(value: unknown): string[] {
   return [];
 }
 
-async function evaluate(sample: Sample): Promise<Result> {
-  const started = Date.now();
-  const checks: Record<string, boolean | string> = {};
-  const models = new Set<string>();
+type Checks = Result['checks'];
 
-  const briefResponse = BriefApiResponse.safeParse(
+/** Step 1: read the description into a complete brief. */
+async function readBrief(sample: Sample, checks: Checks, models: Set<string>) {
+  const answer = BriefApiResponse.safeParse(
     await (await post('/api/ai/brief', { text: sample.text, today, uiLanguage: 'en' })).json(),
   );
-  if (!briefResponse.success) {
-    return { sample: sample.name, checks: { brief: 'invalid answer' }, models: [], seconds: 0 };
+  if (!answer.success) {
+    checks.brief = 'invalid answer';
+    return undefined;
   }
-  models.add(briefResponse.data.meta.model);
-  checks['brief from Gemini'] = briefResponse.data.meta.mode === expectedMode;
-  const brief = completeBrief(briefResponse.data.brief, sample);
+  models.add(answer.data.meta.model);
+  checks['brief from Gemini'] = answer.data.meta.mode === expectedMode;
+  const brief = completeBrief(answer.data.brief, sample);
   checks['brief complete'] = brief.success || 'missing fields';
-  if (!brief.success) return { sample: sample.name, checks, models: [...models], seconds: 0 };
+  return brief.success ? brief.data : undefined;
+}
 
-  const stream = await (await post('/api/ai/personalize', { brief: brief.data, today })).text();
+/** Step 2: tailor all four sections and merge them with the app's own engine. */
+async function tailorPlan(brief: EventBrief, checks: Checks, models: Set<string>) {
+  const stream = await (await post('/api/ai/personalize', { brief, today })).text();
   const context = { today, now: new Date().toISOString(), makeId: createId };
-  let plan: EventPlan = createBaselinePlan(brief.data, context);
+  let plan: EventPlan = createBaselinePlan(brief, context);
   let tailored = 0;
   for (const line of stream.split('\n').filter(Boolean)) {
     const event = PersonalizeEvent.safeParse(JSON.parse(line));
     if (!event.success || event.data.type !== 'section') continue;
-    models.add(event.data.meta.model);
-    if (event.data.meta.mode === expectedMode) tailored += 1;
-    plan = mergeSection(plan, { section: event.data.section, data: event.data.data } as never, {
-      ...context,
-      model: event.data.meta.model,
-    });
+    const { model, mode } = event.data.meta;
+    models.add(model);
+    if (mode === expectedMode) tailored += 1;
+    plan = mergeSection(plan, event.data, { ...context, model });
   }
   checks['4 sections from Gemini'] = tailored === 4 || `${String(tailored)} of 4`;
+  return plan;
+}
 
-  const lines = plan.budget.lines.reduce((sum, line) => sum + line.planned, 0);
-  checks['budget adds up'] = lines === plan.budget.total;
-  const lastDay = brief.data.endDate ?? brief.data.date;
-  checks['dates in range'] = plan.tasks.every(
-    (task) => task.dueDate >= today && (task.daysBefore < 0 || task.dueDate <= lastDay),
-  );
+/** Food ideas must not name what the diet excludes; quotes the first slip for a reviewer. */
+function dietCheck(plan: EventPlan, diet: NonNullable<Sample['diet']>): boolean | string {
+  const food = plan.ideas.filter((idea) => idea.kind === 'food').flatMap(strings);
+  const avoid = diet === 'jain' ? [NON_VEG, JAIN_AVOID] : [NON_VEG];
+  const offending = food.find((value) => avoid.some((pattern) => pattern.test(value)));
+  return offending === undefined || `"${offending.slice(0, 80)}"`;
+}
+
+/** At least four in five things Gemini wrote must be in the requested script. */
+function scriptCheck(plan: EventPlan, script: RegExp): boolean {
   // Only prose Gemini wrote (not IDs, dates or the built-in English template items).
-  const text = [
+  const written = [
     ...plan.ideas
       .filter((idea) => idea.source === 'ai')
       .flatMap((idea) => [idea.title, idea.description]),
     ...plan.schedule.filter((slot) => slot.source === 'ai').map((slot) => slot.title),
     ...(plan.summary ? [plan.summary] : []),
-  ];
+  ].filter((value) => value.length > 12);
+  const inScript = written.filter((value) => script.test(value)).length;
+  return inScript >= written.length * 0.8;
+}
+
+/** Step 3: check what matters in the merged plan. */
+function checkPlan(plan: EventPlan, brief: EventBrief, sample: Sample, checks: Checks): void {
+  const lines = plan.budget.lines.reduce((sum, line) => sum + line.planned, 0);
+  checks['budget adds up'] = lines === plan.budget.total;
+  const lastDay = brief.endDate ?? brief.date;
+  checks['dates in range'] = plan.tasks.every(
+    (task) => task.dueDate >= today && (task.daysBefore < 0 || task.dueDate <= lastDay),
+  );
   checks['no contact details'] = !strings(plan).some((value) => CONTACT.test(value));
-  if (sample.diet) {
-    const food = plan.ideas.filter((idea) => idea.kind === 'food').flatMap(strings);
-    const avoid = sample.diet === 'jain' ? [NON_VEG, JAIN_AVOID] : [NON_VEG];
-    const offending = food.find((value) => avoid.some((pattern) => pattern.test(value)));
-    // Quote the dish so a reviewer can tell a real slip from "made without onion".
-    checks['respects the diet'] = offending === undefined || `"${offending.slice(0, 80)}"`;
-  }
+  if (sample.diet) checks['respects the diet'] = dietCheck(plan, sample.diet);
   // The demo provider always answers in English, so only Gemini's language is checked.
   const script = mock ? undefined : SCRIPT[sample.language];
-  if (script) {
-    const written = text.filter((value) => value.length > 12);
-    const inScript = written.filter((value) => script.test(value)).length;
-    checks[`written in ${sample.language}`] = inScript >= written.length * 0.8;
-  }
+  if (script) checks[`written in ${sample.language}`] = scriptCheck(plan, script);
   checks['has a summary'] = Boolean(plan.summary);
+}
+
+async function evaluate(sample: Sample): Promise<Result> {
+  const started = Date.now();
+  const checks: Checks = {};
+  const models = new Set<string>();
+  const brief = await readBrief(sample, checks, models);
+  if (brief) checkPlan(await tailorPlan(brief, checks, models), brief, sample, checks);
   return {
     sample: sample.name,
     checks,
     models: [...models],
-    seconds: Math.round((Date.now() - started) / 100) / 10,
+    seconds: brief ? Math.round((Date.now() - started) / 100) / 10 : 0,
   };
 }
 

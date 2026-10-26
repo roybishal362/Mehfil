@@ -1,7 +1,7 @@
 /** Human-readable descriptions of Copilot operations and their effects on the plan. */
 import type { PlanChange } from '../../../shared/domain/diff';
-import type { PlanOperation } from '../../../shared/schemas/operations';
-import type { EventPlan } from '../../../shared/schemas/plan';
+import { COPILOT_OPERATION_TYPES, type PlanOperation } from '../../../shared/schemas/operations';
+import type { BudgetLine, EventPlan, Vendor } from '../../../shared/schemas/plan';
 import { VENDOR_STATUSES } from '../../../shared/schemas/primitives';
 import type { Formatters, Messages } from '../../i18n';
 
@@ -17,81 +17,68 @@ function statusLabel(value: string, t: Messages): string {
   return status ? t.vendorStatuses[status] : value;
 }
 
-export function describeOperation(
-  op: PlanOperation,
-  plan: EventPlan,
-  t: Messages,
-  f: Formatters,
-): Described {
-  const money = (amount: number) => f.money(amount, plan.budget.currency);
+/** What a description needs: the plan before the change, the messages and the formatters. */
+interface Context {
+  plan: EventPlan;
+  t: Messages;
+  f: Formatters;
+  money: (amount: number) => string;
+}
+
+type Op<T extends PlanOperation['type']> = Extract<PlanOperation, { type: T }>;
+type Proposable = Op<(typeof COPILOT_OPERATION_TYPES)[number]>;
+/** Operations the Copilot never proposes; they only describe the user's own edits. */
+type DirectEdit = Exclude<PlanOperation, Proposable>;
+
+const PROPOSABLE: ReadonlySet<string> = new Set(COPILOT_OPERATION_TYPES);
+const isProposable = (op: PlanOperation): op is Proposable => PROPOSABLE.has(op.type);
+
+const lineName = (line: BudgetLine, t: Messages) => line.label ?? t.budgetCategories[line.category];
+const vendorName = (vendor: Vendor, t: Messages) =>
+  vendor.label ?? t.vendorCategories[vendor.category];
+
+/** The parts that are present, joined with a middle dot. */
+const joined = (...parts: (string | undefined)[]) =>
+  parts.filter((part) => part !== undefined).join(' · ');
+
+function describeLineUpdate(op: Op<'budget.updateLine'>, { plan, t, money }: Context): Described {
+  const line = plan.budget.lines.find((entry) => entry.id === op.id);
+  if (!line) return { what: t.copilotOps.total, detail: '' };
+  const { planned } = op.patch;
+  const detail = planned === undefined ? '' : arrow(money(line.planned), money(planned));
+  return { what: lineName(line, t), detail };
+}
+
+function describeTaskUpdate(op: Op<'task.update'>, { plan, t, f }: Context): Described {
+  const task = plan.tasks.find((entry) => entry.id === op.id);
+  const { status, dueDate, priority } = op.patch;
+  return {
+    what: task?.title ?? t.copilotOps.newTask,
+    detail: joined(
+      status && t.taskStatuses[status],
+      dueDate && f.dateShort(dueDate),
+      priority && t.priorities[priority],
+    ),
+  };
+}
+
+function describeVendorUpdate(op: Op<'vendor.update'>, { plan, t, f }: Context): Described {
+  const vendor = plan.vendors.find((entry) => entry.id === op.id);
+  const { status, bookBy } = op.patch;
+  return {
+    what: vendor ? vendorName(vendor, t) : t.copilotOps.newVendor,
+    detail: joined(status && t.vendorStatuses[status], bookBy && f.dateShort(bookBy)),
+  };
+}
+
+/** A short name for the user's own edits, which never need a detailed preview. */
+function describeDirectEdit(op: DirectEdit, { plan, t }: Context): Described {
   switch (op.type) {
-    case 'guests.setCount':
-      return {
-        what: t.copilotOps.guests,
-        detail: arrow(f.number(plan.brief.guestCount), f.number(op.guestCount)),
-      };
-    case 'budget.setTotal':
-      return { what: t.copilotOps.total, detail: arrow(money(plan.budget.total), money(op.total)) };
-    case 'budget.updateLine': {
-      const line = plan.budget.lines.find((entry) => entry.id === op.id);
-      const name = line ? (line.label ?? t.budgetCategories[line.category]) : t.copilotOps.total;
-      const planned = op.patch.planned;
-      return {
-        what: name,
-        detail: planned !== undefined && line ? arrow(money(line.planned), money(planned)) : '',
-      };
-    }
-    case 'budget.addLine':
-      return {
-        what: t.copilotOps.newLine,
-        detail: `${op.line.label} · ${money(op.line.planned)}`,
-      };
-    case 'task.add':
-      return {
-        what: t.copilotOps.newTask,
-        detail: `${op.task.title} · ${f.dateShort(op.task.dueDate)}`,
-      };
-    case 'task.update': {
-      const task = plan.tasks.find((entry) => entry.id === op.id);
-      const parts: string[] = [];
-      if (op.patch.status) parts.push(t.taskStatuses[op.patch.status]);
-      if (op.patch.dueDate) parts.push(f.dateShort(op.patch.dueDate));
-      if (op.patch.priority) parts.push(t.priorities[op.patch.priority]);
-      return { what: task?.title ?? t.copilotOps.newTask, detail: parts.join(' · ') };
-    }
-    case 'task.remove':
-      return {
-        what: t.copilotOps.removeTask,
-        detail: plan.tasks.find((entry) => entry.id === op.id)?.title ?? '',
-      };
-    case 'vendor.update': {
-      const vendor = plan.vendors.find((entry) => entry.id === op.id);
-      const parts: string[] = [];
-      if (op.patch.status) parts.push(t.vendorStatuses[op.patch.status]);
-      if (op.patch.bookBy) parts.push(f.dateShort(op.patch.bookBy));
-      return {
-        what: vendor
-          ? (vendor.label ?? t.vendorCategories[vendor.category])
-          : t.copilotOps.newVendor,
-        detail: parts.join(' · '),
-      };
-    }
-    case 'idea.add':
-      return { what: t.copilotOps.newIdea, detail: op.idea.title };
-    case 'schedule.add':
-      return {
-        what: t.copilotOps.newSlot,
-        detail: `${f.dateShort(op.item.day)} ${f.time(op.item.time)} · ${op.item.title}`,
-      };
-    // The Copilot proposes only the operations above; these describe direct edits.
     case 'brief.update':
       return { what: t.copilotOps.details, detail: '' };
     case 'budget.removeLine': {
       const line = plan.budget.lines.find((entry) => entry.id === op.id);
-      return {
-        what: t.copilotOps.removeLine,
-        detail: line ? (line.label ?? t.budgetCategories[line.category]) : '',
-      };
+      return { what: t.copilotOps.removeLine, detail: line ? lineName(line, t) : '' };
     }
     case 'guest.add':
     case 'guest.update':
@@ -113,6 +100,56 @@ export function describeOperation(
       return { what: t.copilotOps.newSlot, detail: '' };
     case 'risk.remove':
       return { what: t.dayOfSection.planB, detail: '' };
+  }
+}
+
+export function describeOperation(
+  op: PlanOperation,
+  plan: EventPlan,
+  t: Messages,
+  f: Formatters,
+): Described {
+  const ctx: Context = { plan, t, f, money: (amount) => f.money(amount, plan.budget.currency) };
+  if (!isProposable(op)) return describeDirectEdit(op, ctx);
+  switch (op.type) {
+    case 'guests.setCount':
+      return {
+        what: t.copilotOps.guests,
+        detail: arrow(f.number(plan.brief.guestCount), f.number(op.guestCount)),
+      };
+    case 'budget.setTotal':
+      return {
+        what: t.copilotOps.total,
+        detail: arrow(ctx.money(plan.budget.total), ctx.money(op.total)),
+      };
+    case 'budget.updateLine':
+      return describeLineUpdate(op, ctx);
+    case 'budget.addLine':
+      return {
+        what: t.copilotOps.newLine,
+        detail: joined(op.line.label, ctx.money(op.line.planned)),
+      };
+    case 'task.add':
+      return {
+        what: t.copilotOps.newTask,
+        detail: joined(op.task.title, f.dateShort(op.task.dueDate)),
+      };
+    case 'task.update':
+      return describeTaskUpdate(op, ctx);
+    case 'task.remove':
+      return {
+        what: t.copilotOps.removeTask,
+        detail: plan.tasks.find((entry) => entry.id === op.id)?.title ?? '',
+      };
+    case 'vendor.update':
+      return describeVendorUpdate(op, ctx);
+    case 'idea.add':
+      return { what: t.copilotOps.newIdea, detail: op.idea.title };
+    case 'schedule.add':
+      return {
+        what: t.copilotOps.newSlot,
+        detail: joined(`${f.dateShort(op.item.day)} ${f.time(op.item.time)}`, op.item.title),
+      };
   }
 }
 

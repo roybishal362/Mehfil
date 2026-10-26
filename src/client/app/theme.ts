@@ -5,7 +5,7 @@
  */
 import { create } from 'zustand';
 
-export type Theme = 'night' | 'day';
+type Theme = 'night' | 'day';
 
 const STORAGE_KEY = 'mehfil:theme';
 const THEME_COLOR: Readonly<Record<Theme, string>> = { night: '#13100d', day: '#f6efe4' };
@@ -32,8 +32,8 @@ interface ThemeState {
 }
 
 export const useTheme = create<ThemeState>()((set, get) => ({
-  // The initial state is what the prerendered page shows; hydration renders with it and React
-  // then re-renders with the saved theme (see src/client/lib/hydration.ts).
+  // The initial state is what the prerendered page shows. Zustand gives it to React as the
+  // server snapshot, so hydration matches the page; React then re-renders with the saved theme.
   theme: 'day',
   toggle: () => {
     const theme: Theme = get().theme === 'night' ? 'day' : 'night';

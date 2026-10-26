@@ -176,13 +176,23 @@ export function sectionPrompt(section: AiSection, brief: EventBrief, today: stri
 }
 
 /** Prompt for regenerating a section with the user's change request. */
-export function refinePrompt(
-  section: AiSection,
-  brief: EventBrief,
-  today: string,
-  instruction: string,
-  existing: readonly string[],
-): string {
+export interface RefineInput {
+  section: AiSection;
+  brief: EventBrief;
+  today: string;
+  /** What the user asked for, in their own words. */
+  instruction: string;
+  /** Titles already in the section, so the model offers something new. */
+  existing: readonly string[];
+}
+
+export function refinePrompt({
+  section,
+  brief,
+  today,
+  instruction,
+  existing,
+}: RefineInput): string {
   return [
     sectionPrompt(section, brief, today),
     'The user wants this section changed as follows. Apply it while keeping every rule above:',

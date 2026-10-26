@@ -2,12 +2,12 @@
  * Plan readiness: one score that blends task progress, vendor bookings and budget health,
  * plus the items that need attention today.
  */
-import type { EventPlan } from '../schemas/plan';
-import { budgetHealth, summariseBudget } from './budget';
+import type { EventPlan, Vendor } from '../schemas/plan';
+import { budgetHealth, summariseBudget, type BudgetSummary } from './budget';
 import { PRIORITY_WEIGHT, taskState, taskStats } from './timeline';
 import { STATUS_PROGRESS, committedByCategory, vendorState } from './vendors';
 
-export type AttentionItem =
+type AttentionItem =
   | { kind: 'task_overdue'; id: string }
   | { kind: 'vendor_overdue'; id: string }
   | { kind: 'line_overspent'; id: string }
@@ -24,47 +24,51 @@ export interface Readiness {
 
 const READINESS_WEIGHTS = { tasks: 0.5, vendors: 0.3, budget: 0.2 } as const;
 
+/** Booking progress, weighting high-priority vendors more. A plan with no vendors is ready. */
+function vendorProgress(vendors: EventPlan['vendors']): number {
+  const weight = (vendor: Vendor) => PRIORITY_WEIGHT[vendor.priority];
+  const total = vendors.reduce((sum, vendor) => sum + weight(vendor), 0);
+  const done = vendors.reduce(
+    (sum, vendor) => sum + weight(vendor) * STATUS_PROGRESS[vendor.status],
+    0,
+  );
+  return total ? done / total : 1;
+}
+
+/** 1 when spending and planning fit the total; lower the further either goes over it. */
+function budgetScore({ total, spent, planned }: BudgetSummary): number {
+  if (total > 0 && spent > total) return Math.max(0, 1 - (spent - total) / total);
+  if (planned > total && planned > 0) return total / planned;
+  return 1;
+}
+
+function attentionItems(plan: EventPlan, summary: BudgetSummary, today: string): AttentionItem[] {
+  return [
+    ...(budgetHealth(summary) === 'over' ? [{ kind: 'budget_over' as const }] : []),
+    ...plan.tasks
+      .filter((task) => taskState(task, today) === 'overdue')
+      .map((task) => ({ kind: 'task_overdue' as const, id: task.id })),
+    ...plan.vendors
+      .filter((vendor) => vendorState(vendor, today) === 'overdue')
+      .map((vendor) => ({ kind: 'vendor_overdue' as const, id: vendor.id })),
+    ...summary.overspentLineIds.map((id) => ({ kind: 'line_overspent' as const, id })),
+  ];
+}
+
 export function readiness(plan: EventPlan, today: string): Readiness {
-  const tasks = taskStats(plan.tasks, today).progress;
-
-  let vendorWeight = 0;
-  let vendorDone = 0;
-  for (const vendor of plan.vendors) {
-    const weight = PRIORITY_WEIGHT[vendor.priority];
-    vendorWeight += weight;
-    vendorDone += weight * STATUS_PROGRESS[vendor.status];
-  }
-  const vendors = vendorWeight ? vendorDone / vendorWeight : 1;
-
   const summary = summariseBudget(
     plan.budget,
     plan.brief.guestCount,
     committedByCategory(plan.vendors),
   );
-  const health = budgetHealth(summary);
-  let budget = 1;
-  if (summary.total > 0 && summary.spent > summary.total) {
-    budget = Math.max(0, 1 - (summary.spent - summary.total) / summary.total);
-  } else if (summary.planned > summary.total && summary.planned > 0) {
-    budget = summary.total / summary.planned;
-  }
-
-  const attention: AttentionItem[] = [];
-  if (health === 'over') attention.push({ kind: 'budget_over' });
-  for (const task of plan.tasks) {
-    if (taskState(task, today) === 'overdue') attention.push({ kind: 'task_overdue', id: task.id });
-  }
-  for (const vendor of plan.vendors) {
-    if (vendorState(vendor, today) === 'overdue')
-      attention.push({ kind: 'vendor_overdue', id: vendor.id });
-  }
-  for (const id of summary.overspentLineIds) attention.push({ kind: 'line_overspent', id });
-
+  const tasks = taskStats(plan.tasks, today).progress;
+  const vendors = vendorProgress(plan.vendors);
+  const budget = budgetScore(summary);
   const score = Math.round(
     100 *
       (READINESS_WEIGHTS.tasks * tasks +
         READINESS_WEIGHTS.vendors * vendors +
         READINESS_WEIGHTS.budget * budget),
   );
-  return { score, tasks, vendors, budget, attention };
+  return { score, tasks, vendors, budget, attention: attentionItems(plan, summary, today) };
 }

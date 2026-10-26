@@ -7,15 +7,17 @@ import type { EventBrief } from '../../../shared/schemas/brief';
 import type { AiSection } from '../../../shared/schemas/primitives';
 import { localToday } from '../../../shared/utils/dates';
 import { createId } from '../../../shared/utils/ids';
+import { announce } from '../../app/feedback';
+import { useI18n } from '../../i18n';
 import { personalizePlan } from '../../state/ai';
 import { plansStore } from '../../state/plans';
 
-export interface StartPlanOptions {
+interface StartPlanOptions {
   onSection?: (section: AiSection, state: 'done' | 'failed') => void;
 }
 
 /** Saves a new plan and starts personalising it. Returns the plan's id. */
-export function startPlan(brief: EventBrief, { onSection }: StartPlanOptions = {}): string {
+function startPlan(brief: EventBrief, { onSection }: StartPlanOptions = {}): string {
   const plan = createBaselinePlan(brief, {
     today: localToday(),
     now: new Date().toISOString(),
@@ -24,4 +26,16 @@ export function startPlan(brief: EventBrief, { onSection }: StartPlanOptions = {
   plansStore.getState().addPlan(plan);
   void personalizePlan(plan.id, onSection ? { onSection } : {});
   return plan.id;
+}
+
+/** Starts plans with each AI section announced to screen-reader users as it settles. */
+export function useStartPlan(): (brief: EventBrief) => string {
+  const { t } = useI18n();
+  return (brief) =>
+    startPlan(brief, {
+      onSection: (section, state) => {
+        const label = t.sections[section];
+        announce(state === 'done' ? t.plan.aiSectionReady(label) : t.plan.aiSectionFailed(label));
+      },
+    });
 }

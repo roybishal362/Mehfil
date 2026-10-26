@@ -89,6 +89,21 @@ export default defineConfig([
   },
 
   {
+    // Short, flat functions are easier to read, review and test. Tests are left out: each test
+    // reads best as one story, setup to expectation.
+    name: 'mehfil/small-functions',
+    files: ['src/**/*.{ts,tsx}', 'scripts/**/*.{ts,mjs}', 'evals/**/*.ts'],
+    ignores: ['**/*.test.{ts,tsx}', 'src/client/test/**'],
+    rules: {
+      complexity: ['error', { max: 10, variant: 'modified' }],
+      'max-depth': ['error', 3],
+      'max-params': ['error', 4],
+      'max-lines-per-function': ['error', { max: 80, skipBlankLines: true, skipComments: true }],
+      'max-nested-callbacks': ['error', 3],
+    },
+  },
+
+  {
     name: 'mehfil/tests',
     files: ['**/*.test.{ts,tsx}', 'e2e/**/*.ts', 'tests/**/*.ts', 'src/client/test/**/*.{ts,tsx}'],
     rules: {

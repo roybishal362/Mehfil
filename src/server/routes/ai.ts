@@ -6,6 +6,7 @@
 import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
 import { stream } from 'hono/streaming';
+import type { StreamingApi } from 'hono/utils/stream';
 import {
   BriefRequest,
   CopilotRequest,
@@ -67,6 +68,64 @@ export const AI_ROUTE_COST: Readonly<Record<string, number>> = {
   invitation: 1,
 };
 
+type Section = PersonalizeRequest['sections'][number];
+
+/** Everything one personalisation stream needs. */
+interface SectionStream {
+  gateway: AiGateway;
+  request: PersonalizeRequest;
+  logger: Logger;
+  requestId: string;
+}
+
+/** Writes NDJSON lines one at a time, even when sections finish at the same moment. */
+function ndjsonWriter(output: StreamingApi): (event: PersonalizeEvent) => Promise<void> {
+  let queue = Promise.resolve();
+  return (event) => {
+    queue = queue.then(() => output.write(`${JSON.stringify(event)}\n`)).then(() => undefined);
+    return queue;
+  };
+}
+
+/** One tailored section, or a friendly error for it; the other sections carry on either way. */
+async function tailorSection(
+  job: SectionStream,
+  section: Section,
+  signal: AbortSignal,
+): Promise<PersonalizeEvent> {
+  const { brief, today } = job.request;
+  try {
+    const { result, meta } = await generateSection(job.gateway, { section, brief, today, signal });
+    return { type: 'section', ...result, meta };
+  } catch (error) {
+    const aiError =
+      error instanceof AiError ? error : new AiError('unavailable', 'Unexpected failure');
+    const { requestId } = job;
+    job.logger.warn('ai.section_failed', { requestId, section, kind: aiError.kind });
+    return {
+      type: 'section_error',
+      section,
+      code: aiError.kind,
+      message: aiFailureMessage(aiError),
+    };
+  }
+}
+
+/** Tailors every requested section in parallel and streams each as soon as it is ready. */
+async function streamSections(job: SectionStream, output: StreamingApi): Promise<void> {
+  const controller = new AbortController();
+  output.onAbort(() => {
+    controller.abort();
+  });
+  const started = performance.now();
+  const send = ndjsonWriter(output);
+  const sections = [...new Set(job.request.sections)];
+  await Promise.all(
+    sections.map(async (section) => send(await tailorSection(job, section, controller.signal))),
+  );
+  await send({ type: 'done', ms: Math.round(performance.now() - started) });
+}
+
 export function aiRoutes(gateway: AiGateway, logger: Logger): Hono<AppEnv> {
   const app = new Hono<AppEnv>();
   app.use(
@@ -87,58 +146,17 @@ export function aiRoutes(gateway: AiGateway, logger: Logger): Hono<AppEnv> {
 
   app.post('/personalize', async (c) => {
     const request = await readJson(c, PersonalizeRequest);
-    const requestId = c.get('requestId');
+    const job: SectionStream = { gateway, request, logger, requestId: c.get('requestId') };
     c.header('Content-Type', 'application/x-ndjson; charset=utf-8');
     c.header('X-Accel-Buffering', 'no');
-    return stream(c, async (output) => {
-      const controller = new AbortController();
-      output.onAbort(() => {
-        controller.abort();
-      });
-      const started = performance.now();
-      let queue = Promise.resolve();
-      const send = (event: PersonalizeEvent) => {
-        queue = queue.then(() => output.write(`${JSON.stringify(event)}\n`)).then(() => undefined);
-        return queue;
-      };
-      await Promise.all(
-        [...new Set(request.sections)].map(async (section) => {
-          try {
-            const { result, meta } = await generateSection(gateway, {
-              section,
-              brief: request.brief,
-              today: request.today,
-              signal: controller.signal,
-            });
-            await send({ type: 'section', ...result, meta });
-          } catch (error) {
-            const aiError =
-              error instanceof AiError ? error : new AiError('unavailable', 'Unexpected failure');
-            logger.warn('ai.section_failed', { requestId, section, kind: aiError.kind });
-            await send({
-              type: 'section_error',
-              section,
-              code: aiError.kind,
-              message: aiFailureMessage(aiError),
-            });
-          }
-        }),
-      );
-      await send({ type: 'done', ms: Math.round(performance.now() - started) });
-    });
+    return stream(c, (output) => streamSections(job, output));
   });
 
   app.post('/refine', async (c) => {
-    const request = await readJson(c, RefineRequest);
+    const { section, brief, today, instruction, existing } = await readJson(c, RefineRequest);
+    const signal = c.req.raw.signal;
     const { result, meta } = await aiCall(() =>
-      generateSection(gateway, {
-        section: request.section,
-        brief: request.brief,
-        today: request.today,
-        instruction: request.instruction,
-        existing: request.existing,
-        signal: c.req.raw.signal,
-      }),
+      generateSection(gateway, { section, brief, today, instruction, existing, signal }),
     );
     return c.json({ ...result, meta });
   });

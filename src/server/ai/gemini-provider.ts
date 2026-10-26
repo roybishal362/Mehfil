@@ -76,23 +76,28 @@ function assertCompleted(response: GenerateContentResponse): void {
   }
 }
 
+/** Maps an HTTP error from Gemini to what the gateway should do about it. */
+function classifyApiError(error: ApiError): AiError {
+  const { status } = error;
+  if (status === 429)
+    return new AiError('rate_limited', 'Gemini rate limit reached', { cause: error });
+  if (status === 401 || status === 403) {
+    return new AiError('auth', 'Gemini rejected the API key', { cause: error });
+  }
+  if (status >= 400 && status < 500) {
+    return new AiError('bad_request', 'Gemini rejected the request', { cause: error });
+  }
+  return new AiError('unavailable', 'Gemini is unavailable', { cause: error });
+}
+
 /** Maps SDK and network failures to `AiError` kinds. */
 export function classifyError(error: unknown, signal: AbortSignal, parent?: AbortSignal): AiError {
   if (error instanceof AiError) return error;
   if (parent?.aborted) return new AiError('aborted', 'The request was cancelled', { cause: error });
-  if (signal.aborted)
+  if (signal.aborted) {
     return new AiError('timeout', 'The model took too long to answer', { cause: error });
-  if (error instanceof ApiError) {
-    if (error.status === 429)
-      return new AiError('rate_limited', 'Gemini rate limit reached', { cause: error });
-    if (error.status === 401 || error.status === 403) {
-      return new AiError('auth', 'Gemini rejected the API key', { cause: error });
-    }
-    if (error.status >= 400 && error.status < 500) {
-      return new AiError('bad_request', 'Gemini rejected the request', { cause: error });
-    }
-    return new AiError('unavailable', 'Gemini is unavailable', { cause: error });
   }
+  if (error instanceof ApiError) return classifyApiError(error);
   return new AiError('unavailable', 'Could not reach Gemini', { cause: error });
 }
 

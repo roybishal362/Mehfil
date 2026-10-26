@@ -42,6 +42,42 @@ function canonical(value: unknown): string {
   );
 }
 
+/** Both copies exist: copy whichever side changed since the last sync, or ask if both did. */
+function reconcileBoth(
+  actions: SyncActions,
+  here: EventPlan,
+  there: EventPlan,
+  synced: number | undefined,
+): void {
+  if (synced === undefined) {
+    // On both sides but never synced from here (for example, after site data was cleared).
+    const same = here.revision === there.revision && canonical(here) === canonical(there);
+    if (same) actions.adopt.push({ id: here.id, revision: there.revision });
+    else actions.conflicts.push({ local: here, remote: there });
+    return;
+  }
+  const changedHere = here.revision !== synced;
+  const changedThere = there.revision !== synced;
+  if (changedHere && changedThere) actions.conflicts.push({ local: here, remote: there });
+  else if (changedHere) actions.upload.push({ plan: here, expected: synced });
+  else if (changedThere) actions.download.push(there);
+}
+
+/** Only this device has it: new here, edited here after a deletion elsewhere, or deleted there. */
+function reconcileHere(actions: SyncActions, here: EventPlan, synced: number | undefined): void {
+  if (synced === undefined || here.revision !== synced) {
+    actions.upload.push({ plan: here, expected: null });
+  } else {
+    actions.removeLocal.push(here.id);
+  }
+}
+
+/** Only the cloud has it: new elsewhere, edited there after a deletion here, or deleted here. */
+function reconcileThere(actions: SyncActions, there: EventPlan, synced: number | undefined): void {
+  if (synced === undefined || there.revision !== synced) actions.download.push(there);
+  else actions.removeRemote.push(there.id);
+}
+
 /**
  * Works out what to copy, delete or ask about. `unreadable` lists cloud plans that failed
  * validation: they are left alone rather than treated as deleted.
@@ -64,45 +100,13 @@ export function reconcile(
   const mine = new Map(local.map((plan) => [plan.id, plan]));
   const theirs = new Map(remote.map((plan) => [plan.id, plan]));
   const ids = new Set([...mine.keys(), ...theirs.keys(), ...Object.keys(base)]);
-
-  for (const id of ids) {
-    if (unreadable.has(id)) continue;
+  for (const id of [...ids].filter((planId) => !unreadable.has(planId))) {
     const here = mine.get(id);
     const there = theirs.get(id);
-    const synced = base[id];
-
-    if (here && there) {
-      if (synced === undefined) {
-        // On both sides but never synced from here (for example, after site data was cleared).
-        if (here.revision === there.revision && canonical(here) === canonical(there)) {
-          actions.adopt.push({ id, revision: there.revision });
-        } else {
-          actions.conflicts.push({ local: here, remote: there });
-        }
-        continue;
-      }
-      const changedHere = here.revision !== synced;
-      const changedThere = there.revision !== synced;
-      if (changedHere && changedThere) actions.conflicts.push({ local: here, remote: there });
-      else if (changedHere) actions.upload.push({ plan: here, expected: synced });
-      else if (changedThere) actions.download.push(there);
-    } else if (here) {
-      if (synced === undefined || here.revision !== synced) {
-        // New here, or edited here after another device deleted it.
-        actions.upload.push({ plan: here, expected: null });
-      } else {
-        actions.removeLocal.push(id);
-      }
-    } else if (there) {
-      if (synced === undefined || there.revision !== synced) {
-        // New on another device, or edited there after this device deleted it.
-        actions.download.push(there);
-      } else {
-        actions.removeRemote.push(id);
-      }
-    } else {
-      actions.forget.push(id);
-    }
+    if (here && there) reconcileBoth(actions, here, there, base[id]);
+    else if (here) reconcileHere(actions, here, base[id]);
+    else if (there) reconcileThere(actions, there, base[id]);
+    else actions.forget.push(id);
   }
   return actions;
 }

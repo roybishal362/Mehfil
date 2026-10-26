@@ -162,13 +162,13 @@ describe('adjustedShares', () => {
 describe('createBudgetLines', () => {
   it('creates one line per template category that sums to the total', () => {
     const template = getTemplate('wedding');
-    const lines = createBudgetLines(
-      1_800_000,
-      template.budget,
-      template.budget.map((l) => l.weight),
-      sequentialIds(),
-      'template',
-    );
+    const lines = createBudgetLines({
+      total: 1_800_000,
+      template: template.budget,
+      shares: template.budget.map((l) => l.weight),
+      makeId: sequentialIds(),
+      source: 'template',
+    });
     expect(lines).toHaveLength(template.budget.length);
     expect(sum(lines.map((l) => l.planned))).toBe(1_800_000);
     expect(lines.find((l) => l.category === 'catering')?.perGuest).toBe(true);

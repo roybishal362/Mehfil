@@ -5,7 +5,7 @@
 import type { EventBrief } from '../schemas/brief';
 import type { BudgetCategory } from '../schemas/categories';
 import type { Budget, BudgetLine } from '../schemas/plan';
-import type { Source } from '../schemas/primitives';
+import type { Source, VenueType } from '../schemas/primitives';
 import type { BudgetTemplateLine, EventTemplate } from '../templates/types';
 import { zipWith } from '../utils/collections';
 import type { IdFactory } from '../utils/ids';
@@ -108,47 +108,51 @@ export function balanceShares(shares: readonly number[], bounds: readonly ShareB
   return items.map((item) => item.value);
 }
 
+/**
+ * How each venue type scales a category's share of the budget (1 when not listed): a home
+ * wedding spends little on the venue, a destination one much more on rooms and travel.
+ */
+const VENUE_FACTORS: Record<VenueType, Partial<Record<BudgetCategory, number>>> = {
+  home: { venue: 0.2, venue_permits: 0.2 },
+  community_hall: { venue: 0.6, venue_permits: 0.6 },
+  religious_venue: { venue: 0.6, venue_permits: 0.6 },
+  destination: { accommodation: 3, transport: 1.6 },
+  outdoor: { decor: 1.15, contingency: 1.4 },
+  banquet_hall: {},
+  hotel: {},
+  restaurant: {},
+  other: {},
+};
+
 /** Template weights nudged by facts in the brief, before any AI involvement. */
 export function adjustedShares(
   template: EventTemplate,
   brief: Pick<EventBrief, 'venueType'>,
 ): number[] {
-  const factor = (category: BudgetCategory): number => {
-    switch (brief.venueType) {
-      case 'home':
-        return category === 'venue' || category === 'venue_permits' ? 0.2 : 1;
-      case 'community_hall':
-      case 'religious_venue':
-        return category === 'venue' || category === 'venue_permits' ? 0.6 : 1;
-      case 'destination':
-        if (category === 'accommodation') return 3;
-        if (category === 'transport') return 1.6;
-        return 1;
-      case 'outdoor':
-        if (category === 'decor') return 1.15;
-        if (category === 'contingency') return 1.4;
-        return 1;
-      case 'banquet_hall':
-      case 'hotel':
-      case 'restaurant':
-      case 'other':
-        return 1;
-    }
-  };
+  const factors = VENUE_FACTORS[brief.venueType];
   return balanceShares(
-    template.budget.map((line) => line.weight * factor(line.category)),
+    template.budget.map((line) => line.weight * (factors[line.category] ?? 1)),
     template.budget,
   );
 }
 
+export interface BudgetLinesInput {
+  total: number;
+  template: readonly BudgetTemplateLine[];
+  /** Final percentage shares, one per template line. */
+  shares: readonly number[];
+  makeId: IdFactory;
+  source: Source;
+}
+
 /** Creates budget lines for a template, given final percentage shares. */
-export function createBudgetLines(
-  total: number,
-  template: readonly BudgetTemplateLine[],
-  shares: readonly number[],
-  makeId: IdFactory,
-  source: Source,
-): BudgetLine[] {
+export function createBudgetLines({
+  total,
+  template,
+  shares,
+  makeId,
+  source,
+}: BudgetLinesInput): BudgetLine[] {
   const contingency = template.findIndex((line) => line.category === 'contingency');
   const amounts = splitBudget(total, shares, contingency >= 0 ? contingency : undefined);
   return zipWith(template, amounts, (line, planned) => ({

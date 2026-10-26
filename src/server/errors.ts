@@ -12,12 +12,15 @@ export type ErrorCode =
   | 'ai_blocked'
   | 'internal';
 
+/** The HTTP statuses the API answers errors with. */
+export type ErrorStatus = 400 | 401 | 403 | 404 | 413 | 415 | 422 | 429 | 500 | 503;
+
 export class AppError extends Error {
-  readonly status: number;
+  readonly status: ErrorStatus;
   readonly code: ErrorCode;
   readonly retryAfterSeconds: number | undefined;
 
-  constructor(status: number, code: ErrorCode, message: string, retryAfterSeconds?: number) {
+  constructor(status: ErrorStatus, code: ErrorCode, message: string, retryAfterSeconds?: number) {
     super(message);
     this.name = 'AppError';
     this.status = status;

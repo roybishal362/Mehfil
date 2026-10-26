@@ -15,7 +15,7 @@ import { plansStore } from './plans';
 
 export type SectionState = 'pending' | 'done' | 'failed';
 
-export interface AiRun {
+interface AiRun {
   running: boolean;
   sections: Partial<Record<AiSection, SectionState>>;
 }
@@ -45,6 +45,53 @@ export interface PersonalizeOptions {
   onSection?: (section: AiSection, state: Exclude<SectionState, 'pending'>) => void;
 }
 
+type SettledState = Exclude<SectionState, 'pending'>;
+type Settle = (section: AiSection, state: SettledState) => void;
+
+/** Starts a run for a plan, cancelling any earlier one, with its sections pending. */
+function beginRun(planId: string, sections: readonly AiSection[]): AbortController {
+  controllers.get(planId)?.abort();
+  const controller = new AbortController();
+  controllers.set(planId, controller);
+  useAiRuns.getState().update(planId, (run) => ({
+    running: true,
+    sections: { ...run.sections, ...Object.fromEntries(sections.map((s) => [s, 'pending'])) },
+  }));
+  return controller;
+}
+
+/** Ends a run, unless a newer run for the same plan already owns the state. */
+function endRun(planId: string, controller: AbortController): void {
+  if (controllers.get(planId) === controller) controllers.delete(planId);
+  if (!controllers.has(planId)) {
+    useAiRuns.getState().update(planId, (run) => ({ ...run, running: false }));
+  }
+}
+
+/** Merges one streamed event into the plan: a tailored section, or one that failed. */
+function applyEvent(planId: string, event: PersonalizeEvent, today: string, settle: Settle): void {
+  const { transform } = plansStore.getState();
+  if (event.type === 'section') {
+    const context = { today, now: new Date().toISOString(), makeId: createId };
+    transform(planId, (current) =>
+      mergeSection(current, event, { ...context, model: event.meta.model }),
+    );
+    settle(event.section, 'done');
+  } else if (event.type === 'section_error') {
+    transform(planId, (current) => markSectionFailed(current, event.section));
+    settle(event.section, 'failed');
+  }
+}
+
+/** After a network or server failure, every section still pending keeps the template plan. */
+function failPending(planId: string, sections: readonly AiSection[], settle: Settle): void {
+  const states = useAiRuns.getState().runs[planId]?.sections ?? {};
+  for (const section of sections.filter((name) => states[name] === 'pending')) {
+    plansStore.getState().transform(planId, (current) => markSectionFailed(current, section));
+    settle(section, 'failed');
+  }
+}
+
 /** Streams AI sections into a plan. Resolves when the stream ends; never throws. */
 export async function personalizePlan(
   planId: string,
@@ -52,59 +99,28 @@ export async function personalizePlan(
 ): Promise<void> {
   const plan = plansStore.getState().plans[planId];
   if (!plan) return;
-  controllers.get(planId)?.abort();
-  const controller = new AbortController();
-  controllers.set(planId, controller);
-
-  const { update } = useAiRuns.getState();
-  const settle = (section: AiSection, state: Exclude<SectionState, 'pending'>) => {
-    update(planId, (run) => ({ ...run, sections: { ...run.sections, [section]: state } }));
+  const controller = beginRun(planId, sections);
+  const settle: Settle = (section, state) => {
+    useAiRuns
+      .getState()
+      .update(planId, (run) => ({ ...run, sections: { ...run.sections, [section]: state } }));
     onSection?.(section, state);
   };
-  update(planId, (run) => ({
-    running: true,
-    sections: { ...run.sections, ...Object.fromEntries(sections.map((s) => [s, 'pending'])) },
-  }));
-
   const today = localToday();
   try {
-    await postNdjson(
-      '/api/ai/personalize',
-      { brief: plan.brief, today, sections },
-      PersonalizeEvent,
-      (event) => {
-        if (event.type === 'section') {
-          plansStore.getState().transform(planId, (current) =>
-            mergeSection(current, event, {
-              today,
-              now: new Date().toISOString(),
-              makeId: createId,
-              model: event.meta.model,
-            }),
-          );
-          settle(event.section, 'done');
-        } else if (event.type === 'section_error') {
-          plansStore
-            .getState()
-            .transform(planId, (current) => markSectionFailed(current, event.section));
-          settle(event.section, 'failed');
-        }
+    await postNdjson({
+      path: '/api/ai/personalize',
+      body: { brief: plan.brief, today, sections },
+      schema: PersonalizeEvent,
+      onEvent: (event) => {
+        applyEvent(planId, event, today, settle);
       },
-      controller.signal,
-    );
+      signal: controller.signal,
+    });
   } catch {
-    if (controller.signal.aborted) return;
-    // Network or server failure: every section still pending keeps the template plan.
-    const pending = useAiRuns.getState().runs[planId]?.sections ?? {};
-    for (const section of sections) {
-      if (pending[section] !== 'pending') continue;
-      plansStore.getState().transform(planId, (current) => markSectionFailed(current, section));
-      settle(section, 'failed');
-    }
+    if (!controller.signal.aborted) failPending(planId, sections, settle);
   } finally {
-    if (controllers.get(planId) === controller) controllers.delete(planId);
-    // A newer run for the same plan owns the state now; otherwise this run is over.
-    if (!controllers.has(planId)) update(planId, (run) => ({ ...run, running: false }));
+    endRun(planId, controller);
   }
 }
 
@@ -116,15 +132,22 @@ export function cancelPersonalization(planId: string): void {
 
 /** Titles already in a section, so Gemini offers something new. */
 export function existingTitles(plan: EventPlan, section: AiSection): string[] {
-  const titles =
-    section === 'ideas'
-      ? plan.ideas.map((idea) => idea.title)
-      : section === 'timeline'
-        ? plan.tasks.map((task) => task.title)
-        : section === 'vendors'
-          ? plan.vendors.map((vendor) => vendor.label ?? vendor.category)
-          : plan.budget.lines.map((line) => line.label ?? line.category);
-  return titles.slice(0, 40).map((title) => title.slice(0, 160));
+  return sectionTitles(plan, section)
+    .slice(0, 40)
+    .map((title) => title.slice(0, 160));
+}
+
+function sectionTitles(plan: EventPlan, section: AiSection): string[] {
+  switch (section) {
+    case 'ideas':
+      return plan.ideas.map((idea) => idea.title);
+    case 'timeline':
+      return plan.tasks.map((task) => task.title);
+    case 'vendors':
+      return plan.vendors.map((vendor) => vendor.label ?? vendor.category);
+    case 'budget':
+      return plan.budget.lines.map((line) => line.label ?? line.category);
+  }
 }
 
 /**

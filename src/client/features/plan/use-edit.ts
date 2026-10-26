@@ -13,3 +13,6 @@ export function useEdit(planId: string): (...operations: PlanOperationInput[]) =
     return result.ok;
   };
 }
+
+/** Applies one or more operations to the plan; false (after telling the user) if refused. */
+export type Edit = ReturnType<typeof useEdit>;

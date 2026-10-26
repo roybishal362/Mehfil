@@ -98,21 +98,19 @@ describe('getJson and postJson', () => {
 });
 
 describe('postNdjson', () => {
+  const request = { path: '/api/s', body: {}, schema: Answer, onEvent: () => undefined };
+
   it('validates every streamed event', async () => {
     mockApi({ '/api/s': () => new Response('{"answer":1}\n{"answer":2}\n') });
     const seen: number[] = [];
-    await postNdjson('/api/s', {}, Answer, (event) => seen.push(event.answer));
+    await postNdjson({ ...request, onEvent: (event) => seen.push(event.answer) });
     expect(seen).toEqual([1, 2]);
     mockApi({ '/api/s': () => new Response('{"answer":1}\n{"oops":true}\n') });
-    await expect(postNdjson('/api/s', {}, Answer, () => undefined)).rejects.toMatchObject({
-      code: 'invalid_response',
-    });
+    await expect(postNdjson(request)).rejects.toMatchObject({ code: 'invalid_response' });
   });
 
   it('needs a body to stream', async () => {
     mockApi({ '/api/s': () => new Response(null, { status: 200 }) });
-    await expect(postNdjson('/api/s', {}, Answer, () => undefined)).rejects.toBeInstanceOf(
-      ApiError,
-    );
+    await expect(postNdjson(request)).rejects.toBeInstanceOf(ApiError);
   });
 });

@@ -2,7 +2,7 @@
  * iCalendar (RFC 5545) export: the event, every open task as an all-day reminder with an alarm,
  * and the day-of run sheet as timed entries. Works with Google Calendar, Apple Calendar and Outlook.
  */
-import type { EventPlan } from '../schemas/plan';
+import type { EventPlan, ScheduleItem, Task } from '../schemas/plan';
 import { addDays, clockToMinutes, compactDate, minutesToClock } from '../utils/dates';
 
 const encoder = new TextEncoder();
@@ -58,69 +58,85 @@ export interface IcsOptions {
   prefix?: string;
 }
 
+/** iCalendar priority: 1 is highest, 9 lowest. */
+const ICS_PRIORITY = { high: '1', medium: '5', low: '9' } as const;
+
+type Entry = string[];
+
+/** Everything one calendar entry needs to know about the export as a whole. */
+interface Export {
+  plan: EventPlan;
+  stamp: string;
+  prefix: string;
+}
+
+const uid = ({ plan }: Export, id: string) => `${plan.id}-${id}@mehfil`;
+
+function eventEntry(out: Export): Entry {
+  const { brief, summary } = out.plan;
+  return [
+    'BEGIN:VEVENT',
+    `UID:${uid(out, 'event')}`,
+    `DTSTAMP:${out.stamp}`,
+    `DTSTART;VALUE=DATE:${compactDate(brief.date)}`,
+    `DTEND;VALUE=DATE:${compactDate(addDays(brief.endDate ?? brief.date, 1))}`,
+    `SUMMARY:${escapeIcsText(brief.title)}`,
+    `LOCATION:${escapeIcsText(brief.city)}`,
+    ...(summary ? [`DESCRIPTION:${escapeIcsText(summary)}`] : []),
+    'END:VEVENT',
+  ];
+}
+
+/** An open task as an all-day reminder, with an alarm at 09:00 the day before. */
+function taskEntry(out: Export, task: Task): Entry {
+  return [
+    'BEGIN:VEVENT',
+    `UID:${uid(out, task.id)}`,
+    `DTSTAMP:${out.stamp}`,
+    `DTSTART;VALUE=DATE:${compactDate(task.dueDate)}`,
+    `DTEND;VALUE=DATE:${compactDate(addDays(task.dueDate, 1))}`,
+    `SUMMARY:${escapeIcsText(`${out.prefix}: ${task.title}`)}`,
+    ...(task.notes ? [`DESCRIPTION:${escapeIcsText(task.notes)}`] : []),
+    `PRIORITY:${ICS_PRIORITY[task.priority]}`,
+    'BEGIN:VALARM',
+    'ACTION:DISPLAY',
+    `DESCRIPTION:${escapeIcsText(task.title)}`,
+    'TRIGGER;RELATED=START:-PT15H',
+    'END:VALARM',
+    'END:VEVENT',
+  ];
+}
+
+/** A run-sheet slot as a timed entry; a late slot may end after midnight. */
+function slotEntry(out: Export, slot: ScheduleItem): Entry {
+  const endTotal = clockToMinutes(slot.time) + Math.max(slot.durationMinutes, 1);
+  const endDay = addDays(slot.day, Math.floor(endTotal / 1440));
+  return [
+    'BEGIN:VEVENT',
+    `UID:${uid(out, slot.id)}`,
+    `DTSTAMP:${out.stamp}`,
+    `DTSTART:${localDateTime(slot.day, slot.time)}`,
+    `DTEND:${localDateTime(endDay, minutesToClock(endTotal))}`,
+    `SUMMARY:${escapeIcsText(slot.title)}`,
+    ...(slot.owner ? [`DESCRIPTION:${escapeIcsText(slot.owner)}`] : []),
+    `LOCATION:${escapeIcsText(out.plan.brief.city)}`,
+    'END:VEVENT',
+  ];
+}
+
 export function buildIcs(plan: EventPlan, { now, prefix = 'Mehfil' }: IcsOptions): string {
-  const { brief } = plan;
-  const stamp = utcStamp(now);
-  const uid = (id: string) => `${plan.id}-${id}@mehfil`;
-  const lines: string[] = [
+  const out: Export = { plan, stamp: utcStamp(now), prefix };
+  const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
     'PRODID:-//Mehfil//Celebration Planner//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
-    `X-WR-CALNAME:${escapeIcsText(brief.title)}`,
+    `X-WR-CALNAME:${escapeIcsText(plan.brief.title)}`,
+    ...eventEntry(out),
+    ...plan.tasks.filter((task) => task.status !== 'done').flatMap((task) => taskEntry(out, task)),
+    ...plan.schedule.flatMap((slot) => slotEntry(out, slot)),
+    'END:VCALENDAR',
   ];
-
-  lines.push(
-    'BEGIN:VEVENT',
-    `UID:${uid('event')}`,
-    `DTSTAMP:${stamp}`,
-    `DTSTART;VALUE=DATE:${compactDate(brief.date)}`,
-    `DTEND;VALUE=DATE:${compactDate(addDays(brief.endDate ?? brief.date, 1))}`,
-    `SUMMARY:${escapeIcsText(brief.title)}`,
-    `LOCATION:${escapeIcsText(brief.city)}`,
-    ...(plan.summary ? [`DESCRIPTION:${escapeIcsText(plan.summary)}`] : []),
-    'END:VEVENT',
-  );
-
-  for (const task of plan.tasks) {
-    if (task.status === 'done') continue;
-    lines.push(
-      'BEGIN:VEVENT',
-      `UID:${uid(task.id)}`,
-      `DTSTAMP:${stamp}`,
-      `DTSTART;VALUE=DATE:${compactDate(task.dueDate)}`,
-      `DTEND;VALUE=DATE:${compactDate(addDays(task.dueDate, 1))}`,
-      `SUMMARY:${escapeIcsText(`${prefix}: ${task.title}`)}`,
-      ...(task.notes ? [`DESCRIPTION:${escapeIcsText(task.notes)}`] : []),
-      `PRIORITY:${task.priority === 'high' ? '1' : task.priority === 'medium' ? '5' : '9'}`,
-      'BEGIN:VALARM',
-      'ACTION:DISPLAY',
-      `DESCRIPTION:${escapeIcsText(task.title)}`,
-      // 09:00 the day before an all-day item.
-      'TRIGGER;RELATED=START:-PT15H',
-      'END:VALARM',
-      'END:VEVENT',
-    );
-  }
-
-  for (const slot of plan.schedule) {
-    const startMinutes = clockToMinutes(slot.time);
-    const endTotal = startMinutes + Math.max(slot.durationMinutes, 1);
-    const endDay = addDays(slot.day, Math.floor(endTotal / 1440));
-    lines.push(
-      'BEGIN:VEVENT',
-      `UID:${uid(slot.id)}`,
-      `DTSTAMP:${stamp}`,
-      `DTSTART:${localDateTime(slot.day, slot.time)}`,
-      `DTEND:${localDateTime(endDay, minutesToClock(endTotal))}`,
-      `SUMMARY:${escapeIcsText(slot.title)}`,
-      ...(slot.owner ? [`DESCRIPTION:${escapeIcsText(slot.owner)}`] : []),
-      `LOCATION:${escapeIcsText(brief.city)}`,
-      'END:VEVENT',
-    );
-  }
-
-  lines.push('END:VCALENDAR');
   return lines.map(foldIcsLine).join('\r\n') + '\r\n';
 }

@@ -102,6 +102,7 @@ describe('budget', () => {
       ctx(),
     );
     expect(next.budget.total).toBe(1_700_000);
+    expect(next.brief.budget).toBe(1_700_000);
     expect(next.budget.lines.reduce((s, l) => s + l.planned, 0)).toBe(1_700_000);
     expect(next.budget.lines.find((l) => l.id === catering.id)?.planned).toBe(catering.planned);
   });
@@ -152,6 +153,7 @@ describe('budget', () => {
     );
     expect(next.brief.guestCount).toBe(350);
     expect(next.budget.total).toBe(1_800_000);
+    expect(next.brief.budget).toBe(1_800_000);
     const cateringBefore = plan.budget.lines.find((l) => l.category === 'catering')!.planned;
     expect(next.budget.lines.find((l) => l.category === 'catering')!.planned).toBeGreaterThan(
       cateringBefore,
@@ -362,6 +364,7 @@ describe('applyOperations', () => {
       ctx(),
     );
     expect(plan.brief.guestCount).toBe(320);
+    expect(plan.brief.budget).toBe(plan.budget.total);
     expect(plan.tasks.at(-1)?.title).toBe('Order 20 extra chairs');
   });
 

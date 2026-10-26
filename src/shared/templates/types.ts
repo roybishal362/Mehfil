@@ -23,7 +23,7 @@ export interface BudgetTemplateLine {
   perGuest?: boolean;
 }
 
-export interface TaskTemplate {
+interface TaskTemplate {
   key: string;
   title: LocalizedText;
   /** Ideal lead time before the event (negative = after the event). */
@@ -32,7 +32,7 @@ export interface TaskTemplate {
   category: TaskCategory;
 }
 
-export interface VendorTemplate {
+interface VendorTemplate {
   category: VendorCategory;
   priority: Priority;
   /** Book at least this many days before the event. */
@@ -40,7 +40,7 @@ export interface VendorTemplate {
   budgetCategory?: BudgetCategory;
 }
 
-export interface ScheduleTemplate {
+interface ScheduleTemplate {
   /** Days after the (first) event date. */
   dayOffset: number;
   time: string;

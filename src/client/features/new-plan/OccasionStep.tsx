@@ -1,13 +1,13 @@
 /** Step 1 of the form: what is being celebrated, when and where. */
-import { EVENT_TYPES, VENUE_TYPES } from '../../../shared/schemas/primitives';
-import { addDays, localToday } from '../../../shared/utils/dates';
-import { Field } from '../../components/Field';
-import { useI18n } from '../../i18n';
 import type { Mood } from '../../../shared/domain/mood';
-import type { EventType } from '../../../shared/schemas/primitives';
+import { EVENT_TYPES, VENUE_TYPES, type EventType } from '../../../shared/schemas/primitives';
+import { addDays, localToday } from '../../../shared/utils/dates';
+import { SelectField } from '../../components/SelectField';
+import { useI18n } from '../../i18n';
 import { archPhoto } from '../../photos';
 import { Arch } from '../../photos/Arch';
 import { Photo } from '../../photos/Photo';
+import { WizardInput } from './fields';
 import type { StepProps } from './step-props';
 
 /** Each type of celebration shows the photograph of the look it starts with. */
@@ -18,160 +18,117 @@ const TYPE_PHOTO: Readonly<Record<EventType, Mood>> = {
   other: 'neutral',
 };
 
+function TypePicker({
+  value,
+  onChange,
+  error,
+}: {
+  value: EventType | '';
+  onChange: (type: EventType) => void;
+  error: string | undefined;
+}) {
+  const { t } = useI18n();
+  return (
+    <fieldset className="type-picker" aria-describedby={error ? 'type-error' : undefined}>
+      <legend>{t.wizard.type}</legend>
+      {EVENT_TYPES.map((type) => (
+        <label key={type} className="type-option">
+          <input
+            type="radio"
+            name="type"
+            id={`type-${type}`}
+            value={type}
+            checked={value === type}
+            onChange={() => {
+              onChange(type);
+            }}
+          />
+          <span>
+            <Arch>
+              <Photo photo={archPhoto(TYPE_PHOTO[type])} sizes="56px" />
+            </Arch>
+            {t.home.occasions[type].title}
+          </span>
+        </label>
+      ))}
+      {error && (
+        <p className="error field" id="type-error">
+          {error}
+        </p>
+      )}
+    </fieldset>
+  );
+}
+
 export function OccasionStep({ values, set, errorText }: StepProps) {
   const { t } = useI18n();
   const today = localToday();
-  const typeError = errorText('type');
-
+  const bound = { values, set };
   return (
     <>
-      <fieldset className="type-picker" aria-describedby={typeError ? 'type-error' : undefined}>
-        <legend>{t.wizard.type}</legend>
-        {EVENT_TYPES.map((type) => (
-          <label key={type} className="type-option">
-            <input
-              type="radio"
-              name="type"
-              id={`type-${type}`}
-              value={type}
-              checked={values.type === type}
-              onChange={() => {
-                set('type', type);
-              }}
-            />
-            <span>
-              <Arch>
-                <Photo photo={archPhoto(TYPE_PHOTO[type])} sizes="56px" />
-              </Arch>
-              {t.home.occasions[type].title}
-            </span>
-          </label>
-        ))}
-        {typeError && (
-          <p className="error field" id="type-error">
-            {typeError}
-          </p>
-        )}
-      </fieldset>
-      <Field
-        id="title"
+      <TypePicker
+        value={values.type}
+        onChange={(type) => {
+          set('type', type);
+        }}
+        error={errorText('type')}
+      />
+      <WizardInput
+        {...bound}
+        field="title"
         label={t.wizard.titleLabel}
         hint={t.wizard.titleHint}
         error={errorText('title')}
-      >
-        {(control) => (
-          <input
-            {...control}
-            className="input"
-            maxLength={80}
-            autoComplete="off"
-            value={values.title}
-            onChange={(event) => {
-              set('title', event.target.value);
-            }}
-          />
-        )}
-      </Field>
+        maxLength={80}
+        autoComplete="off"
+      />
       <div className="fields-2">
-        <Field id="date" label={t.wizard.date} error={errorText('date')}>
-          {(control) => (
-            <input
-              {...control}
-              type="date"
-              className="input"
-              min={today}
-              max={addDays(today, 3 * 365)}
-              value={values.date}
-              onChange={(event) => {
-                set('date', event.target.value);
-              }}
-            />
-          )}
-        </Field>
-        <Field
-          id="endDate"
+        <WizardInput
+          {...bound}
+          field="date"
+          type="date"
+          label={t.wizard.date}
+          error={errorText('date')}
+          min={today}
+          max={addDays(today, 3 * 365)}
+        />
+        <WizardInput
+          {...bound}
+          field="endDate"
+          type="date"
+          optional
           label={t.wizard.endDate}
-          extra={`(${t.common.optional})`}
           hint={t.wizard.endDateHint}
           error={errorText('endDate')}
-        >
-          {(control) => (
-            <input
-              {...control}
-              type="date"
-              className="input"
-              min={values.date || today}
-              value={values.endDate}
-              onChange={(event) => {
-                set('endDate', event.target.value);
-              }}
-            />
-          )}
-        </Field>
-        <Field id="city" label={t.wizard.city} error={errorText('city')}>
-          {(control) => (
-            <input
-              {...control}
-              className="input"
-              maxLength={80}
-              autoComplete="address-level2"
-              value={values.city}
-              onChange={(event) => {
-                set('city', event.target.value);
-              }}
-            />
-          )}
-        </Field>
-        <Field id="startTime" label={t.wizard.startTime} extra={`(${t.common.optional})`}>
-          {(control) => (
-            <input
-              {...control}
-              type="time"
-              className="input"
-              value={values.startTime}
-              onChange={(event) => {
-                set('startTime', event.target.value);
-              }}
-            />
-          )}
-        </Field>
-        <Field id="venueType" label={t.wizard.venueType}>
-          {(control) => (
-            <select
-              {...control}
-              className="select"
-              value={values.venueType}
-              onChange={(event) => {
-                const venue = VENUE_TYPES.find((option) => option === event.target.value);
-                if (venue) set('venueType', venue);
-              }}
-            >
-              {VENUE_TYPES.map((venue) => (
-                <option key={venue} value={venue}>
-                  {t.venues[venue]}
-                </option>
-              ))}
-            </select>
-          )}
-        </Field>
-        <Field
-          id="subtype"
+          min={values.date || today}
+        />
+        <WizardInput
+          {...bound}
+          field="city"
+          label={t.wizard.city}
+          error={errorText('city')}
+          maxLength={80}
+          autoComplete="address-level2"
+        />
+        <WizardInput {...bound} field="startTime" type="time" optional label={t.wizard.startTime} />
+        <SelectField
+          id="venueType"
+          label={t.wizard.venueType}
+          value={values.venueType}
+          options={VENUE_TYPES}
+          labelOf={(venue) => t.venues[venue]}
+          onChange={(venue) => {
+            set('venueType', venue);
+          }}
+        />
+        <WizardInput
+          {...bound}
+          field="subtype"
+          optional
           label={t.wizard.subtype}
-          extra={`(${t.common.optional})`}
           hint={t.wizard.subtypeHint}
-        >
-          {(control) => (
-            <input
-              {...control}
-              className="input"
-              maxLength={60}
-              value={values.subtype}
-              onChange={(event) => {
-                set('subtype', event.target.value);
-              }}
-            />
-          )}
-        </Field>
+          maxLength={60}
+        />
       </div>
     </>
   );

@@ -3,9 +3,9 @@
  * and shows them grouped for the reader's locale. Changes are committed on blur or Enter;
  * Escape cancels.
  */
-import { useRef, useState } from 'react';
 import { parseAmount } from '../../shared/utils/money';
 import { useI18n } from '../i18n';
+import { useDraftInput } from './use-draft-input';
 
 export interface AmountInputProps {
   id?: string;
@@ -29,25 +29,14 @@ export function AmountInput({
   className = 'input amount',
 }: AmountInputProps) {
   const { f } = useI18n();
-  const [draft, setDraft] = useState<string | null>(null);
-  // Escape blurs the field before React applies the cancel, so blur must know to skip.
-  const cancelled = useRef(false);
-
-  const commit = () => {
-    if (cancelled.current) {
-      cancelled.current = false;
-      setDraft(null);
-      return;
-    }
-    if (draft === null) return;
-    const parsed = parseAmount(draft);
-    setDraft(null);
+  const { draft, setDraft, commit, onKeyDown } = useDraftInput((typed) => {
+    const parsed = parseAmount(typed);
     if (parsed === null || parsed < min) {
-      if (draft.trim() !== '') onInvalid?.();
+      if (typed.trim() !== '') onInvalid?.();
       return;
     }
     if (parsed !== value) onCommit(parsed);
-  };
+  });
 
   return (
     <input
@@ -67,13 +56,7 @@ export function AmountInput({
         setDraft(event.target.value);
       }}
       onBlur={commit}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter') event.currentTarget.blur();
-        if (event.key === 'Escape') {
-          cancelled.current = true;
-          event.currentTarget.blur();
-        }
-      }}
+      onKeyDown={onKeyDown}
     />
   );
 }

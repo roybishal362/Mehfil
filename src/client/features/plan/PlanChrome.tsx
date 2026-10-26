@@ -1,5 +1,6 @@
 /** The plan page's chrome: section tabs, undo/redo and the Gemini progress banner. */
 import { Check, CircleAlert, Redo2, Sparkles, Undo2 } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { Link } from 'wouter';
 import type { EventPlan } from '../../../shared/schemas/plan';
 import { AI_SECTIONS, type AiSection } from '../../../shared/schemas/primitives';
@@ -71,6 +72,74 @@ function shownState(plan: EventPlan, section: AiSection, running: SectionState |
   return status === 'ai' ? 'done' : status === 'failed' ? 'failed' : 'template';
 }
 
+const STATE_PILL: Readonly<Record<Shown, string>> = {
+  done: 'pill--ok',
+  failed: 'pill--danger',
+  pending: 'pill--plain',
+  template: 'pill--plain',
+};
+
+interface SectionShown {
+  section: AiSection;
+  state: Shown;
+}
+
+/** While Gemini works: one pill per section, ticked off as each arrives. */
+function Working({ states }: { states: readonly SectionShown[] }) {
+  const { t } = useI18n();
+  return (
+    <div className="ai-status" role="status">
+      <span className="lead">
+        <span className="spinner" aria-hidden="true" />
+        {t.plan.aiWorking}
+      </span>
+      <ul>
+        {states.map(({ section, state }) => (
+          <li key={section} className={`pill ${STATE_PILL[state]}`}>
+            {state === 'done' && <Check />}
+            {state === 'failed' && <CircleAlert />}
+            {t.sections[section]}
+            <span className="sr-only">
+              : {t.plan.aiStateLabel[state === 'template' ? 'pending' : state]}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/** A note and one action: retry the sections that failed, or tailor a template plan. */
+function Offer({
+  icon,
+  note,
+  action,
+  primary,
+  onAct,
+}: {
+  icon: ReactNode;
+  note: string;
+  action: ReactNode;
+  primary: boolean;
+  onAct: () => void;
+}) {
+  return (
+    <div className="ai-status">
+      <span className="lead">
+        {icon}
+        {note}
+      </span>
+      <button
+        type="button"
+        className={primary ? 'btn btn--primary btn--sm' : 'btn btn--ghost btn--sm'}
+        onClick={onAct}
+      >
+        {action}
+      </button>
+    </div>
+  );
+}
+
 export function AiStatus({ plan }: { plan: EventPlan }) {
   const { t } = useI18n();
   const run = useAiRuns((state) => state.runs[plan.id]);
@@ -79,7 +148,6 @@ export function AiStatus({ plan }: { plan: EventPlan }) {
     state: shownState(plan, section, run?.sections[section]),
   }));
   const failed = states.filter((entry) => entry.state === 'failed').map((entry) => entry.section);
-  const untouched = states.every((entry) => entry.state === 'template');
 
   const retry = (sections: readonly AiSection[]) => {
     void personalizePlan(plan.id, {
@@ -92,67 +160,36 @@ export function AiStatus({ plan }: { plan: EventPlan }) {
     });
   };
 
-  if (run?.running) {
-    return (
-      <div className="ai-status" role="status">
-        <span className="lead">
-          <span className="spinner" aria-hidden="true" />
-          {t.plan.aiWorking}
-        </span>
-        <ul>
-          {states.map(({ section, state }) => (
-            <li
-              key={section}
-              className={`pill ${state === 'done' ? 'pill--ok' : state === 'failed' ? 'pill--danger' : 'pill--plain'}`}
-            >
-              {state === 'done' ? <Check /> : state === 'failed' ? <CircleAlert /> : null}
-              {t.sections[section]}
-              <span className="sr-only">
-                : {t.plan.aiStateLabel[state === 'template' ? 'pending' : state]}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </div>
-    );
-  }
+  if (run?.running) return <Working states={states} />;
   if (failed.length > 0) {
     return (
-      <div className="ai-status">
-        <span className="lead">
-          <CircleAlert className="i" />
-          {t.plan.aiSectionFailed(failed.map((section) => t.sections[section]).join(', '))}
-        </span>
-        <button
-          type="button"
-          className="btn btn--ghost btn--sm"
-          onClick={() => {
-            retry(failed);
-          }}
-        >
-          {t.plan.aiRetry}
-        </button>
-      </div>
+      <Offer
+        icon={<CircleAlert className="i" />}
+        note={t.plan.aiSectionFailed(failed.map((section) => t.sections[section]).join(', '))}
+        action={t.plan.aiRetry}
+        primary={false}
+        onAct={() => {
+          retry(failed);
+        }}
+      />
     );
   }
-  if (untouched) {
+  if (states.every((entry) => entry.state === 'template')) {
     return (
-      <div className="ai-status">
-        <span className="lead">
-          <Sparkles className="i" />
-          {t.plan.templateNote}
-        </span>
-        <button
-          type="button"
-          className="btn btn--primary btn--sm"
-          onClick={() => {
-            retry(AI_SECTIONS);
-          }}
-        >
-          <Sparkles />
-          {t.plan.tailor}
-        </button>
-      </div>
+      <Offer
+        icon={<Sparkles className="i" />}
+        note={t.plan.templateNote}
+        action={
+          <>
+            <Sparkles />
+            {t.plan.tailor}
+          </>
+        }
+        primary
+        onAct={() => {
+          retry(AI_SECTIONS);
+        }}
+      />
     );
   }
   return null;

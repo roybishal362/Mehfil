@@ -77,7 +77,13 @@ export function createBaselinePlan(brief: EventBrief, ctx: PlanContext): EventPl
     budget: {
       currency: brief.currency,
       total: brief.budget,
-      lines: createBudgetLines(brief.budget, template.budget, shares, ctx.makeId, 'template'),
+      lines: createBudgetLines({
+        total: brief.budget,
+        template: template.budget,
+        shares,
+        makeId: ctx.makeId,
+        source: 'template',
+      }),
       savingTips: [],
     },
     tasks: createTasks(template, brief, ctx),

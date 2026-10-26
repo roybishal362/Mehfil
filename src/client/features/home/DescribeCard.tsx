@@ -7,26 +7,21 @@ import { Sparkles } from 'lucide-react';
 import { useDeferredValue, useEffect, useRef, useState, type SubmitEvent } from 'react';
 import { Link, useLocation } from 'wouter';
 import { quickParse } from '../../../shared/domain/quick-parse';
-import type { AiSection } from '../../../shared/schemas/primitives';
 import { localToday } from '../../../shared/utils/dates';
-import { announce } from '../../app/feedback';
 import { paths } from '../../app/routing';
 import { useI18n } from '../../i18n';
 import { useDraft } from '../new-plan/draft';
 import { briefFromDraft, completeDraft, readDescription } from '../new-plan/intake';
-import { startPlan } from '../new-plan/start-plan';
+import { useStartPlan } from '../new-plan/start-plan';
 import { UnderstoodChips } from './UnderstoodChips';
 
-export function DescribeCard() {
+/** Reads a description with Gemini, then opens the plan, or the form when details are missing. */
+function useReadDescription() {
   const { t, locale } = useI18n();
   const [, navigate] = useLocation();
-  const [text, setText] = useState('');
+  const start = useStartPlan();
   const [reading, setReading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const textarea = useRef<HTMLTextAreaElement>(null);
   const controller = useRef<AbortController | null>(null);
-  const today = localToday();
-  const parsed = quickParse(useDeferredValue(text), today);
 
   // Leaving the page cancels a description that is still being read.
   useEffect(
@@ -36,31 +31,16 @@ export function DescribeCard() {
     [],
   );
 
-  const announceSection = (section: AiSection, state: 'done' | 'failed') => {
-    const label = t.sections[section];
-    announce(state === 'done' ? t.plan.aiSectionReady(label) : t.plan.aiSectionFailed(label));
-  };
-
-  const submit = async (event: SubmitEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!text.trim()) {
-      setError(t.home.emptyError);
-      textarea.current?.focus();
-      return;
-    }
-    setError(null);
+  const read = async (text: string, today: string) => {
     setReading(true);
     controller.current = new AbortController();
     try {
-      const { draft, usedFallback } = await readDescription(text, {
-        today,
-        locale,
-        signal: controller.current.signal,
-      });
+      const { signal } = controller.current;
+      const { draft, usedFallback } = await readDescription(text, { today, locale, signal });
       const complete = completeDraft(draft, t, locale);
       const brief = briefFromDraft(complete);
       if (brief) {
-        navigate(paths.plan(startPlan(brief, { onSection: announceSection })));
+        navigate(paths.plan(start(brief)));
       } else {
         useDraft.getState().set(complete, usedFallback ? 'fallback' : 'prefilled');
         navigate(paths.newPlan());
@@ -72,8 +52,58 @@ export function DescribeCard() {
     }
   };
 
+  return { reading, read };
+}
+
+/** Sample descriptions to try, one tap each. */
+function Examples({ onPick }: { onPick: (text: string) => void }) {
+  const { t } = useI18n();
   return (
-    <form className="describe" onSubmit={(event) => void submit(event)} noValidate>
+    <div className="examples">
+      <span className="lbl">{t.home.tryLabel}</span>
+      {t.home.examples.map((example) => (
+        <button
+          key={example.label}
+          type="button"
+          onClick={() => {
+            onPick(example.text);
+          }}
+        >
+          {example.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export function DescribeCard() {
+  const { t } = useI18n();
+  const [text, setText] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const textarea = useRef<HTMLTextAreaElement>(null);
+  const today = localToday();
+  const parsed = quickParse(useDeferredValue(text), today);
+  const { reading, read } = useReadDescription();
+
+  const submit = (event: SubmitEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!text.trim()) {
+      setError(t.home.emptyError);
+      textarea.current?.focus();
+      return;
+    }
+    setError(null);
+    void read(text, today);
+  };
+
+  const pickExample = (example: string) => {
+    setText(example);
+    setError(null);
+    textarea.current?.focus();
+  };
+
+  return (
+    <form className="describe" onSubmit={submit} noValidate>
       <div className="describe-label">
         <label htmlFor="describe">{t.home.describeLabel}</label>
         <small id="describe-hint">{t.home.describeHint}</small>
@@ -111,22 +141,7 @@ export function DescribeCard() {
       <p className="status" role="status">
         {reading ? t.home.reading : ''}
       </p>
-      <div className="examples">
-        <span className="lbl">{t.home.tryLabel}</span>
-        {t.home.examples.map((example) => (
-          <button
-            key={example.label}
-            type="button"
-            onClick={() => {
-              setText(example.text);
-              setError(null);
-              textarea.current?.focus();
-            }}
-          >
-            {example.label}
-          </button>
-        ))}
-      </div>
+      <Examples onPick={pickExample} />
     </form>
   );
 }

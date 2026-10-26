@@ -53,14 +53,15 @@ describe('prompts', () => {
   });
 
   it('carry refine instructions and existing items as untrusted input', () => {
-    const prompt = refinePrompt('ideas', weddingBrief(), '2026-10-23', 'more <eco> ideas', [
-      'Mishti doi bar',
-    ]);
+    const base = { section: 'ideas', brief: weddingBrief(), today: '2026-10-23' } as const;
+    const prompt = refinePrompt({
+      ...base,
+      instruction: 'more <eco> ideas',
+      existing: ['Mishti doi bar'],
+    });
     expect(prompt).toContain('more ‹eco› ideas');
     expect(prompt).toContain('Mishti doi bar');
-    expect(refinePrompt('ideas', weddingBrief(), '2026-10-23', 'x', [])).not.toContain(
-      'already have',
-    );
+    expect(refinePrompt({ ...base, instruction: 'x', existing: [] })).not.toContain('already have');
   });
 
   it('build brief, Copilot and invitation prompts', () => {

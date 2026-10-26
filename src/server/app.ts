@@ -2,7 +2,7 @@
  * The HTTP application. All dependencies are injected so tests can run the real app in-process
  * with the mock AI provider, fake clocks and a local token verifier.
  */
-import { Hono } from 'hono';
+import { Hono, type ErrorHandler, type MiddlewareHandler } from 'hono';
 import { APP_NAME, APP_VERSION } from '../shared/meta';
 import type { AiGateway } from './ai/gateway';
 import type { AppConfig } from './config';
@@ -28,42 +28,39 @@ export interface AppDeps {
 /** How many users' AI allowance one address shares between its signed-in users. */
 const ADDRESS_SHARE = 4;
 
-export function createApp({
+/** A bucket that holds `capacity` tokens and refills completely in ten minutes. */
+const tenMinuteBucket = (capacity: number, now: () => number) =>
+  new TokenBucketLimiter({ capacity, refillPerSecond: capacity / 600, now });
+
+/** Generous for ordinary API calls, much tighter for AI calls (which cost real quota). */
+function createLimiters(config: AppConfig, now: () => number) {
+  return {
+    api: new TokenBucketLimiter({ capacity: 120, refillPerSecond: 2, now }),
+    ai: tenMinuteBucket(config.ai.rateLimit, now),
+    // Every signed-in user at one address shares four users' worth, so new anonymous accounts
+    // cannot multiply an address's AI allowance (offices and colleges still have room).
+    aiAddress: tenMinuteBucket(config.ai.rateLimit * ADDRESS_SHARE, now),
+  };
+}
+
+/** API answers are not cached unless a route says otherwise. */
+const defaultCacheControl: MiddlewareHandler<AppEnv> = async (c, next) => {
+  await next();
+  if (!c.res.headers.has('Cache-Control')) c.res.headers.set('Cache-Control', CACHE_RULES.api);
+};
+
+/** Health, and the public settings the client reads before it calls the AI. */
+function infoRoutes({
   config,
-  logger,
   gateway,
-  verifier,
-  now = Date.now,
-}: AppDeps): Hono<AppEnv> {
+  now,
+}: {
+  config: AppConfig;
+  gateway: AiGateway;
+  now: () => number;
+}): Hono<AppEnv> {
   const app = new Hono<AppEnv>();
-  const production = config.env === 'production';
-
-  // Generous for ordinary API calls, much tighter for AI calls (which cost real quota).
-  const apiLimiter = new TokenBucketLimiter({ capacity: 120, refillPerSecond: 2, now });
-  const aiLimiter = new TokenBucketLimiter({
-    capacity: config.ai.rateLimit,
-    refillPerSecond: config.ai.rateLimit / 600,
-    now,
-  });
-  // Every signed-in user at one address shares four users' worth, so new anonymous accounts
-  // cannot multiply an address's AI allowance (offices and colleges still have room).
-  const aiAddressLimiter = new TokenBucketLimiter({
-    capacity: config.ai.rateLimit * ADDRESS_SHARE,
-    refillPerSecond: (config.ai.rateLimit * ADDRESS_SHARE) / 600,
-    now,
-  });
-
-  app.use('*', requestId());
-  app.use('*', applySecurityHeaders(production));
-
-  app.use('/api/*', accessLog(logger));
-  app.use('/api/*', async (c, next) => {
-    await next();
-    if (!c.res.headers.has('Cache-Control')) c.res.headers.set('Cache-Control', CACHE_RULES.api);
-  });
-  app.use('/api/*', rateLimit({ limiter: apiLimiter, clientIpMode: config.clientIp }));
-
-  app.get('/api/health', (c) =>
+  app.get('/health', (c) =>
     c.json({
       status: 'ok',
       name: APP_NAME,
@@ -72,8 +69,7 @@ export function createApp({
       time: new Date(now()).toISOString(),
     }),
   );
-
-  app.get('/api/config', (c) => {
+  app.get('/config', (c) => {
     c.header('Cache-Control', 'public, max-age=300');
     return c.json({
       ai: { mode: gateway.mode, requiresSignIn: config.requireAuthForAi },
@@ -81,15 +77,54 @@ export function createApp({
       features: { cloudSync: config.firebase !== null },
     });
   });
+  return app;
+}
+
+/** Known errors keep their status and safe message; anything else is logged and hidden. */
+function errorHandler(logger: Logger): ErrorHandler<AppEnv> {
+  return (error, c) => {
+    const id = c.get('requestId');
+    if (error instanceof AppError) {
+      if (error.retryAfterSeconds !== undefined) {
+        c.header('Retry-After', String(error.retryAfterSeconds));
+      }
+      return c.json({ code: error.code, message: error.message, requestId: id }, error.status);
+    }
+    logger.error('http.unhandled_error', {
+      requestId: id,
+      path: c.req.path,
+      error: error instanceof Error ? error.name : 'unknown',
+    });
+    const message = 'Something went wrong on our side. Please try again.';
+    return c.json({ code: 'internal', message, requestId: id }, 500);
+  };
+}
+
+export function createApp({
+  config,
+  logger,
+  gateway,
+  verifier,
+  now = Date.now,
+}: AppDeps): Hono<AppEnv> {
+  const app = new Hono<AppEnv>();
+  const limiters = createLimiters(config, now);
+
+  app.use('*', requestId());
+  app.use('*', applySecurityHeaders(config.env === 'production'));
+  app.use('/api/*', accessLog(logger));
+  app.use('/api/*', defaultCacheControl);
+  app.use('/api/*', rateLimit({ limiter: limiters.api, clientIpMode: config.clientIp }));
+  app.route('/api', infoRoutes({ config, gateway, now }));
 
   app.use('/api/ai/*', auth({ verifier, required: config.requireAuthForAi }));
   app.use(
     '/api/ai/*',
     rateLimit({
-      limiter: aiLimiter,
+      limiter: limiters.ai,
       clientIpMode: config.clientIp,
       cost: (c) => AI_ROUTE_COST[c.req.path.split('/').pop() ?? ''] ?? 1,
-      addressLimiter: aiAddressLimiter,
+      addressLimiter: limiters.aiAddress,
     }),
   );
   app.route('/api/ai', aiRoutes(gateway, logger));
@@ -97,31 +132,6 @@ export function createApp({
   app.all('/api/*', (c) =>
     c.json({ code: 'not_found', message: 'Not found', requestId: c.get('requestId') }, 404),
   );
-
-  app.onError((error, c) => {
-    const requestIdValue = c.get('requestId');
-    if (error instanceof AppError) {
-      if (error.retryAfterSeconds !== undefined)
-        c.header('Retry-After', String(error.retryAfterSeconds));
-      return c.json(
-        { code: error.code, message: error.message, requestId: requestIdValue },
-        error.status as 400 | 401 | 404 | 413 | 415 | 422 | 429 | 503,
-      );
-    }
-    logger.error('http.unhandled_error', {
-      requestId: requestIdValue,
-      path: c.req.path,
-      error: error instanceof Error ? error.name : 'unknown',
-    });
-    return c.json(
-      {
-        code: 'internal',
-        message: 'Something went wrong on our side. Please try again.',
-        requestId: requestIdValue,
-      },
-      500,
-    );
-  });
-
+  app.onError(errorHandler(logger));
   return app;
 }

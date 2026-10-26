@@ -2,6 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { axe } from 'jest-axe';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { EventPlan } from '../../../shared/schemas/plan';
 import { useRuntimeConfig, type RuntimeConfig } from '../../app/runtime-config';
 import { en } from '../../i18n/en';
 import {
@@ -223,8 +224,11 @@ describe('shared plan page', () => {
     const link = await createShareLink(plan, true);
     const { container } = renderAt(<SharedPlanPage params={{ id: link.id }} />, `/s/${link.id}`);
     expect(await screen.findByRole('heading', { level: 1, name: plan.brief.title })).toBeVisible();
-    // The shared copy wears its occasion's look, like the plan itself.
-    expect(document.documentElement.dataset.mood).toBe('wedding');
+    // The shared copy wears its occasion's look, like the plan itself. The look is applied in
+    // an effect, which can run just after the heading appears.
+    await waitFor(() => {
+      expect(document.documentElement.dataset.mood).toBe('wedding');
+    });
     expect(screen.getByText(en.moods.greeting.wedding)).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: en.shared.budgetTitle })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: en.shared.tasksTitle })).toBeInTheDocument();
@@ -232,6 +236,50 @@ describe('shared plan page', () => {
       'href',
       '/new',
     );
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it('shows ideas, the run sheet in time order and risks, and leaves out a withheld budget', async () => {
+    const seeded = seedPlan();
+    const day = seeded.brief.date;
+    const plan: EventPlan = {
+      ...seeded,
+      ideas: [
+        {
+          id: 'idea-1',
+          kind: 'decor',
+          title: 'Marigold arch',
+          description: 'Strings of marigold over the entrance.',
+          favorite: false,
+          source: 'ai',
+        },
+      ],
+      schedule: [
+        { id: 's-2', day, time: '19:00', durationMinutes: 60, title: 'Pheras', source: 'user' },
+        { id: 's-1', day, time: '17:30', durationMinutes: 45, title: 'Baraat', source: 'user' },
+      ],
+      risks: [
+        {
+          id: 'risk-1',
+          title: 'Evening rain',
+          likelihood: 'medium',
+          mitigation: 'Keep the covered hall ready.',
+          source: 'ai',
+        },
+      ],
+    };
+    const link = await createShareLink(plan, false);
+    const { container } = renderAt(<SharedPlanPage params={{ id: link.id }} />, `/s/${link.id}`);
+
+    const ideas = await screen.findByRole('region', { name: en.shared.ideasTitle });
+    expect(within(ideas).getByRole('heading', { name: 'Marigold arch' })).toBeInTheDocument();
+    const slots = within(screen.getByRole('region', { name: en.shared.scheduleTitle }))
+      .getAllByRole('listitem')
+      .map((item) => item.textContent);
+    expect(slots).toEqual([expect.stringContaining('Baraat'), expect.stringContaining('Pheras')]);
+    const risks = screen.getByRole('region', { name: en.shared.risksTitle });
+    expect(within(risks).getByText(en.overview.likelihood.medium)).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: en.shared.budgetTitle })).not.toBeInTheDocument();
     expect(await axe(container)).toHaveNoViolations();
   });
 

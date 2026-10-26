@@ -23,15 +23,15 @@ const snapshotOf = (plan: EventPlan, includeBudget: boolean, now: Date): SharedP
 
 const expiryFrom = (now: Date) => new Date(now.getTime() + SHARE_TTL_DAYS * 86_400_000);
 
-export async function createShareLink(
-  plan: EventPlan,
-  includeBudget: boolean,
-  now = new Date(),
-): Promise<ShareLink> {
-  const { cloud, user } = await ensureUser();
-  const id = secureToken();
-  const expiresAt = expiryFrom(now);
-  await cloud.createShare(user.uid, id, snapshotOf(plan, includeBudget, now), expiresAt);
+interface SharedCopy {
+  id: string;
+  includeBudget: boolean;
+  now: Date;
+  expiresAt: Date;
+}
+
+/** Remembers on this device that the link now shows the plan as it is. */
+function remember(plan: EventPlan, { id, includeBudget, now, expiresAt }: SharedCopy): ShareLink {
   const link: ShareLink = {
     id,
     includeBudget,
@@ -41,6 +41,18 @@ export async function createShareLink(
   };
   writeLinks({ ...useShareLinks.getState().links, [plan.id]: link });
   return link;
+}
+
+export async function createShareLink(
+  plan: EventPlan,
+  includeBudget: boolean,
+  now = new Date(),
+): Promise<ShareLink> {
+  const { cloud, user } = await ensureUser();
+  const id = secureToken();
+  const expiresAt = expiryFrom(now);
+  await cloud.createShare(user.uid, id, snapshotOf(plan, includeBudget, now), expiresAt);
+  return remember(plan, { id, includeBudget, now, expiresAt });
 }
 
 /** Replaces the shared copy with the plan as it is now, and restarts the 90 days. */
@@ -54,15 +66,7 @@ export async function refreshShareLink(
   const { cloud } = await ensureUser();
   const expiresAt = expiryFrom(now);
   await cloud.updateShare(current.id, snapshotOf(plan, includeBudget, now), expiresAt);
-  const link: ShareLink = {
-    ...current,
-    includeBudget,
-    revision: plan.revision,
-    sharedAt: now.toISOString(),
-    expiresAt: expiresAt.toISOString(),
-  };
-  writeLinks({ ...useShareLinks.getState().links, [plan.id]: link });
-  return link;
+  return remember(plan, { id: current.id, includeBudget, now, expiresAt });
 }
 
 export async function stopSharing(planId: string): Promise<void> {

@@ -2,7 +2,8 @@
  * A text input for inline editing: typing is local, and the change is committed once, on blur
  * or Enter, so each edit is a single undo step. Escape cancels.
  */
-import { useRef, useState, type InputHTMLAttributes } from 'react';
+import type { InputHTMLAttributes } from 'react';
+import { useDraftInput } from './use-draft-input';
 
 export interface CommitInputProps extends Omit<
   InputHTMLAttributes<HTMLInputElement>,
@@ -23,21 +24,11 @@ export function CommitInput({
   className = 'input input--inline',
   ...rest
 }: CommitInputProps) {
-  const [draft, setDraft] = useState<string | null>(null);
-  // Escape blurs the field before React applies the cancel, so blur must know to skip.
-  const cancelled = useRef(false);
-  const commit = () => {
-    if (cancelled.current) {
-      cancelled.current = false;
-      setDraft(null);
-      return;
-    }
-    if (draft === null) return;
-    const next = draft.trim();
-    setDraft(null);
+  const { draft, setDraft, commit, onKeyDown } = useDraftInput((typed) => {
+    const next = typed.trim();
     if (next === value || (!next && !allowEmpty)) return;
     onCommit(next);
-  };
+  });
   return (
     <input
       {...rest}
@@ -51,13 +42,7 @@ export function CommitInput({
         setDraft(event.target.value);
       }}
       onBlur={commit}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter') event.currentTarget.blur();
-        if (event.key === 'Escape') {
-          cancelled.current = true;
-          event.currentTarget.blur();
-        }
-      }}
+      onKeyDown={onKeyDown}
     />
   );
 }

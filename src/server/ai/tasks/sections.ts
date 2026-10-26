@@ -72,7 +72,7 @@ export async function generateSection(
       model: smart ? gateway.models.smart : gateway.models.fast,
       system: systemPrompt(brief.language),
       prompt: instruction
-        ? refinePrompt(section, brief, today, instruction, existing)
+        ? refinePrompt({ section, brief, today, instruction, existing })
         : sectionPrompt(section, brief, today),
       schema: sectionSchema(section, brief),
       temperature: settings.temperature,

@@ -18,7 +18,7 @@ export function seeded(seed: number): Random {
   };
 }
 
-export type ParticleKind = 'rocket' | 'trail' | 'spark' | 'confetti';
+type ParticleKind = 'rocket' | 'trail' | 'spark' | 'confetti';
 
 export interface Particle {
   kind: ParticleKind;
@@ -125,14 +125,16 @@ export function burst(rocket: Particle, random: Random, scale = 1): Particle[] {
   });
 }
 
-/** One cannon's worth of confetti, fired from (x, y) towards `direction` (radians). */
-export function confetti(
-  x: number,
-  y: number,
-  direction: number,
-  random: Random,
-  scale = 1,
-): Particle[] {
+/** A confetti cannon: where it stands, where it points (radians) and how hard it fires. */
+interface Cannon {
+  x: number;
+  y: number;
+  direction: number;
+  scale: number;
+}
+
+/** One cannon's worth of confetti. */
+function confetti({ x, y, direction, scale }: Cannon, random: Random): Particle[] {
   return Array.from({ length: 90 }, () => {
     const angle = direction + (random() - 0.5) * 0.9;
     const speed = (520 + random() * 520) * scale;
@@ -207,25 +209,24 @@ const SCHEDULE: Readonly<Record<ShowKind, readonly number[]>> = {
   confetti: [0.15, 0.15, 0.7, 0.7],
 };
 
+export interface Stage {
+  width: number;
+  height: number;
+}
+
 /** New particles for the `index`-th firing of a show. */
-export function fire(
-  kind: ShowKind,
-  index: number,
-  random: Random,
-  width: number,
-  height: number,
-): Particle[] {
+export function fire(kind: ShowKind, index: number, random: Random, stage: Stage): Particle[] {
+  const { width, height } = stage;
   if (kind === 'fireworks') return [launchRocket(random, width, height)];
   // Cannons in the bottom corners, aimed up and inwards.
   const left = index % 2 === 0;
-  const scale = Math.min(1.2, Math.max(0.6, height / 800));
-  return confetti(
-    left ? 0 : width,
-    height,
-    left ? -Math.PI / 3 : (-2 * Math.PI) / 3,
-    random,
-    scale,
-  );
+  const cannon: Cannon = {
+    x: left ? 0 : width,
+    y: height,
+    direction: left ? -Math.PI / 3 : (-2 * Math.PI) / 3,
+    scale: Math.min(1.2, Math.max(0.6, height / 800)),
+  };
+  return confetti(cannon, random);
 }
 
 function draw(context: CanvasRenderingContext2D, particles: readonly Particle[], kind: ShowKind) {
@@ -295,7 +296,7 @@ export function startShow(
     last = now;
     elapsed += dt;
     while (fired < times.length && (times[fired] ?? Infinity) <= elapsed) {
-      particles.push(...fire(kind, fired, random, width, height));
+      particles.push(...fire(kind, fired, random, { width, height }));
       fired += 1;
     }
     particles = step(particles, dt, random);

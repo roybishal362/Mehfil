@@ -15,19 +15,25 @@ import type { AiGateway } from '../gateway';
 import { briefPrompt, systemPrompt } from '../prompts';
 import { aiMeta } from './meta';
 
+/** One extracted field, cleaned, if it passes validation on its own; otherwise nothing. */
+function validField(key: string, value: unknown): [string, unknown] | [] {
+  const cleaned = typeof value === 'string' ? cleanText(value, 300) : value;
+  if (cleaned === '') return [];
+  const single = PartialBrief.safeParse({ [key]: cleaned });
+  return single.success && key in single.data ? [key, cleaned] : [];
+}
+
 /** Keeps only the extracted fields that pass validation on their own. */
 export function validExtractedFields(
   raw: BriefExtraction['brief'],
   today: string,
 ): BriefResponse['brief'] {
-  const out: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(raw)) {
-    const cleaned = typeof value === 'string' ? cleanText(value, 300) : value;
-    if (cleaned === '') continue;
-    const single = PartialBrief.safeParse({ [key]: cleaned });
-    if (single.success && key in single.data) out[key] = cleaned;
-  }
-  const brief = PartialBrief.parse(out);
+  const fields = Object.entries(raw).flatMap(([key, value]) => {
+    const field = validField(key, value);
+    return field.length ? [field] : [];
+  });
+  const brief = PartialBrief.parse(Object.fromEntries(fields));
+  // A past date, or an end before the start, is a misreading: better to ask again.
   if (brief.date && brief.date < today) delete brief.date;
   if (brief.endDate && (!brief.date || brief.endDate < brief.date)) delete brief.endDate;
   return brief;

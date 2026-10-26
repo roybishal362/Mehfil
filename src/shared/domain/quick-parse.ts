@@ -107,39 +107,48 @@ function monthNumber(token: string): number | undefined {
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
+interface DateParts {
+  day: number;
+  month: number | undefined;
+  year: number | undefined;
+}
+
+const optionalYear = (digits: string | undefined) => (digits ? Number(digits) : undefined);
+
+/** The first date written as "14 Feb 2027", "Feb 14, 2027" or "14/02/2027", in that order. */
+function dateParts(text: string): DateParts | undefined {
+  const dayMonth = DAY_MONTH.exec(text);
+  if (dayMonth) {
+    const [, day, month = '', year] = dayMonth;
+    return { day: Number(day), month: monthNumber(month), year: optionalYear(year) };
+  }
+  const monthDay = MONTH_DAY.exec(text);
+  if (monthDay) {
+    const [, month = '', day, year] = monthDay;
+    return { day: Number(day), month: monthNumber(month), year: optionalYear(year) };
+  }
+  const numeric = NUMERIC_DATE.exec(text);
+  if (!numeric) return undefined;
+  const [, day, month, year] = numeric;
+  return { day: Number(day), month: Number(month), year: Number(year) };
+}
+
+/** The real date those parts name. Without a year it is the next time that day comes round. */
+function toIsoDate({ day, month, year }: DateParts, today: string): string | undefined {
+  if (month === undefined) return undefined;
+  const thisYear = Number(today.slice(0, 4));
+  const inYear = (y: number) => `${String(y)}-${pad(month)}-${pad(day)}`;
+  const candidate = inYear(year ?? thisYear);
+  const date = year !== undefined || candidate >= today ? candidate : inYear(thisYear + 1);
+  return isIsoDate(date) ? date : undefined;
+}
+
 /** Finds 14 Feb 2027, Feb 14, 14/02/2027, 2027-02-14 or १४ फ़रवरी; a missing year means the next one. */
 function findDate(text: string, today: string): string | undefined {
   const iso = ISO_DATE.exec(text);
   if (iso && isIsoDate(iso[0])) return iso[0];
-
-  let day: number;
-  let month: number | undefined;
-  let year: number | undefined;
-  const dayMonth = DAY_MONTH.exec(text);
-  const monthDay = dayMonth ? null : MONTH_DAY.exec(text);
-  const numeric = dayMonth || monthDay ? null : NUMERIC_DATE.exec(text);
-  if (dayMonth) {
-    day = Number(dayMonth[1]);
-    month = monthNumber(dayMonth[2] ?? '');
-    year = dayMonth[3] ? Number(dayMonth[3]) : undefined;
-  } else if (monthDay) {
-    month = monthNumber(monthDay[1] ?? '');
-    day = Number(monthDay[2]);
-    year = monthDay[3] ? Number(monthDay[3]) : undefined;
-  } else if (numeric) {
-    day = Number(numeric[1]);
-    month = Number(numeric[2]);
-    year = Number(numeric[3]);
-  } else {
-    return undefined;
-  }
-  if (month === undefined) return undefined;
-
-  const thisYear = Number(today.slice(0, 4));
-  const candidate = `${String(year ?? thisYear)}-${pad(month)}-${pad(day)}`;
-  if (year !== undefined || candidate >= today) return isIsoDate(candidate) ? candidate : undefined;
-  const nextYear = `${String(thisYear + 1)}-${pad(month)}-${pad(day)}`;
-  return isIsoDate(nextYear) ? nextYear : undefined;
+  const parts = dateParts(text);
+  return parts && toIsoDate(parts, today);
 }
 
 /** Cities people often name without "in". Longer names first so "New Delhi" beats "Delhi". */
@@ -229,24 +238,42 @@ const NOT_PLACES = new Set(
 );
 const IN_PLACE = /\bin\s+([A-Z][a-z]+)(?:\s+([A-Z][a-z]+))?/g;
 
-function findCity(text: string): string | undefined {
+interface CityHit {
+  city: string;
+  index: number;
+}
+
+/** A well-known city in English spelling, under its current name (Bombay is Mumbai). */
+function knownCity(text: string): CityHit | undefined {
   const known = KNOWN_CITY.exec(text);
-  const indic = INDIC_CITIES.map(([name, city]) => ({ city, index: text.indexOf(name) }))
+  const name = known?.[1];
+  if (!known || !name) return undefined;
+  const canonical = KNOWN_CITIES.find((city) => city.toLowerCase() === name.toLowerCase()) ?? name;
+  return { city: CITY_ALIASES[canonical.toLowerCase()] ?? canonical, index: known.index };
+}
+
+/** The earliest city named in Hindi or Bengali script. */
+function indicCity(text: string): CityHit | undefined {
+  return INDIC_CITIES.map(([name, city]) => ({ city, index: text.indexOf(name) }))
     .filter((hit) => hit.index >= 0)
     .sort((a, b) => a.index - b.index)[0];
-  if (known?.[1] && (!indic || known.index < indic.index)) {
-    const name = known[1];
-    const canonical =
-      KNOWN_CITIES.find((city) => city.toLowerCase() === name.toLowerCase()) ?? name;
-    return CITY_ALIASES[canonical.toLowerCase()] ?? canonical;
-  }
-  if (indic) return indic.city;
-  for (const match of text.matchAll(IN_PLACE)) {
-    const [, first = '', second] = match;
+}
+
+/** Any other place, from "in Shimla" or "in Bodh Gaya" (not "in March" or "in the evening"). */
+function placeAfterIn(text: string): string | undefined {
+  for (const [, first = '', second] of text.matchAll(IN_PLACE)) {
     if (NOT_PLACES.has(first.toLowerCase())) continue;
     return second && !NOT_PLACES.has(second.toLowerCase()) ? `${first} ${second}` : first;
   }
   return undefined;
+}
+
+/** The city named first, whichever script it is written in. */
+function findCity(text: string): string | undefined {
+  const known = knownCity(text);
+  const indic = indicCity(text);
+  if (known && (!indic || known.index < indic.index)) return known.city;
+  return indic?.city ?? placeAfterIn(text);
 }
 
 /** "guests" in English, Hindi and Bengali. A following virama would make it another word (जन्मदिन). */
@@ -289,21 +316,37 @@ function currencyOf(symbol: string): Currency {
   return 'INR';
 }
 
+/** An amount found in the text, with how it was written and the words just before it. */
+interface AmountHit {
+  amount: number;
+  currency: string | undefined;
+  unit: string | undefined;
+  before: string;
+}
+
+/** Reads one AMOUNT match, unless it is really part of a date or a head count. */
+function readAmount(text: string, match: RegExpExecArray): AmountHit | undefined {
+  const [whole, currency, digits = '', unit] = match;
+  const before = text.slice(Math.max(0, match.index - 24), match.index);
+  const after = text.slice(match.index + whole.length);
+  // The year of 14-02-2027 is not money; the "20 lakh" of "18-20 lakh" is.
+  if (NOT_MONEY_AFTER.test(after) || /\d[/.-]\d{1,2}[/.-]$/.test(before)) return undefined;
+  const amount = parseAmount(`${digits.replace(/,+$/, '')}${unit ?? ''}`);
+  if (amount === null || amount < 1000) return undefined;
+  return { amount, currency, unit, before };
+}
+
 /** The first amount with a currency or scale word, else a plain number right after "budget". */
 function findBudget(text: string): { amount: number; currency?: Currency } | undefined {
   let nearBudgetWord: number | undefined;
   for (const match of text.matchAll(AMOUNT)) {
-    const [whole, currency, rawDigits = '', unit] = match;
-    const digits = rawDigits.replace(/,+$/, '');
-    const before = text.slice(Math.max(0, match.index - 24), match.index);
-    const after = text.slice(match.index + whole.length);
-    // The year of 14-02-2027 is not money; the "20 lakh" of "18-20 lakh" is.
-    if (NOT_MONEY_AFTER.test(after) || /\d[/.-]\d{1,2}[/.-]$/.test(before)) continue;
-    const amount = parseAmount(`${digits}${unit ?? ''}`);
-    if (amount === null || amount < 1000) continue;
-    if (currency) return { amount, currency: currencyOf(currency) };
-    if (unit) return { amount };
-    if (nearBudgetWord === undefined && BUDGET_WORD_BEFORE.test(before)) nearBudgetWord = amount;
+    const hit = readAmount(text, match);
+    if (!hit) continue;
+    if (hit.currency) return { amount: hit.amount, currency: currencyOf(hit.currency) };
+    if (hit.unit) return { amount: hit.amount };
+    if (nearBudgetWord === undefined && BUDGET_WORD_BEFORE.test(hit.before)) {
+      nearBudgetWord = hit.amount;
+    }
   }
   return nearBudgetWord === undefined ? undefined : { amount: nearBudgetWord };
 }
@@ -338,23 +381,29 @@ function findDietary(text: string): DietaryNeed[] {
   return needs;
 }
 
+/** A date the planner can use: from today up to three years ahead. */
+function plannableDate(text: string, today: string): string | undefined {
+  const date = findDate(text, today);
+  return date && date >= today && date <= addDays(today, 3 * 365) ? date : undefined;
+}
+
 export function quickParse(raw: string, today: string): QuickParse {
   // Nothing typed yet (the usual first render): skip compiling and running the patterns.
   if (!raw.trim()) return { dietary: [] };
   const text = foldForMatching(normaliseDigits(raw));
-  const result: QuickParse = { dietary: findDietary(text) };
   const type = TYPE_PATTERNS.find(([, regex]) => regex.test(text))?.[0];
-  if (type) result.type = type;
-  const date = findDate(text, today);
-  if (date && date >= today && date <= addDays(today, 3 * 365)) result.date = date;
+  const date = plannableDate(text, today);
   const city = findCity(text);
-  if (city) result.city = city;
   const guestCount = findGuests(text);
-  if (guestCount !== undefined) result.guestCount = guestCount;
   const budget = findBudget(text);
-  if (budget) {
-    result.budget = budget.amount;
-    if (budget.currency) result.currency = budget.currency;
-  }
-  return result;
+  // Fields only appear when found, so the chips show exactly what was understood.
+  return {
+    dietary: findDietary(text),
+    ...(type ? { type } : {}),
+    ...(date ? { date } : {}),
+    ...(city ? { city } : {}),
+    ...(guestCount === undefined ? {} : { guestCount }),
+    ...(budget ? { budget: budget.amount } : {}),
+    ...(budget?.currency ? { currency: budget.currency } : {}),
+  };
 }

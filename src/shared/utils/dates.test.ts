@@ -6,6 +6,7 @@ import {
   clockToMinutes,
   compactDate,
   diffDays,
+  isClockTime,
   isIsoDate,
   localToday,
   maxDate,
@@ -83,5 +84,12 @@ describe('formatting helpers', () => {
     expect(minutesToClock(1185)).toBe('19:45');
     expect(minutesToClock(1440 + 30)).toBe('00:30');
     expect(minutesToClock(-30)).toBe('23:30');
+  });
+
+  it('accepts only 24-hour HH:MM times', () => {
+    for (const time of ['00:00', '07:30', '19:45', '23:59']) expect(isClockTime(time)).toBe(true);
+    for (const time of ['24:00', '7:30', '19:60', '19:45:00', '', 'noon']) {
+      expect(isClockTime(time)).toBe(false);
+    }
   });
 });

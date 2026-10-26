@@ -65,24 +65,20 @@ function IdeaCard({ plan, idea }: { plan: EventPlan; idea: Idea }) {
   );
 }
 
-export function IdeasSection({ plan }: { plan: EventPlan }) {
+/** Asking Gemini for different ideas, with ready-made requests or the user's own words. */
+function RefineForm({ planId, onRefined }: { planId: string; onRefined: () => void }) {
   const { t } = useI18n();
-  const [filter, setFilter] = useState<KindFilter>('all');
   const [instruction, setInstruction] = useState('');
   const [busy, setBusy] = useState(false);
-  const kinds = IDEA_KINDS.filter((kind) => plan.ideas.some((idea) => idea.kind === kind));
-  const shown = plan.ideas.filter((idea) =>
-    filter === 'all' ? true : filter === 'kept' ? idea.favorite : idea.kind === filter,
-  );
 
   const refine = async (text: string) => {
     const request = text.trim();
     if (!request || busy) return;
     setBusy(true);
     try {
-      await refineSection(plan.id, 'ideas', request);
+      await refineSection(planId, 'ideas', request);
       setInstruction('');
-      setFilter('all');
+      onRefined();
       announce(t.ideasSection.refined);
       toast(t.ideasSection.refined);
     } catch {
@@ -98,72 +94,109 @@ export function IdeasSection({ plan }: { plan: EventPlan }) {
   };
 
   return (
+    <form className="card refine" onSubmit={submit}>
+      <h3 className="flex items-center gap-2 text-2xl">
+        <WandSparkles className="i" />
+        {t.ideasSection.refineTitle}
+      </h3>
+      <div className="chips-row">
+        {t.ideasSection.refineChips.map((chip) => (
+          <button
+            key={chip}
+            type="button"
+            className="btn btn--ghost btn--sm"
+            disabled={busy}
+            onClick={() => void refine(chip)}
+          >
+            {chip}
+          </button>
+        ))}
+      </div>
+      <div className="composer">
+        <label className="sr-only" htmlFor="refine-input">
+          {t.ideasSection.refineLabel}
+        </label>
+        <input
+          id="refine-input"
+          className="input"
+          maxLength={300}
+          placeholder={t.ideasSection.refinePlaceholder}
+          value={instruction}
+          onChange={(event) => {
+            setInstruction(event.target.value);
+          }}
+        />
+        <button type="submit" aria-label={t.ideasSection.refineButton} disabled={busy}>
+          {busy ? <span className="spinner" aria-hidden="true" /> : <Sparkles />}
+        </button>
+      </div>
+      <p className="note" role="status">
+        {busy ? t.ideasSection.refining : t.ideasSection.refineNote}
+      </p>
+    </form>
+  );
+}
+
+function matchesFilter(idea: Idea, filter: KindFilter): boolean {
+  if (filter === 'all') return true;
+  if (filter === 'kept') return idea.favorite;
+  return idea.kind === filter;
+}
+
+/** One filter per kind of idea the plan has, plus all and kept. */
+function IdeaFilters({
+  ideas,
+  filter,
+  onFilter,
+}: {
+  ideas: readonly Idea[];
+  filter: KindFilter;
+  onFilter: (filter: KindFilter) => void;
+}) {
+  const { t } = useI18n();
+  const kinds = IDEA_KINDS.filter((kind) => ideas.some((idea) => idea.kind === kind));
+  const labelOf = (option: KindFilter) => {
+    if (option === 'all') return t.ideasSection.all;
+    if (option === 'kept') return t.ideasSection.keptOnly;
+    return t.ideaKinds[option];
+  };
+  return (
+    <div className="filters" role="group" aria-label={t.ideasSection.filterLabel}>
+      {(['all', ...kinds, 'kept'] as const).map((option) => (
+        <button
+          key={option}
+          type="button"
+          aria-pressed={filter === option}
+          onClick={() => {
+            onFilter(option);
+          }}
+        >
+          {labelOf(option)}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export function IdeasSection({ plan }: { plan: EventPlan }) {
+  const { t } = useI18n();
+  const [filter, setFilter] = useState<KindFilter>('all');
+  const shown = plan.ideas.filter((idea) => matchesFilter(idea, filter));
+  return (
     <section className="ws-main" aria-labelledby="section-title">
       <SectionHead title={t.ideasSection.title} intro={t.ideasSection.intro} />
-
-      <form className="card refine" onSubmit={submit}>
-        <h3 className="flex items-center gap-2 text-2xl">
-          <WandSparkles className="i" />
-          {t.ideasSection.refineTitle}
-        </h3>
-        <div className="chips-row">
-          {t.ideasSection.refineChips.map((chip) => (
-            <button
-              key={chip}
-              type="button"
-              className="btn btn--ghost btn--sm"
-              disabled={busy}
-              onClick={() => void refine(chip)}
-            >
-              {chip}
-            </button>
-          ))}
-        </div>
-        <div className="composer">
-          <label className="sr-only" htmlFor="refine-input">
-            {t.ideasSection.refineLabel}
-          </label>
-          <input
-            id="refine-input"
-            className="input"
-            maxLength={300}
-            placeholder={t.ideasSection.refinePlaceholder}
-            value={instruction}
-            onChange={(event) => {
-              setInstruction(event.target.value);
-            }}
-          />
-          <button type="submit" aria-label={t.ideasSection.refineButton} disabled={busy}>
-            {busy ? <span className="spinner" aria-hidden="true" /> : <Sparkles />}
-          </button>
-        </div>
-        <p className="note" role="status">
-          {busy ? t.ideasSection.refining : t.ideasSection.refineNote}
-        </p>
-      </form>
-
+      {/* New ideas may not match the current filter, so all are shown after a refine. */}
+      <RefineForm
+        planId={plan.id}
+        onRefined={() => {
+          setFilter('all');
+        }}
+      />
       {plan.ideas.length === 0 ? (
         <p className="card empty">{t.ideasSection.empty}</p>
       ) : (
         <>
-          <div className="filters" role="group" aria-label={t.ideasSection.filterLabel}>
-            {(['all', ...kinds, 'kept'] as const).map((option) => (
-              <button
-                key={option}
-                type="button"
-                aria-pressed={filter === option}
-                onClick={() => {
-                  setFilter(option);
-                }}
-              >
-                {option === 'all'
-                  ? t.ideasSection.all
-                  : option === 'kept'
-                    ? t.ideasSection.keptOnly
-                    : t.ideaKinds[option]}
-              </button>
-            ))}
-          </div>
+          <IdeaFilters ideas={plan.ideas} filter={filter} onFilter={setFilter} />
           <ul className="ideas">
             {shown.map((idea) => (
               <IdeaCard key={idea.id} plan={plan} idea={idea} />

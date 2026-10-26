@@ -5,7 +5,7 @@
 import { CircleAlert } from 'lucide-react';
 import type { ReactNode } from 'react';
 
-export interface ControlProps {
+interface ControlProps {
   id: string;
   'aria-describedby'?: string;
   'aria-invalid'?: true;

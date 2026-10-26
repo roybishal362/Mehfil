@@ -65,6 +65,13 @@ export function compactDate(iso: string): string {
   return iso.replaceAll('-', '');
 }
 
+const CLOCK = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+/** A 24-hour `HH:MM` time, such as 07:30 or 19:00. */
+export function isClockTime(value: string): boolean {
+  return CLOCK.test(value);
+}
+
 /** Converts `HH:MM` to minutes after midnight. */
 export function clockToMinutes(time: string): number {
   const [h, m] = time.split(':').map(Number) as [number, number];

@@ -21,6 +21,7 @@ import {
   signInWithCredential,
   signInWithPopup,
   signOut,
+  type Auth,
   type User,
 } from 'firebase/auth';
 import {
@@ -38,6 +39,7 @@ import {
   updateDoc,
   where,
   deleteDoc,
+  type Firestore,
 } from 'firebase/firestore/lite';
 import type { SharedPlan } from '../../shared/export/share';
 import type { EventPlan } from '../../shared/schemas/plan';
@@ -71,31 +73,33 @@ export interface BackendOptions {
   emulators?: { auth: string; firestore: { host: string; port: number } };
 }
 
-export function firebaseBackend(config: WebConfig, options: BackendOptions = {}): CloudBackend {
-  const app = initializeApp(
-    {
-      apiKey: config.apiKey,
-      authDomain: config.authDomain,
-      projectId: config.projectId,
-      ...(config.appId ? { appId: config.appId } : {}),
-    },
-    options.appName,
-  );
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-  if (options.emulators) {
-    connectAuthEmulator(auth, options.emulators.auth, { disableWarnings: true });
-    connectFirestoreEmulator(
-      db,
-      options.emulators.firestore.host,
-      options.emulators.firestore.port,
-    );
-  }
-  // Resolves once a session saved by an earlier visit has been restored.
-  const ready = auth.authStateReady();
-  const planDoc = (uid: string, id: string) => doc(db, 'users', uid, 'plans', id);
-  const shareDoc = (id: string) => doc(db, 'shares', id);
+type AuthMethods = Pick<
+  CloudBackend,
+  'currentUser' | 'signInAnonymously' | 'signInWithGoogle' | 'signOut' | 'idToken' | 'deleteAccount'
+>;
+type PlanMethods = Pick<CloudBackend, 'listPlans' | 'savePlan' | 'deletePlan'>;
+type ShareMethods = Pick<
+  CloudBackend,
+  'createShare' | 'updateShare' | 'deleteShare' | 'listShareIds' | 'getShare'
+>;
 
+/**
+ * Upgrades an anonymous user to Google in place, which keeps the uid (and so the share links
+ * made so far). If that Google account already has its own account here, switches to it.
+ */
+async function upgradeToGoogle(auth: Auth, anonymous: User): Promise<User> {
+  try {
+    return (await linkWithPopup(anonymous, googleProvider())).user;
+  } catch (error) {
+    const inUse = error instanceof FirebaseError && error.code === 'auth/credential-already-in-use';
+    const credential = inUse ? GoogleAuthProvider.credentialFromError(error) : null;
+    if (!credential) throw error;
+    return (await signInWithCredential(auth, credential)).user;
+  }
+}
+
+/** `ready` resolves once a session saved by an earlier visit has been restored. */
+function authMethods(auth: Auth, ready: Promise<void>): AuthMethods {
   return {
     async currentUser() {
       await ready;
@@ -111,20 +115,8 @@ export function firebaseBackend(config: WebConfig, options: BackendOptions = {})
     async signInWithGoogle() {
       await ready;
       const current = auth.currentUser;
-      if (!current?.isAnonymous)
-        return toCloudUser((await signInWithPopup(auth, googleProvider())).user);
-      try {
-        // Upgrading keeps the uid, so share links made so far stay editable.
-        return toCloudUser((await linkWithPopup(current, googleProvider())).user);
-      } catch (error) {
-        // That Google account already has its own account here: switch to it.
-        const credential =
-          codeOf(error) === 'auth/credential-already-in-use' && error instanceof FirebaseError
-            ? GoogleAuthProvider.credentialFromError(error)
-            : null;
-        if (!credential) throw error;
-        return toCloudUser((await signInWithCredential(auth, credential)).user);
-      }
+      if (current?.isAnonymous) return toCloudUser(await upgradeToGoogle(auth, current));
+      return toCloudUser((await signInWithPopup(auth, googleProvider())).user);
     },
 
     async signOut() {
@@ -143,12 +135,19 @@ export function firebaseBackend(config: WebConfig, options: BackendOptions = {})
       try {
         await deleteUser(user);
       } catch (error) {
+        // Deleting needs a recent sign-in: Google confirms it, then the delete runs again.
         if (codeOf(error) !== 'auth/requires-recent-login' || user.isAnonymous) throw error;
         await reauthenticateWithPopup(user, googleProvider());
         await deleteUser(user);
       }
     },
+  };
+}
 
+/** Synced plans. Every write is a transaction that checks the revision this device last saw. */
+function planMethods(db: Firestore): PlanMethods {
+  const planDoc = (uid: string, id: string) => doc(db, 'users', uid, 'plans', id);
+  return {
     async listPlans(uid) {
       const snapshot = await getDocs(collection(db, 'users', uid, 'plans'));
       return snapshot.docs.map((entry): RemotePlan => {
@@ -183,7 +182,13 @@ export function firebaseBackend(config: WebConfig, options: BackendOptions = {})
         return 'saved';
       });
     },
+  };
+}
 
+/** Share links: read-only snapshots that anyone with the link can open until they expire. */
+function shareMethods(db: Firestore): ShareMethods {
+  const shareDoc = (id: string) => doc(db, 'shares', id);
+  return {
     async createShare(uid: string, id: string, snapshot: SharedPlan, expiresAt: Date) {
       await setDoc(shareDoc(id), {
         owner: uid,
@@ -220,5 +225,29 @@ export function firebaseBackend(config: WebConfig, options: BackendOptions = {})
         throw error;
       }
     },
+  };
+}
+
+export function firebaseBackend(config: WebConfig, options: BackendOptions = {}): CloudBackend {
+  const app = initializeApp(
+    {
+      apiKey: config.apiKey,
+      authDomain: config.authDomain,
+      projectId: config.projectId,
+      ...(config.appId ? { appId: config.appId } : {}),
+    },
+    options.appName,
+  );
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  if (options.emulators) {
+    const { firestore } = options.emulators;
+    connectAuthEmulator(auth, options.emulators.auth, { disableWarnings: true });
+    connectFirestoreEmulator(db, firestore.host, firestore.port);
+  }
+  return {
+    ...authMethods(auth, auth.authStateReady()),
+    ...planMethods(db),
+    ...shareMethods(db),
   };
 }

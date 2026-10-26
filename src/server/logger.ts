@@ -7,7 +7,7 @@ export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 const ORDER: Readonly<Record<LogLevel, number>> = { debug: 10, info: 20, warn: 30, error: 40 };
 
-export type LogFields = Readonly<Record<string, string | number | boolean | null | undefined>>;
+type LogFields = Readonly<Record<string, string | number | boolean | null | undefined>>;
 
 export interface Logger {
   debug(message: string, fields?: LogFields): void;

@@ -7,12 +7,12 @@ import { useEffect } from 'react';
 import { create } from 'zustand';
 import { useI18n } from '../i18n';
 
-export interface ToastAction {
+interface ToastAction {
   label: string;
   run: () => void;
 }
 
-export interface Toast {
+interface Toast {
   id: number;
   message: string;
   tone: 'info' | 'error';

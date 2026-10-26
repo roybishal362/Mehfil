@@ -27,7 +27,7 @@ export const STYLE_KEYS = [
   'fun',
   'elegant',
 ] as const;
-export type StyleKey = (typeof STYLE_KEYS)[number];
+type StyleKey = (typeof STYLE_KEYS)[number];
 
 /** Names of the AI output languages in their own scripts. */
 export const LANGUAGE_ENDONYMS: Readonly<Record<OutputLanguage, string>> = {
@@ -71,7 +71,7 @@ export interface WizardValues {
 }
 
 export type WizardField = keyof WizardValues;
-export type WizardError = keyof Messages['wizard']['errors'];
+type WizardError = keyof Messages['wizard']['errors'];
 export type WizardErrors = Partial<Record<WizardField, WizardError>>;
 
 /** The fields each step checks before moving on. */
@@ -84,40 +84,50 @@ export const STEP_COUNT = STEP_FIELDS.length;
 
 const MAX_DAYS_AHEAD = 3 * 365;
 
-export function validateStep(step: number, values: WizardValues, today: string): WizardErrors {
-  const errors: WizardErrors = {};
-  const fields = STEP_FIELDS[step] ?? [];
-  const check = (field: WizardField, problem: WizardError | null) => {
-    if (fields.includes(field) && problem) errors[field] = problem;
+type Problem = WizardError | null;
+
+/** A real date from today up to three years ahead. */
+function dateProblem(date: string, today: string): Problem {
+  if (!isIsoDate(date) || date < today) return 'date';
+  return date > addDays(today, MAX_DAYS_AHEAD) ? 'dateTooFar' : null;
+}
+
+/** The end date is optional; when given, the celebration may last up to MAX_EVENT_DAYS. */
+function endDateProblem({ date, endDate }: WizardValues): Problem {
+  if (!endDate) return null;
+  if (!isIsoDate(endDate)) return 'endDate';
+  if (!isIsoDate(date)) return null;
+  return endDate < date || endDate > addDays(date, MAX_EVENT_DAYS) ? 'endDate' : null;
+}
+
+function guestCountProblem(text: string): Problem {
+  const guests = Number(text);
+  return Number.isInteger(guests) && guests >= 1 && guests <= MAX_GUESTS ? null : 'guestCount';
+}
+
+function budgetProblem(text: string): Problem {
+  const budget = parseAmount(text);
+  return budget !== null && budget >= MIN_BUDGET ? null : 'budget';
+}
+
+/** Each checked field's rule, with the same limits as the shared brief schema. */
+const FIELD_RULES: Partial<Record<WizardField, (values: WizardValues, today: string) => Problem>> =
+  {
+    type: (values) => (values.type ? null : 'type'),
+    title: (values) => (values.title.trim() ? null : 'title'),
+    date: (values, today) => dateProblem(values.date, today),
+    endDate: (values) => endDateProblem(values),
+    city: (values) => (values.city.trim() ? null : 'city'),
+    guestCount: (values) => guestCountProblem(values.guestCount),
+    budget: (values) => budgetProblem(values.budget),
   };
 
-  check('type', values.type ? null : 'type');
-  check('title', values.title.trim() ? null : 'title');
-  check(
-    'date',
-    !isIsoDate(values.date) || values.date < today
-      ? 'date'
-      : values.date > addDays(today, MAX_DAYS_AHEAD)
-        ? 'dateTooFar'
-        : null,
-  );
-  check(
-    'endDate',
-    values.endDate &&
-      (!isIsoDate(values.endDate) ||
-        (isIsoDate(values.date) &&
-          (values.endDate < values.date || values.endDate > addDays(values.date, MAX_EVENT_DAYS))))
-      ? 'endDate'
-      : null,
-  );
-  check('city', values.city.trim() ? null : 'city');
-  const guests = Number(values.guestCount);
-  check(
-    'guestCount',
-    Number.isInteger(guests) && guests >= 1 && guests <= MAX_GUESTS ? null : 'guestCount',
-  );
-  const budget = parseAmount(values.budget);
-  check('budget', budget !== null && budget >= MIN_BUDGET ? null : 'budget');
+export function validateStep(step: number, values: WizardValues, today: string): WizardErrors {
+  const errors: WizardErrors = {};
+  for (const field of STEP_FIELDS[step] ?? []) {
+    const problem = FIELD_RULES[field]?.(values, today);
+    if (problem) errors[field] = problem;
+  }
   return errors;
 }
 
@@ -138,30 +148,47 @@ export function validateAll(
 
 const STYLE_BY_ENGLISH = new Map(STYLE_KEYS.map((key) => [en.styles[key].toLowerCase(), key]));
 
+type TextField =
+  'title' | 'date' | 'endDate' | 'startTime' | 'city' | 'traditions' | 'accessibility' | 'notes';
+
+/** Text fields start empty when the draft does not have them. */
+function textValues(draft: DraftBrief): Pick<WizardValues, TextField> {
+  return {
+    title: draft.title ?? '',
+    date: draft.date ?? '',
+    endDate: draft.endDate ?? '',
+    startTime: draft.startTime ?? '',
+    city: draft.city ?? '',
+    traditions: draft.traditions ?? '',
+    accessibility: draft.accessibility ?? '',
+    notes: draft.notes ?? '',
+  };
+}
+
+/** Numbers as the user would type them, empty when unknown; amounts default to rupees. */
+function numberValues(draft: DraftBrief): Pick<WizardValues, 'guestCount' | 'budget' | 'currency'> {
+  return {
+    guestCount: draft.guestCount ? String(draft.guestCount) : '',
+    budget: draft.budget ? String(draft.budget) : '',
+    currency: draft.currency ?? 'INR',
+  };
+}
+
 export function valuesFromDraft(
   draft: DraftBrief,
   defaults: { language: OutputLanguage; type?: EventType; subtype?: string },
 ): WizardValues {
   const type = draft.type ?? defaults.type;
   return {
+    ...textValues(draft),
+    ...numberValues(draft),
     type: type ?? '',
-    title: draft.title ?? '',
     subtype: draft.subtype ?? defaults.subtype ?? '',
-    date: draft.date ?? '',
-    endDate: draft.endDate ?? '',
-    startTime: draft.startTime ?? '',
-    city: draft.city ?? '',
     venueType: draft.venueType ?? (type === 'community' ? 'community_hall' : 'banquet_hall'),
-    guestCount: draft.guestCount ? String(draft.guestCount) : '',
-    budget: draft.budget ? String(draft.budget) : '',
-    currency: draft.currency ?? 'INR',
     styles: (draft.styles ?? [])
       .map((style) => STYLE_BY_ENGLISH.get(style.toLowerCase()))
       .filter((key) => key !== undefined),
-    traditions: draft.traditions ?? '',
     dietary: draft.dietary ?? [],
-    accessibility: draft.accessibility ?? '',
-    notes: draft.notes ?? '',
     language: draft.language ?? defaults.language,
   };
 }
