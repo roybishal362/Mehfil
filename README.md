@@ -329,7 +329,7 @@ The full picture, including the data model and the request pipeline, is in
 | Firestore Security Rules and the Firebase adapter (emulator)                                      | **13 passing**                                                                                |
 | Browser journeys (Playwright on desktop and a phone, axe on every page, reflow at 390 and 320 px) | **44 passing**                                                                                |
 | Gemini evaluation (six sample celebrations, real API)                                             | **6 of 6** pass every check                                                                   |
-| Lighthouse on the live site (simulated phone, three runs)                                         | Performance 97 · Accessibility 100 · Best practices 100 · SEO 100                             |
+| Lighthouse on the live site (simulated phone, five runs)                                          | Performance 93–96 · Accessibility 100 · Best practices 100 · SEO 100                          |
 | Static analysis                                                                                   | Strict TypeScript, typescript-eslint strict type-checked rules, jsx-a11y, CodeQL, secret scan |
 
 Every push runs the full pipeline in [GitHub Actions](.github/workflows/ci.yml): secret scan, size
