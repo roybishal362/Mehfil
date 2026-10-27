@@ -42,6 +42,7 @@ src/shared/     Used by the server and the browser
   schemas/      Zod schemas: brief, plan, operations, AI requests and responses (one source of truth)
   domain/       Budget, timeline, vendors, guests, readiness, operations, AI merges, quick parsing
     ops/        How each kind of edit applies: brief, tasks, budget, vendors, lists
+    parse/      The quick parser: one reader each for dates, places, guests, money, food
   templates/    India-aware categories and lead times for weddings, birthdays and community events
   export/       .ics calendars, Google Calendar and Maps links, CSV, share snapshots
   zod.ts        The only way to import Zod (turns off its eval-based parsers for the CSP)

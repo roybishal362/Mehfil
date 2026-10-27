@@ -55,6 +55,9 @@ what every automated test uses.
 12. **Small functions.** Lint holds source functions to 80 lines, complexity 10, four
     parameters and three levels of nesting (tests are exempt). Split by meaning: a pure helper or
     a lookup table, a hook for state and requests, or a named sub-component. See ADR 6.
+13. **Storage through one module.** Read and write localStorage only with the helpers in
+    `src/client/lib/storage.ts`. Private windows and full quotas make storage throw; the helpers
+    turn that into "nothing stored" so the app keeps working.
 
 ## Writing style
 
