@@ -4,6 +4,7 @@
  * correctly and the right fonts load.
  */
 import { create } from 'zustand';
+import { writeText } from '../lib/storage';
 import { en } from './en';
 import { formatters, type Formatters } from './format';
 import { isLocale, type Locale, type Messages } from './types';
@@ -27,11 +28,8 @@ interface LocaleState {
 
 function remember(locale: Locale): void {
   document.documentElement.lang = locale;
-  try {
-    localStorage.setItem(STORAGE_KEY, locale);
-  } catch {
-    // Storage may be unavailable (private mode); the choice then lasts for this visit.
-  }
+  // Without storage (some private windows) the choice lasts for this visit.
+  writeText(STORAGE_KEY, locale);
 }
 
 export const useLocaleStore = create<LocaleState>()((set) => ({

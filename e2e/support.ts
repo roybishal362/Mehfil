@@ -4,7 +4,7 @@
  * against the WCAG 2.2 A and AA rules and checks that it never scrolls sideways (reflow).
  */
 import { AxeBuilder } from '@axe-core/playwright';
-import { test as base, expect, type Page } from '@playwright/test';
+import { test as base, expect, type Locator, type Page } from '@playwright/test';
 
 export const test = base.extend<{ problems: string[] }>({
   problems: [
@@ -76,4 +76,16 @@ export async function describeCelebration(page: Page, description = WEDDING): Pr
 export async function openSection(page: Page, name: string): Promise<void> {
   await page.getByRole('navigation', { name: 'Plan sections' }).getByRole('link', { name }).click();
   await expect(page.getByRole('heading', { level: 2, name })).toBeVisible();
+}
+
+/**
+ * Presses Tab until `target` has focus, as a keyboard user would. Fails after `limit` presses,
+ * since a control that far down the tab order is effectively out of reach.
+ */
+export async function tabTo(page: Page, target: Locator, limit = 12): Promise<void> {
+  for (let press = 0; press < limit; press += 1) {
+    await page.keyboard.press('Tab');
+    if (await target.evaluate((element) => element === document.activeElement)) return;
+  }
+  throw new Error(`Tab did not reach the control in ${String(limit)} presses`);
 }

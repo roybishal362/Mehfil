@@ -1,13 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { weddingPlan } from '../../shared/test/fixtures';
-import {
-  BACKUP_KEY,
-  STORAGE_KEY,
-  browserStorage,
-  connectPersistence,
-  loadPlans,
-  savePlans,
-} from './persistence';
+import { BACKUP_KEY, STORAGE_KEY, connectPersistence, loadPlans, savePlans } from './persistence';
 import { createPlansStore } from './plans';
 
 afterEach(() => {
@@ -52,7 +45,6 @@ describe('loadPlans and savePlans', () => {
     } as unknown as Storage;
     expect(loadPlans(blocked)).toEqual({ plans: [], skipped: 0 });
     expect(savePlans(blocked, [weddingPlan()])).toBe(false);
-    expect(browserStorage()).toBe(localStorage);
   });
 });
 

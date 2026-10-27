@@ -4,6 +4,7 @@ import { weddingPlan } from '../../shared/test/fixtures';
 import { createPlansStore } from '../state/plans';
 import { FakeCloud } from '../test/fake-cloud';
 import { baseKey, startSync, type SyncEngine, type SyncSnapshot } from './sync';
+import type { SyncTriggers } from './sync-browser';
 
 const UID = 'uid-google';
 const planWith = (id: string, extra: Partial<EventPlan> = {}): EventPlan => ({
@@ -137,6 +138,32 @@ describe('plan sync', () => {
     document.dispatchEvent(new Event('visibilitychange'));
     await engine.settle();
     expect(store.getState().plans.evt_a?.summary).toBe('From the phone');
+  });
+
+  it('runs on the triggers it is given, without the browser, and stops listening when stopped', async () => {
+    const cloud = new FakeCloud();
+    const store = createPlansStore();
+    store.getState().hydrate([planWith('evt_a')]);
+    let triggers: SyncTriggers | undefined;
+    const unwatch = vi.fn();
+    engine = startSync({
+      backend: cloud,
+      store,
+      uid: UID,
+      storage: null,
+      onChange: () => undefined,
+      pullIntervalMs: 0,
+      watch: (on) => {
+        triggers = on;
+        return unwatch;
+      },
+    });
+    cloud.putRemote(UID, planWith('evt_b'));
+    triggers?.visible();
+    await engine.settle();
+    expect(store.getState().plans.evt_b).toBeDefined();
+    engine.stop();
+    expect(unwatch).toHaveBeenCalledOnce();
   });
 
   it('follows deletions from other devices but never loses newer work', async () => {

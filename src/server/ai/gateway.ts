@@ -125,8 +125,10 @@ export class AiGateway {
     );
     const ms = this.now() - started;
     if (cached) this.logger.info('ai.call', { task: request.task, model: value.model, cached, ms });
-    // The cache stores results for any T; this call's schema produced the stored value.
-    return { data: value.data as T, model: value.model, cached, ms };
+    // The cache holds answers of every shape, so the answer is checked against this request's
+    // schema rather than assumed to fit. The key includes the task, and each task has one schema,
+    // so a cached answer always passes; parsing again is cheap and the schemas only trim text.
+    return { data: request.schema.parse(value.data), model: value.model, cached, ms };
   }
 
   /** Function-calling generation (Copilot). Conversations are not cached. */

@@ -1,3 +1,4 @@
+import { SHARED_TITLES } from './common';
 import type { EventTemplate } from './types';
 
 /** Anniversaries, baby showers, housewarmings and other celebrations. Weights sum to 100. */
@@ -16,18 +17,14 @@ export const otherTemplate: EventTemplate = {
   tasks: [
     {
       key: 'budget',
-      title: {
-        en: 'Set the budget and guest list',
-        hi: 'बजट और मेहमानों की सूची तय करें',
-        bn: 'বাজেট ও অতিথি তালিকা ঠিক করুন',
-      },
+      title: SHARED_TITLES.budget,
       daysBefore: 60,
       priority: 'high',
       category: 'planning',
     },
     {
       key: 'venue',
-      title: { en: 'Book the venue', hi: 'वेन्यू बुक करें', bn: 'ভেন্যু বুক করুন' },
+      title: SHARED_TITLES.venue,
       daysBefore: 45,
       priority: 'high',
       category: 'venue',
@@ -45,7 +42,7 @@ export const otherTemplate: EventTemplate = {
     },
     {
       key: 'invitations',
-      title: { en: 'Send invitations', hi: 'निमंत्रण भेजें', bn: 'নিমন্ত্রণপত্র পাঠান' },
+      title: SHARED_TITLES.invitations,
       daysBefore: 25,
       priority: 'high',
       category: 'guests',
@@ -92,11 +89,7 @@ export const otherTemplate: EventTemplate = {
     },
     {
       key: 'thanks',
-      title: {
-        en: 'Thank guests and share photos',
-        hi: 'मेहमानों को धन्यवाद दें और फ़ोटो साझा करें',
-        bn: 'অতিথিদের ধন্যবাদ জানান ও ছবি শেয়ার করুন',
-      },
+      title: SHARED_TITLES.thanks,
       daysBefore: -3,
       priority: 'low',
       category: 'after',
@@ -121,7 +114,7 @@ export const otherTemplate: EventTemplate = {
       time: '18:30',
       durationMinutes: 30,
       anchor: true,
-      title: { en: 'Guests arrive', hi: 'मेहमानों का आगमन', bn: 'অতিথিদের আগমন' },
+      title: SHARED_TITLES.guestsArrive,
     },
     {
       dayOffset: 0,

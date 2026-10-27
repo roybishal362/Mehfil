@@ -1,3 +1,4 @@
+import { SHARED_TITLES } from './common';
 import type { EventTemplate } from './types';
 
 /** Birthdays from first birthdays to milestone parties. Weights sum to 100. */
@@ -16,11 +17,7 @@ export const birthdayTemplate: EventTemplate = {
   tasks: [
     {
       key: 'budget',
-      title: {
-        en: 'Set the budget and guest list',
-        hi: 'बजट और मेहमानों की सूची तय करें',
-        bn: 'বাজেট ও অতিথি তালিকা ঠিক করুন',
-      },
+      title: SHARED_TITLES.budget,
       daysBefore: 45,
       priority: 'high',
       category: 'planning',
@@ -45,7 +42,7 @@ export const birthdayTemplate: EventTemplate = {
     },
     {
       key: 'invitations',
-      title: { en: 'Send invitations', hi: 'निमंत्रण भेजें', bn: 'নিমন্ত্রণপত্র পাঠান' },
+      title: SHARED_TITLES.invitations,
       daysBefore: 21,
       priority: 'high',
       category: 'guests',
@@ -110,11 +107,7 @@ export const birthdayTemplate: EventTemplate = {
     },
     {
       key: 'thanks',
-      title: {
-        en: 'Thank guests and share photos',
-        hi: 'मेहमानों को धन्यवाद दें और फ़ोटो साझा करें',
-        bn: 'অতিথিদের ধন্যবাদ জানান ও ছবি শেয়ার করুন',
-      },
+      title: SHARED_TITLES.thanks,
       daysBefore: -3,
       priority: 'low',
       category: 'after',
@@ -140,7 +133,7 @@ export const birthdayTemplate: EventTemplate = {
       time: '16:00',
       durationMinutes: 30,
       anchor: true,
-      title: { en: 'Guests arrive', hi: 'मेहमानों का आगमन', bn: 'অতিথিদের আগমন' },
+      title: SHARED_TITLES.guestsArrive,
     },
     {
       dayOffset: 0,

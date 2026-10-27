@@ -5,6 +5,7 @@
  */
 import type { Mood } from '../../../shared/domain/mood';
 import { motionAllowed } from '../../lib/motion';
+import { browserStorage, readJson, writeText } from '../../lib/storage';
 
 export type MomentMood = Exclude<Mood, 'neutral'>;
 
@@ -27,34 +28,18 @@ const STORAGE_KEY = 'mehfil:celebrated';
 const REMEMBERED = 60;
 
 function read(storage: Storage | null): string[] {
-  try {
-    const value: unknown = JSON.parse(storage?.getItem(STORAGE_KEY) ?? '[]');
-    return Array.isArray(value) ? value.filter((id): id is string => typeof id === 'string') : [];
-  } catch {
-    return [];
-  }
+  const value = readJson(STORAGE_KEY, storage);
+  return Array.isArray(value) ? value.filter((id): id is string => typeof id === 'string') : [];
 }
 
-function localStorageOrNull(): Storage | null {
-  try {
-    return typeof localStorage === 'undefined' ? null : localStorage;
-  } catch {
-    // Some browsers throw when storage is blocked.
-    return null;
-  }
-}
-
-export function wasCelebrated(planId: string, storage = localStorageOrNull()): boolean {
+export function wasCelebrated(planId: string, storage = browserStorage()): boolean {
   return read(storage).includes(planId);
 }
 
-export function rememberCelebrated(planId: string, storage = localStorageOrNull()): void {
+export function rememberCelebrated(planId: string, storage = browserStorage()): void {
   const ids = [planId, ...read(storage).filter((id) => id !== planId)].slice(0, REMEMBERED);
-  try {
-    storage?.setItem(STORAGE_KEY, JSON.stringify(ids));
-  } catch {
-    // Without storage the moment may play again next time, which is harmless.
-  }
+  // Without storage the moment may play again next time, which is harmless.
+  writeText(STORAGE_KEY, JSON.stringify(ids), storage);
 }
 
 /** Plays by itself only on a plan's first opening, and only when motion is welcome. */

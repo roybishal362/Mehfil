@@ -83,20 +83,29 @@ export interface ShareBounds {
   max: number;
 }
 
+/** A safety cap on balancing passes; real input settles in at most one pass per share. */
+const MAX_PASSES = 50;
+/** How far from 100 the total may be and still count as balanced (floating-point noise). */
+const BALANCED = 1e-9;
+/** How close to a bound a share must be to count as having no room left. */
+const AT_BOUND = 1e-12;
+
 /**
  * Brings percentage shares inside their [min, max] bounds and back to a total of 100 by
- * repeatedly spreading the surplus or deficit over the shares that still have room.
+ * repeatedly spreading the surplus or deficit over the shares that still have room, in
+ * proportion to their size. Each pass either balances the total or pins at least one more share
+ * at a bound (and the gap keeps its sign), so it settles within one pass per share.
  * Assumes the bounds are feasible (sum of mins ≤ 100 ≤ sum of maxes).
  */
 export function balanceShares(shares: readonly number[], bounds: readonly ShareBounds[]): number[] {
   const clamp = (value: number, b: ShareBounds) =>
     Math.min(b.max, Math.max(b.min, Number.isFinite(value) ? value : b.min));
   const items = zipWith(shares, bounds, (value, b) => ({ ...b, value: clamp(value, b) }));
-  for (let iteration = 0; iteration < 50; iteration += 1) {
+  for (let pass = 0; pass < MAX_PASSES; pass += 1) {
     const diff = 100 - items.reduce((sum, item) => sum + item.value, 0);
-    if (Math.abs(diff) < 1e-9) break;
+    if (Math.abs(diff) < BALANCED) break;
     const movable = items.filter((item) =>
-      diff > 0 ? item.value < item.max - 1e-12 : item.value > item.min + 1e-12,
+      diff > 0 ? item.value < item.max - AT_BOUND : item.value > item.min + AT_BOUND,
     );
     if (movable.length === 0) break;
     const base = movable.reduce((sum, item) => sum + item.value, 0);

@@ -5,6 +5,7 @@
  */
 import { loadRuntimeConfig, useRuntimeConfig } from '../app/runtime-config';
 import { setTokenProvider } from '../lib/api';
+import { readText, removeKey, writeText } from '../lib/storage';
 import type { PlansStore } from '../state/plans';
 import { cloudBackend } from './backend';
 import { forgetShareLinks } from './share-links';
@@ -15,37 +16,80 @@ import type { CloudBackend, CloudUser } from './types';
 /** Set while this browser is signed in with Google, so the next visit resumes sync early. */
 export const ACCOUNT_KEY = 'mehfil:account';
 
-let engine: SyncEngine | null = null;
-let context: { store: PlansStore; storage: Storage | null } | null = null;
+interface CloudContext {
+  store: PlansStore;
+  storage: Storage | null;
+}
 
-function rememberGoogle(signedIn: boolean): void {
-  try {
-    if (signedIn) context?.storage?.setItem(ACCOUNT_KEY, 'google');
-    else context?.storage?.removeItem(ACCOUNT_KEY);
-  } catch {
-    // Without storage, sync resumes the first time a cloud feature is used.
+/** What startup wired in (the plans store and storage) and the signed-in account's sync. */
+class CloudConnection {
+  private context: CloudContext | null = null;
+  private engine: SyncEngine | null = null;
+
+  connect(context: CloudContext): void {
+    this.context = context;
+  }
+
+  disconnect(): void {
+    this.stopSync();
+    this.context = null;
+  }
+
+  /** Syncs a Google account's plans. Anonymous sessions (for share links) never sync. */
+  startSync(cloud: CloudBackend, user: CloudUser): void {
+    this.engine?.stop();
+    this.engine = null;
+    if (!this.context || user.anonymous) return;
+    this.engine = startSync({
+      backend: cloud,
+      store: this.context.store,
+      uid: user.uid,
+      storage: this.context.storage,
+      onChange: setSync,
+    });
+    void this.engine.syncNow();
+  }
+
+  stopSync(): void {
+    this.engine?.stop();
+    this.engine = null;
+    useCloud.setState({ sync: IDLE_SYNC });
+  }
+
+  syncNow(): Promise<void> {
+    return this.engine?.syncNow() ?? Promise.resolve();
+  }
+
+  resolve(id: string, choice: ConflictChoice, copyTitle: string): Promise<void> {
+    return this.engine?.resolve(id, choice, copyTitle) ?? Promise.resolve();
+  }
+
+  /** Waits until changes made here have been sent. */
+  async settle(): Promise<void> {
+    await this.engine?.settle();
+  }
+
+  /** Without storage, sync resumes the first time a cloud feature is used. */
+  rememberGoogle(signedIn: boolean): void {
+    if (signedIn) writeText(ACCOUNT_KEY, 'google', this.storage());
+    else removeKey(ACCOUNT_KEY, this.storage());
+  }
+
+  signedInWithGoogleBefore(): boolean {
+    return readText(ACCOUNT_KEY, this.storage()) === 'google';
+  }
+
+  /** Forgets which revisions this device last synced, for an account that no longer exists. */
+  forgetSyncState(uid: string): void {
+    removeKey(baseKey(uid), this.storage());
+  }
+
+  private storage(): Storage | null {
+    return this.context?.storage ?? null;
   }
 }
 
-function startEngine(cloud: CloudBackend, user: CloudUser): void {
-  engine?.stop();
-  engine = null;
-  if (!context || user.anonymous) return;
-  engine = startSync({
-    backend: cloud,
-    store: context.store,
-    uid: user.uid,
-    storage: context.storage,
-    onChange: setSync,
-  });
-  void engine.syncNow();
-}
-
-function stopEngine(): void {
-  engine?.stop();
-  engine = null;
-  useCloud.setState({ sync: IDLE_SYNC });
-}
+const connection = new CloudConnection();
 
 async function withBusy<T>(busy: 'signin' | 'signout' | 'delete', task: () => Promise<T>) {
   useCloud.setState({ busy });
@@ -61,19 +105,19 @@ export function signInWithGoogle(): Promise<void> {
   return withBusy('signin', async () => {
     const cloud = await cloudBackend();
     const user = await cloud.signInWithGoogle();
-    rememberGoogle(true);
+    connection.rememberGoogle(true);
     useCloud.setState({ user });
-    startEngine(cloud, user);
+    connection.startSync(cloud, user);
   });
 }
 
 /** Sends any unsynced changes, then signs out. Plans stay on this device. */
 export function signOut(): Promise<void> {
   return withBusy('signout', async () => {
-    await engine?.settle();
-    stopEngine();
+    await connection.settle();
+    connection.stopSync();
     await (await cloudBackend()).signOut();
-    rememberGoogle(false);
+    connection.rememberGoogle(false);
     useCloud.setState({ user: null });
   });
 }
@@ -86,31 +130,29 @@ export function deleteCloudData(): Promise<void> {
   return withBusy('delete', async () => {
     const cloud = await cloudBackend();
     const user = await cloud.currentUser();
-    stopEngine();
-    if (user) {
-      for (const plan of await cloud.listPlans(user.uid)) {
-        await cloud.deletePlan(user.uid, plan.id, plan.revision);
-      }
-      for (const id of await cloud.listShareIds(user.uid)) await cloud.deleteShare(id);
-      await cloud.deleteAccount();
-      try {
-        context?.storage?.removeItem(baseKey(user.uid));
-      } catch {
-        // Nothing else to clean up.
-      }
-    }
+    connection.stopSync();
+    if (user) await deleteAccount(cloud, user.uid);
     forgetShareLinks();
-    rememberGoogle(false);
+    connection.rememberGoogle(false);
     useCloud.setState({ user: null });
   });
 }
 
+/** The account's synced plans, then its share links, then the account itself. */
+async function deleteAccount(cloud: CloudBackend, uid: string): Promise<void> {
+  for (const plan of await cloud.listPlans(uid))
+    await cloud.deletePlan(uid, plan.id, plan.revision);
+  for (const id of await cloud.listShareIds(uid)) await cloud.deleteShare(id);
+  await cloud.deleteAccount();
+  connection.forgetSyncState(uid);
+}
+
 export function syncNow(): Promise<void> {
-  return engine?.syncNow() ?? Promise.resolve();
+  return connection.syncNow();
 }
 
 export function resolveConflict(id: string, choice: ConflictChoice, copyTitle: string) {
-  return engine?.resolve(id, choice, copyTitle) ?? Promise.resolve();
+  return connection.resolve(id, choice, copyTitle);
 }
 
 async function resumeGoogleSession(): Promise<void> {
@@ -118,11 +160,11 @@ async function resumeGoogleSession(): Promise<void> {
     const cloud = await cloudBackend();
     const user = await cloud.currentUser();
     if (!user || user.anonymous) {
-      rememberGoogle(false);
+      connection.rememberGoogle(false);
       return;
     }
     useCloud.setState({ user });
-    startEngine(cloud, user);
+    connection.startSync(cloud, user);
   } catch {
     // The cloud is unreachable or not configured: keep working locally.
   }
@@ -155,23 +197,14 @@ function whenIdle(task: () => void): void {
  * Connects the cloud features at startup: API calls carry an ID token when someone is signed
  * in, and a returning Google user's sync resumes once the page is idle.
  */
-export function connectCloud(options: { store: PlansStore; storage: Storage | null }): void {
-  context = options;
+export function connectCloud(context: CloudContext): void {
+  connection.connect(context);
   setTokenProvider(apiToken);
-  if (signedInWithGoogleBefore(options.storage)) whenIdle(() => void resumeGoogleSession());
-}
-
-function signedInWithGoogleBefore(storage: Storage | null): boolean {
-  try {
-    return storage?.getItem(ACCOUNT_KEY) === 'google';
-  } catch {
-    return false;
-  }
+  if (connection.signedInWithGoogleBefore()) whenIdle(() => void resumeGoogleSession());
 }
 
 /** Test helper: forget the wiring and any running sync. */
 export function disconnectCloudForTests(): void {
-  stopEngine();
-  context = null;
+  connection.disconnect();
   setTokenProvider(null);
 }

@@ -9,9 +9,20 @@
  */
 import { EventPlan } from '../../shared/schemas/plan';
 import { createId } from '../../shared/utils/ids';
+import { parseJson } from '../../shared/utils/json';
+import { readJson, writeText } from '../lib/storage';
 import type { PlansStore } from '../state/plans';
-import { reconcile, type SyncActions, type SyncConflict } from './reconcile';
+import { browserTriggers, isOffline, type WatchForSync } from './sync-browser';
+import {
+  reconcile,
+  settleConflict,
+  type ConflictChoice,
+  type SyncActions,
+  type SyncConflict,
+} from './reconcile';
 import type { CloudBackend } from './types';
+
+export type { ConflictChoice } from './reconcile';
 
 type SyncStatus = 'idle' | 'syncing' | 'offline' | 'error';
 
@@ -20,8 +31,6 @@ export interface SyncSnapshot {
   lastSyncedAt: string | null;
   conflicts: readonly SyncConflict[];
 }
-
-export type ConflictChoice = 'local' | 'remote' | 'both';
 
 export interface SyncOptions {
   backend: CloudBackend;
@@ -34,6 +43,8 @@ export interface SyncOptions {
   delayMs?: number;
   /** A tab coming back into view pulls at most this often. */
   pullIntervalMs?: number;
+  /** Tells the engine when a sync is due; by default, store edits and browser events. */
+  watch?: WatchForSync;
 }
 
 export interface SyncEngine {
@@ -48,38 +59,20 @@ export interface SyncEngine {
 
 export const baseKey = (uid: string) => `mehfil:sync:${uid}`;
 
-function readBase(storage: Storage | null, key: string): Record<string, number> {
-  try {
-    const parsed: unknown = JSON.parse(storage?.getItem(key) ?? '{}');
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
-    return Object.fromEntries(
-      Object.entries(parsed).filter(
-        (entry): entry is [string, number] => Number.isInteger(entry[1]) && entry[1] >= 0,
-      ),
-    );
-  } catch {
-    return {};
-  }
+/** The base saved on an earlier visit; anything that is not a revision is dropped. */
+function loadBase(storage: Storage | null, key: string): Map<string, number> {
+  const stored = readJson(key, storage);
+  if (!stored || typeof stored !== 'object' || Array.isArray(stored)) return new Map();
+  return new Map(
+    Object.entries(stored).filter(
+      (entry): entry is [string, number] => Number.isInteger(entry[1]) && entry[1] >= 0,
+    ),
+  );
 }
 
 function parsePlan(json: string): EventPlan | null {
-  try {
-    const result = EventPlan.safeParse(JSON.parse(json));
-    return result.success ? result.data : null;
-  } catch {
-    return null;
-  }
-}
-
-/** Network failures (offline, server unreachable) as opposed to real errors. */
-function isOffline(error: unknown): boolean {
-  if (typeof navigator !== 'undefined' && !navigator.onLine) return true;
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'code' in error &&
-    (error.code === 'unavailable' || error.code === 'deadline-exceeded')
-  );
+  const result = EventPlan.safeParse(parseJson(json));
+  return result.success ? result.data : null;
 }
 
 /** One signed-in device's sync session. Work runs one task at a time, in order. */
@@ -93,17 +86,22 @@ class SyncSession implements SyncEngine {
   private timer: ReturnType<typeof setTimeout> | undefined;
   private lastPull = 0;
   private stopped = false;
-  private readonly unsubscribe: () => void;
+  private readonly unwatch: () => void;
 
   constructor(options: Required<SyncOptions>) {
     this.options = options;
     this.key = baseKey(options.uid);
-    this.base = new Map(Object.entries(readBase(options.storage, this.key)));
-    this.unsubscribe = options.store.subscribe((state, previous) => {
-      if (state.plans !== previous.plans || state.order !== previous.order) this.schedulePush();
+    this.base = loadBase(options.storage, this.key);
+    this.unwatch = options.watch({
+      edited: () => {
+        this.schedulePush();
+      },
+      online: () => void this.enqueue(() => this.push()),
+      visible: () => {
+        const due = this.options.now().getTime() - this.lastPull > this.options.pullIntervalMs;
+        if (due) void this.enqueue(() => this.pull());
+      },
     });
-    window.addEventListener('online', this.onOnline);
-    document.addEventListener('visibilitychange', this.onVisible);
   }
 
   syncNow(): Promise<void> {
@@ -119,7 +117,10 @@ class SyncSession implements SyncEngine {
     // The cloud copy is now the agreed starting point; what follows is pushed on top of it.
     this.base.set(id, remote.revision);
     this.saveBase();
-    this.options.store.getState().putPlans(this.settledPlans(local, remote, choice, copyTitle));
+    const at = this.options.now().toISOString();
+    const copyId = createId('evt');
+    const settled = settleConflict({ local, remote, choice, copyTitle, copyId, at });
+    this.options.store.getState().putPlans(settled);
     await this.enqueue(() => this.push());
   }
 
@@ -135,39 +136,7 @@ class SyncSession implements SyncEngine {
   stop(): void {
     this.stopped = true;
     if (this.timer) clearTimeout(this.timer);
-    this.unsubscribe();
-    window.removeEventListener('online', this.onOnline);
-    document.removeEventListener('visibilitychange', this.onVisible);
-  }
-
-  private readonly onOnline = () => void this.enqueue(() => this.push());
-
-  private readonly onVisible = () => {
-    const due = Date.now() - this.lastPull > this.options.pullIntervalMs;
-    if (document.visibilityState === 'visible' && due) void this.enqueue(() => this.pull());
-  };
-
-  /** What to store for a settled conflict: one side, a newer copy of ours, or both plans. */
-  private settledPlans(
-    local: EventPlan,
-    remote: EventPlan,
-    choice: ConflictChoice,
-    copyTitle: string,
-  ): EventPlan[] {
-    const at = this.options.now().toISOString();
-    if (choice === 'remote') return [remote];
-    if (choice === 'local') {
-      return [{ ...local, revision: Math.max(local.revision, remote.revision) + 1, updatedAt: at }];
-    }
-    const copy: EventPlan = {
-      ...local,
-      id: createId('evt'),
-      brief: { ...local.brief, title: copyTitle },
-      revision: 0,
-      createdAt: at,
-      updatedAt: at,
-    };
-    return [remote, copy];
+    this.unwatch();
   }
 
   private update(patch: Partial<SyncSnapshot>): void {
@@ -176,11 +145,8 @@ class SyncSession implements SyncEngine {
   }
 
   private saveBase(): void {
-    try {
-      this.options.storage?.setItem(this.key, JSON.stringify(Object.fromEntries(this.base)));
-    } catch {
-      // Without storage the next sync compares more, but nothing is lost.
-    }
+    // Without storage the next sync compares more, but nothing is lost.
+    writeText(this.key, JSON.stringify(Object.fromEntries(this.base)), this.options.storage);
   }
 
   private inConflict(id: string): boolean {
@@ -223,7 +189,7 @@ class SyncSession implements SyncEngine {
 
   /** A full sync: compare both sides with the base, then copy, delete or ask. */
   private async pull(): Promise<boolean> {
-    this.lastPull = Date.now();
+    this.lastPull = this.options.now().getTime();
     this.update({ status: 'syncing' });
     const { remote, unreadable } = await this.readRemote();
     const { plans, order } = this.options.store.getState();
@@ -313,7 +279,14 @@ export function startSync({
   now = () => new Date(),
   delayMs = 1500,
   pullIntervalMs = 30_000,
+  watch,
   ...options
 }: SyncOptions): SyncEngine {
-  return new SyncSession({ ...options, now, delayMs, pullIntervalMs });
+  return new SyncSession({
+    ...options,
+    now,
+    delayMs,
+    pullIntervalMs,
+    watch: watch ?? browserTriggers(options.store),
+  });
 }

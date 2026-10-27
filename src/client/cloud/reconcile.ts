@@ -12,6 +12,8 @@ import type { EventPlan } from '../../shared/schemas/plan';
 /** The revision of each plan as last synced from this device, by plan ID. */
 export type SyncBase = Readonly<Record<string, number>>;
 
+export type ConflictChoice = 'local' | 'remote' | 'both';
+
 export interface SyncConflict {
   local: EventPlan;
   remote: EventPlan;
@@ -31,6 +33,39 @@ export interface SyncActions {
   /** Plans gone from both sides: their base can be dropped. */
   forget: string[];
   conflicts: SyncConflict[];
+}
+
+export interface Settlement {
+  local: EventPlan;
+  remote: EventPlan;
+  choice: ConflictChoice;
+  /** Names the extra plan when keeping both. */
+  copyTitle: string;
+  /** The ID for the extra plan when keeping both. */
+  copyId: string;
+  /** When the conflict is settled (ISO date and time). */
+  at: string;
+}
+
+/**
+ * What to store once a conflict is settled: the cloud copy, this device's copy made newer than
+ * both, or both plans (this device's under a new ID and title).
+ */
+export function settleConflict(settlement: Settlement): EventPlan[] {
+  const { local, remote, choice, at } = settlement;
+  if (choice === 'remote') return [remote];
+  if (choice === 'local') {
+    return [{ ...local, revision: Math.max(local.revision, remote.revision) + 1, updatedAt: at }];
+  }
+  const copy: EventPlan = {
+    ...local,
+    id: settlement.copyId,
+    brief: { ...local.brief, title: settlement.copyTitle },
+    revision: 0,
+    createdAt: at,
+    updatedAt: at,
+  };
+  return [remote, copy];
 }
 
 /** JSON with object keys sorted, so equal plans compare equal whatever their key order. */

@@ -4,6 +4,7 @@
  * paint, following the device's light or dark setting until the visitor picks one.
  */
 import { create } from 'zustand';
+import { writeText } from '../lib/storage';
 
 type Theme = 'night' | 'day';
 
@@ -19,11 +20,8 @@ function currentTheme(): Theme {
 function applyTheme(theme: Theme): void {
   document.documentElement.dataset.theme = theme;
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', THEME_COLOR[theme]);
-  try {
-    localStorage.setItem(STORAGE_KEY, theme);
-  } catch {
-    // Storage may be unavailable; the theme then lasts for this visit.
-  }
+  // Without storage the theme lasts for this visit.
+  writeText(STORAGE_KEY, theme);
 }
 
 interface ThemeState {

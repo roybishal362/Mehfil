@@ -5,6 +5,8 @@
  * instead of being thrown away.
  */
 import { EventPlan } from '../../shared/schemas/plan';
+import { parseJson } from '../../shared/utils/json';
+import { readText, writeText } from '../lib/storage';
 import type { PlansStore } from './plans';
 
 export const STORAGE_KEY = 'mehfil:plans';
@@ -33,28 +35,12 @@ function isEnvelope(value: unknown): value is Envelope {
 }
 
 export function loadPlans(storage: Storage | null): LoadResult {
-  if (!storage) return { plans: [], skipped: 0 };
-  let raw: string | null;
-  try {
-    raw = storage.getItem(STORAGE_KEY);
-  } catch {
-    return { plans: [], skipped: 0 };
-  }
+  const raw = readText(STORAGE_KEY, storage);
   if (!raw) return { plans: [], skipped: 0 };
-
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw);
-  } catch {
-    parsed = null;
-  }
+  const parsed = parseJson(raw);
   if (!isEnvelope(parsed) || parsed.version > VERSION) {
-    // Unknown or damaged data: keep a copy for recovery, start fresh.
-    try {
-      storage.setItem(BACKUP_KEY, raw);
-    } catch {
-      // Nothing more we can do if storage is full.
-    }
+    // Unknown or damaged data: keep a copy for recovery (if there is room), and start fresh.
+    writeText(BACKUP_KEY, raw, storage);
     return { plans: [], skipped: 1 };
   }
 
@@ -70,14 +56,8 @@ export function loadPlans(storage: Storage | null): LoadResult {
 
 /** Returns false when the browser refuses to store the data (quota or privacy settings). */
 export function savePlans(storage: Storage | null, plans: readonly EventPlan[]): boolean {
-  if (!storage) return false;
-  try {
-    const envelope: Envelope = { version: VERSION, plans: [...plans] };
-    storage.setItem(STORAGE_KEY, JSON.stringify(envelope));
-    return true;
-  } catch {
-    return false;
-  }
+  const envelope: Envelope = { version: VERSION, plans: [...plans] };
+  return writeText(STORAGE_KEY, JSON.stringify(envelope), storage);
 }
 
 export interface PersistenceOptions {
@@ -123,13 +103,4 @@ export function connectPersistence(
     document.removeEventListener('visibilitychange', onHide);
     window.removeEventListener('pagehide', flush);
   };
-}
-
-/** localStorage, or null where the browser blocks it. */
-export function browserStorage(): Storage | null {
-  try {
-    return window.localStorage;
-  } catch {
-    return null;
-  }
 }

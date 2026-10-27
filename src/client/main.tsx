@@ -23,7 +23,8 @@ import { loadRuntimeConfig } from './app/runtime-config';
 import { connectCloud } from './cloud/account';
 import { initLocale, useLocaleStore } from './i18n';
 import { markLoaded } from './lib/after-load';
-import { browserStorage, connectPersistence, loadPlans } from './state/persistence';
+import { browserStorage } from './lib/storage';
+import { connectPersistence, loadPlans } from './state/persistence';
 import { plansStore } from './state/plans';
 
 async function start(): Promise<void> {

@@ -1,3 +1,4 @@
+import { SHARED_TITLES } from './common';
 import type { EventTemplate } from './types';
 
 /** Weddings, including multi-day Indian weddings. Weights sum to 100. */
@@ -30,7 +31,7 @@ export const weddingTemplate: EventTemplate = {
     },
     {
       key: 'venue',
-      title: { en: 'Book the venue', hi: 'वेन्यू बुक करें', bn: 'ভেন্যু বুক করুন' },
+      title: SHARED_TITLES.venue,
       daysBefore: 300,
       priority: 'high',
       category: 'venue',
@@ -128,7 +129,7 @@ export const weddingTemplate: EventTemplate = {
     },
     {
       key: 'invitations',
-      title: { en: 'Send invitations', hi: 'निमंत्रण भेजें', bn: 'নিমন্ত্রণপত্র পাঠান' },
+      title: SHARED_TITLES.invitations,
       daysBefore: 60,
       priority: 'high',
       category: 'guests',
